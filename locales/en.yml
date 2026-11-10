@@ -1,0 +1,48 @@
+# Kaku i18n bundle: English (source-of-truth language).
+#
+# Conventions:
+#   - Keys are dot-namespaced: <scope>.<context>.<key>.
+#   - Placeholders use the `%{name}` syntax from rust-i18n.
+#   - Every key here must also exist in zh-CN.yml, and every literal
+#     `t!("...")` key in the Rust sources must exist in both files;
+#     scripts/check_locales.py enforces this.
+#   - Slug-lookup namespaces (commands.brief/doc/menubar, config_tui) live
+#     only in translation files: the code derives the key from the English
+#     label and falls back to that label.
+#   - Purely developer-facing strings (log lines, panics) stay literals.
+
+ai:
+  approval:
+    title: "Kaku AI Needs Confirmation"
+  task_complete:
+    title: "Kaku AI Task Complete"
+  header:
+    user: "  You"
+    assistant: "  AI"
+  prompt:
+    respond_in_language: "Respond in English."
+
+tab:
+  # Shown in the tab title when a tab has no live pane attached.
+  empty_pane: "no pane"
+
+commands:
+  # Hard-coded NSMenuItems in the Kaku app menu (not CommandDef entries).
+  menu:
+    settings: "Settings..."
+    check_for_updates: "Check for Updates..."
+    set_as_default_terminal: "Set as Default Terminal"
+    services: "Services"
+
+init:
+  k_wrapper_conflict: "k: %{path} already exists and does not appear to be a Kaku wrapper; skipping."
+
+overlay:
+  confirm_close:
+    pane: "Close this pane?\nThe running process in this pane will be terminated."
+    tab: "Close this tab?\nAll panes in this tab will be terminated."
+    update: "Update Kaku now?\nAll windows will close and running tasks will stop."
+    quit: "Quit Kaku?\nAll open tabs and panes will be closed."
+  launcher:
+    pane_encoding: "Pane Encoding"
+    pane_encoding_help: "Select encoding  |  Enter = set  |  Esc = back  |  / = filter"

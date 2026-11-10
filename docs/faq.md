@@ -17,6 +17,19 @@ config.window_background_opacity = 0.92
 config.macos_window_background_blur = 20  -- optional blur, 0–100
 ```
 
+## How do I switch the interface to Simplified Chinese?
+
+Set `config.language` to `"zh-CN"` and relaunch:
+
+```lua
+config.language = "zh-CN"
+```
+
+Use `"auto"` to follow `$LC_ALL` / `$LC_MESSAGES` / `$LANG` from your
+shell. See [configuration.md#language](configuration.md#language) for
+details, including which surfaces are translated and which (e.g. the
+macOS system menu bar) follow the OS instead.
+
 ## How do I turn off copy on select?
 
 ```lua

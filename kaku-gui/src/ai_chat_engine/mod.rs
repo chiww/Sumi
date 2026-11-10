@@ -56,8 +56,8 @@ pub enum StreamMsg {
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
-/// Returns the static system prompt, optionally suffixed with the user's
-/// Soul identity.
+/// Returns the static system prompt, optionally suffixed with a language
+/// directive (non-English UI locales only) and the user's Soul identity.
 ///
 /// This is the single source of truth for both the Cmd+L overlay and the `k`
 /// CLI. The prompt is composed from six topical fragments under
@@ -85,14 +85,21 @@ pub(crate) fn build_system_prompt() -> String {
         )),
     ];
     let base = fragments.join("\n\n");
-    let identity = crate::soul::load_for_prompt();
-    if identity.is_empty() {
+    // The directive changes only when the UI locale changes, a
+    // session-level decision, so the prompt bytes stay cache-stable. English
+    // gets no directive: the model already follows the user's language.
+    let with_language = if rust_i18n::locale().starts_with("en") {
         base
     } else {
-        format!(
-            "{}\n\n---\n\nUSER IDENTITY (read-only, user-authored):\n{}",
-            base, identity
-        )
+        let directive = rust_i18n::t!("ai.prompt.respond_in_language");
+        format!("{base}\n\n{directive}")
+    };
+    let identity = crate::soul::load_for_prompt();
+
+    if identity.is_empty() {
+        with_language
+    } else {
+        format!("{with_language}\n\n---\n\nUSER IDENTITY (read-only, user-authored):\n{identity}")
     }
 }
 

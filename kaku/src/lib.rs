@@ -25,6 +25,11 @@ use std::path::PathBuf;
 use umask::UmaskSaver;
 use wezterm_gui_subcommands::*;
 
+// Register the i18n bundle for the `kaku` CLI. `t!()` invocations inside
+// this crate look up keys against `locales/{en,zh-CN}.yml` at the
+// workspace root.
+rust_i18n::i18n!("../locales", fallback = "en");
+
 mod ai_config;
 mod assistant_config;
 mod chat;
@@ -704,6 +709,27 @@ fn init_config(opts: &Opt) -> anyhow::Result<ConfigHandle> {
     Ok(config)
 }
 
+fn apply_locale_from_config(config: &ConfigHandle) {
+    let locale = config::i18n::resolve_locale(&config.language);
+    rust_i18n::set_locale(&locale);
+    log::trace!("i18n: active locale = {locale}");
+}
+
+/// Honor `config.language` from kaku.lua for the interactive subcommands.
+/// A config that fails to load keeps the environment locale; the command
+/// itself reports the config error.
+fn refine_locale_from_lua_config(opts: &Opt) {
+    if config::common_init(
+        opts.config_file.as_ref(),
+        &opts.config_override,
+        opts.skip_config,
+    )
+    .is_ok()
+    {
+        apply_locale_from_config(&config::configuration());
+    }
+}
+
 fn run() -> anyhow::Result<()> {
     let saver = UmaskSaver::new();
 
@@ -715,6 +741,10 @@ fn run() -> anyhow::Result<()> {
     );
 
     let opts = Opt::parse();
+
+    // Pick a locale from the environment first so the main menu and early
+    // errors are localized; commands that read kaku.lua refine it below.
+    rust_i18n::set_locale(&config::i18n::resolve_locale(config::i18n::LANGUAGE_AUTO));
 
     let cmd = if let Some(cmd) = opts.cmd.as_ref().cloned() {
         Some(cmd)
@@ -752,21 +782,39 @@ fn run() -> anyhow::Result<()> {
             Ok(())
         }
         SubCommand::Update(cmd) => cmd.run(),
-        SubCommand::Config(cmd) => cmd.run(
-            opts.config_file.as_ref().map(PathBuf::from),
-            opts.config_file.clone(),
-            opts.config_override.clone(),
-            opts.skip_config,
-        ),
-        SubCommand::Init(cmd) => cmd.run(),
-        SubCommand::Doctor(cmd) => cmd.run(),
-        SubCommand::Reset(cmd) => cmd.run(),
-        SubCommand::Ai(cmd) => cmd.run(
-            opts.config_file.clone(),
-            opts.config_override.clone(),
-            opts.skip_config,
-        ),
-        SubCommand::Chat(cmd) => cmd.run(),
+        SubCommand::Config(cmd) => {
+            refine_locale_from_lua_config(&opts);
+            cmd.run(
+                opts.config_file.as_ref().map(PathBuf::from),
+                opts.config_file.clone(),
+                opts.config_override.clone(),
+                opts.skip_config,
+            )
+        }
+        SubCommand::Init(cmd) => {
+            refine_locale_from_lua_config(&opts);
+            cmd.run()
+        }
+        SubCommand::Doctor(cmd) => {
+            refine_locale_from_lua_config(&opts);
+            cmd.run()
+        }
+        SubCommand::Reset(cmd) => {
+            refine_locale_from_lua_config(&opts);
+            cmd.run()
+        }
+        SubCommand::Ai(cmd) => {
+            refine_locale_from_lua_config(&opts);
+            cmd.run(
+                opts.config_file.clone(),
+                opts.config_override.clone(),
+                opts.skip_config,
+            )
+        }
+        SubCommand::Chat(cmd) => {
+            refine_locale_from_lua_config(&opts);
+            cmd.run()
+        }
     }
 }
 

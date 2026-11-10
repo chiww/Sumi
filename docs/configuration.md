@@ -50,6 +50,43 @@ Keep terminal behavior, appearance, key bindings, launch behavior, and other Wez
 
 Manage Kaku Assistant settings with `kaku ai`. That command writes `~/.config/kaku/assistant.toml` for model, base URL, auth, API keys, and tool settings. The Lua/TOML split is intentional: `kaku.lua` stays compatible with WezTerm-style terminal configuration, while `assistant.toml` is managed by the AI setup flow.
 
+## Language
+
+Kaku ships built-in English and Simplified Chinese (`zh-CN`) translations
+for its menus, command palette, AI overlay, and CLI TUIs. The selected
+language also asks the AI Assistant to reply in Simplified Chinese by
+default; in English the Assistant follows the language you write in.
+
+```lua
+config.language = "auto"   -- default: detect from $LC_ALL / $LANG; fall back to English
+config.language = "zh-CN"  -- force Simplified Chinese
+config.language = "en"     -- force English
+```
+
+Resolution order when `"auto"` is set:
+
+1. `$LC_ALL`
+2. `$LC_MESSAGES`
+3. `$LANG`
+4. English (fallback)
+
+When the desktop app starts from the Dock or Finder, `$LANG` is usually
+unset; Kaku then derives it from the macOS **region** (System Settings >
+General > Language & Region), not the preferred language. If the two
+differ, set `config.language` explicitly.
+
+Unsupported values fall back to English and emit a warning in the log.
+The macOS system menu bar (File / Edit / Window) is owned by the OS;
+it follows your system language and is **not** affected by
+`config.language`. Re-launch Kaku after changing the value.
+
+> **Note:** `kaku.lua` is loaded by the desktop app and the `kaku` CLI.
+> The standalone `k` chat CLI resolves its locale from the environment
+> only (`LC_ALL` / `LC_MESSAGES` / `LANG`); set those variables in your
+> shell rc to control `k`.
+
+---
+
 ## Appearance
 
 **Theme**

@@ -88,6 +88,7 @@ portable-pty = { workspace=true, features = ["serde_support"]}
 promise.workspace = true
 rangeset.workspace = true
 rayon.workspace = true
+rust-i18n.workspace = true
 serde = {workspace=true, features = ["rc", "derive"]}
 reqwest = { workspace = true, features = ["blocking", "json"] }
 regex.workspace = true
@@ -131,7 +132,10 @@ objc.workspace = true
 benchmarking.workspace = true
 env_logger.workspace = true
 k9.workspace = true
+regex.workspace = true
+serde_yaml.workspace = true
 tempfile.workspace = true
+walkdir.workspace = true
 
 [lints]
 workspace = true

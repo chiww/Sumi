@@ -17,7 +17,7 @@ pub fn confirm_close_pane(
     window: ::window::Window,
 ) -> anyhow::Result<()> {
     if confirm::run_confirmation(
-        "Close this pane?\nThe running process in this pane will be terminated.",
+        &rust_i18n::t!("overlay.confirm_close.pane"),
         frame,
         &mut term,
     )? {
@@ -50,7 +50,7 @@ pub fn confirm_close_tab(
     window: ::window::Window,
 ) -> anyhow::Result<()> {
     if confirm::run_confirmation(
-        "Close this tab?\nAll panes in this tab will be terminated.",
+        &rust_i18n::t!("overlay.confirm_close.tab"),
         frame,
         &mut term,
     )? {
@@ -78,7 +78,7 @@ pub fn confirm_apply_update(
     tab_id: TabId,
 ) -> anyhow::Result<()> {
     if confirm::run_confirmation(
-        "Update Kaku now?\nAll windows will close and running tasks will stop.",
+        &rust_i18n::t!("overlay.confirm_close.update"),
         frame,
         &mut term,
     )? {
@@ -99,7 +99,7 @@ pub fn confirm_quit_program(
     tab_id: TabId,
 ) -> anyhow::Result<()> {
     if confirm::run_confirmation(
-        "Quit Kaku?\nAll open tabs and panes will be closed.",
+        &rust_i18n::t!("overlay.confirm_close.quit"),
         frame,
         &mut term,
     )? {
