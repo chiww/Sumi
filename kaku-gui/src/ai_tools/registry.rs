@@ -360,7 +360,7 @@ pub fn all_tools(config: &AssistantConfig) -> Vec<ToolDef> {
         description: Cow::Borrowed(
             "Read the rolling memory file that stores persistent facts, \
              preferences, and project context across AI chat sessions. \
-             Kaku updates this file automatically after each conversation; \
+             Sumi updates this file automatically after each conversation; \
              you do not need to write to it yourself.",
         ),
         parameters: serde_json::json!({

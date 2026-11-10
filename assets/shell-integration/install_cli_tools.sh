@@ -11,11 +11,11 @@ NC='\033[0m'
 
 case "${KAKU_TARGET_SHELL:-${SHELL:-/bin/zsh}}" in
 *fish|fish)
-	USER_BIN_DIR="$HOME/.config/kaku/fish/bin"
+	USER_BIN_DIR="$HOME/.config/sumi/fish/bin"
 	RELOAD_CMD="exec fish"
 	;;
 *)
-	USER_BIN_DIR="$HOME/.config/kaku/zsh/bin"
+	USER_BIN_DIR="$HOME/.config/sumi/zsh/bin"
 	RELOAD_CMD="exec zsh"
 	;;
 esac
@@ -57,7 +57,7 @@ prompt_install_homebrew() {
 	fi
 
 	echo ""
-	echo "Homebrew is required to install Kaku's optional CLI tools:"
+	echo "Homebrew is required to install Sumi's optional CLI tools:"
 	if [[ ${#MISSING_TOOLS[@]} -gt 0 ]]; then
 		echo "  ${MISSING_TOOLS[*]}"
 	fi
@@ -106,9 +106,9 @@ ensure_homebrew_installation() {
 	if [[ ${#MISSING_TOOLS[@]} -gt 0 ]]; then
 		echo "Missing optional tools: ${MISSING_TOOLS[*]}"
 	fi
-	echo "Kaku shell integration will continue without them."
+	echo "Sumi shell integration will continue without them."
 	echo "Install Homebrew later, then refresh optional tools with:"
-	echo "  kaku init --update-only"
+	echo "  sumi init --update-only"
 	echo "Homebrew install guide:"
 	echo "  https://brew.sh"
 	return 1
@@ -298,7 +298,7 @@ install_missing_tools() {
 			echo -e "${BOLD}Installing optional CLI tools automatically...${NC}"
 		else
 			echo -e "${BOLD}Optional CLI tools${NC}"
-			echo "Kaku can install missing tools with Homebrew:"
+			echo "Sumi can install missing tools with Homebrew:"
 			for tool in "${MISSING_TOOLS[@]}"; do
 				echo "  - $tool"
 			done

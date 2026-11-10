@@ -1,4 +1,4 @@
--- Kaku Configuration
+-- Sumi Configuration
 
 local wezterm = require 'wezterm'
 
@@ -30,11 +30,11 @@ end
 local function default_kaku_user_config_path()
   local xdg = os.getenv('XDG_CONFIG_HOME')
   if xdg and xdg ~= '' then
-    return xdg .. '/kaku/kaku.lua'
+    return xdg .. '/kaku/sumi.lua'
   end
   local home = os.getenv('HOME')
   if home then
-    return home .. '/.config/kaku/kaku.lua'
+    return home .. '/.config/sumi/sumi.lua'
   end
   return nil
 end
@@ -45,8 +45,8 @@ local function is_bundled_kaku_config_path(path)
   end
 
   local normalized = path:gsub('\\', '/')
-  return normalized:match('/Kaku%.app/Contents/Resources/kaku%.lua$') ~= nil
-    or normalized:match('/assets/macos/Kaku%.app/Contents/Resources/kaku%.lua$') ~= nil
+  return normalized:match('/Sumi%.app/Contents/Resources/kaku%.lua$') ~= nil
+    or normalized:match('/assets/macos/Sumi%.app/Contents/Resources/kaku%.lua$') ~= nil
 end
 
 -- Detect if user has custom config overrides in their config file.
@@ -103,9 +103,9 @@ do
           user_has_custom_window_frame = true
         end
         if user_theme_selection == 'none' and trimmed:match('^config%.color_scheme%s*=') then
-          if trimmed:match("^config%.color_scheme%s*=%s*['\"]Kaku Light['\"]") then
+          if trimmed:match("^config%.color_scheme%s*=%s*['\"]Sumi Light['\"]") then
             user_theme_selection = 'light'
-          elseif trimmed:match("^config%.color_scheme%s*=%s*['\"]Kaku Dark['\"]") then
+          elseif trimmed:match("^config%.color_scheme%s*=%s*['\"]Sumi Dark['\"]") then
             user_theme_selection = 'dark'
           elseif trimmed:match('get_appearance') then
             user_theme_selection = 'auto'
@@ -123,7 +123,7 @@ end
 
 -- Detect macOS appearance via `defaults read` as a reliable fallback when
 -- wezterm.gui is not yet available (early Lua init, TUI processes like
--- `kaku config` / `kaku ai`). Mirrors the Rust-side is_macos_dark_mode().
+-- `sumi config` / `sumi ai`). Mirrors the Rust-side is_macos_dark_mode().
 -- The subprocess result is memoized for this config evaluation: TUI loads
 -- otherwise fork `defaults` several times per load. The GUI never consults
 -- this fallback at runtime (wezterm.gui.get_appearance takes priority), and
@@ -152,10 +152,10 @@ local function resolve_appearance_color_scheme()
   if gui and type(gui.get_appearance) == 'function' then
     local ok, appearance = pcall(gui.get_appearance)
     if ok and type(appearance) == 'string' then
-      return appearance:find('Dark', 1, true) and 'Kaku Dark' or 'Kaku Light'
+      return appearance:find('Dark', 1, true) and 'Sumi Dark' or 'Sumi Light'
     end
   end
-  return is_macos_dark_appearance() and 'Kaku Dark' or 'Kaku Light'
+  return is_macos_dark_appearance() and 'Sumi Dark' or 'Sumi Light'
 end
 
 local function resolve_kaku_color_scheme(scheme)
@@ -168,7 +168,7 @@ local function resolve_kaku_color_scheme(scheme)
   return scheme
 end
 
--- Optional Claude Code theme sync with Kaku color scheme.
+-- Optional Claude Code theme sync with Sumi color scheme.
 -- Disabled by default because it writes ~/.claude.json.
 -- Set KAKU_CLAUDE_SYNC=1 to opt in.
 local kaku_last_synced_cc_theme = nil
@@ -380,7 +380,7 @@ local runtime_cwd_startup_grace_secs = 3
 local runtime_cwd_warmup_until_secs = now_secs() + runtime_cwd_startup_grace_secs
 
 local home_dir = os.getenv("HOME") or wezterm.home_dir
-local kaku_state_dir = home_dir and (home_dir .. "/.config/kaku") or nil
+local kaku_state_dir = home_dir and (home_dir .. "/.config/sumi") or nil
 local xdg_config_home = os.getenv("XDG_CONFIG_HOME")
 local kaku_config_dir = xdg_config_home and xdg_config_home ~= ""
     and (xdg_config_home .. "/kaku")
@@ -804,7 +804,7 @@ local function detect_git_branch(path)
 end
 
 -- Loads a static prompt file shipped under assets/prompts/.
--- In a built bundle the prompts live next to kaku.lua under Resources/prompts/.
+-- In a built bundle the prompts live next to sumi.lua under Resources/prompts/.
 -- In dev mode (cargo run), fall back to the repo's assets/prompts/ path.
 -- Strips the leading <!-- ... --> metadata block. Caches the result.
 --
@@ -1191,7 +1191,7 @@ local function is_dangerous_command(command)
   end
 
   -- Quitting or killing apps anywhere in the line: a fix once quit Stash (the
-  -- proxy) and Kaku itself, the terminal running the command, in one Enter.
+  -- proxy) and Sumi itself, the terminal running the command, in one Enter.
   if lower:find("osascript", 1, true) and lower:find("%f[%w]quit%f[%W]") then
     return true
   end
@@ -1408,10 +1408,10 @@ local function inject_ai_notice(pane, headline, detail, suggested_command)
   end
 
   local cmd = sanitize_suggested_command(suggested_command or "")
-  local is_light = resolve_appearance_color_scheme() == 'Kaku Light'
+  local is_light = resolve_appearance_color_scheme() == 'Sumi Light'
   local label_color = is_light and "\27[38;2;32;94;166m" or "\27[38;5;105m"
   local hint_color = is_light and "\27[38;5;244m" or "\27[38;5;249m"
-  local summary_line = label_color .. "╭─ Kaku Assistant\27[0m  \27[1m" .. summary .. "\27[0m"
+  local summary_line = label_color .. "╭─ Sumi Assistant\27[0m  \27[1m" .. summary .. "\27[0m"
   local command_line = ""
   if cmd ~= "" then
     command_line = label_color .. "╰─\27[0m " .. cmd .. "    " .. hint_color .. "Cmd+Shift+E\27[0m"
@@ -1445,11 +1445,11 @@ local function inject_ai_status(pane, message, full_text)
   local summary = full_text and trim_surrounding_whitespace(text)
     or normalize_ai_summary(text, "Checking this error now.")
   summary = summary:gsub("\n", "\r\n")
-  local is_light = resolve_appearance_color_scheme() == 'Kaku Light'
+  local is_light = resolve_appearance_color_scheme() == 'Sumi Light'
   local label_color = is_light and "\27[38;2;32;94;166m" or "\27[38;5;105m"
   local summary_color = full_text and "\27[0m"
     or (is_light and "\27[38;5;244m" or "\27[38;5;249m")
-  local line = label_color .. "╰─ Kaku Assistant\27[0m  " .. summary_color .. summary .. "\27[0m"
+  local line = label_color .. "╰─ Sumi Assistant\27[0m  " .. summary_color .. summary .. "\27[0m"
   local output = "\r\n" .. line .. "\r\n\r\n"
   pcall(function()
     pane:inject_output(output)
@@ -2084,8 +2084,8 @@ local function resolve_yazi_command()
   local home = os.getenv("HOME") or ""
   local candidates = { "yazi", "/opt/homebrew/bin/yazi", "/usr/local/bin/yazi" }
   if home ~= "" then
-    table.insert(candidates, 1, home .. "/.config/kaku/zsh/bin/yazi")
-    table.insert(candidates, 1, home .. "/.config/kaku/fish/bin/yazi")
+    table.insert(candidates, 1, home .. "/.config/sumi/zsh/bin/yazi")
+    table.insert(candidates, 1, home .. "/.config/sumi/fish/bin/yazi")
   end
   local resolved = nil
   for _, cmd in ipairs(candidates) do
@@ -2110,7 +2110,7 @@ local kaku_yazi_theme_marker_end = "# ===== End Kaku Yazi Flavor (managed) =====
 local function current_yazi_flavor(window)
   local overrides = window and window:get_config_overrides() or {}
   local scheme = resolve_kaku_color_scheme(overrides.color_scheme or config.color_scheme)
-  return scheme == 'Kaku Light' and 'kaku-light' or 'kaku-dark'
+  return scheme == 'Sumi Light' and 'kaku-light' or 'kaku-dark'
 end
 
 local function strip_managed_yazi_theme_block(content)
@@ -2141,7 +2141,7 @@ local function build_managed_yazi_theme_block(flavor)
 end
 
 local function is_legacy_kaku_yazi_theme(content)
-  if content:find("# Kaku%-aligned theme for Yazi 26%.x", 1) then
+  if content:find("# Sumi%-aligned theme for Yazi 26%.x", 1) then
     return true
   end
 
@@ -2167,7 +2167,7 @@ local function sync_managed_yazi_theme(window)
   end
 
   -- yazi >= 26.5.6 rejects a `$schema` key in its config files (the supported
-  -- form is a `#:schema <url>` comment); older Kaku versions wrote the key,
+  -- form is a `#:schema <url>` comment); older Sumi versions wrote the key,
   -- which makes yazi fail to start, so rewrite it in existing user configs.
   -- Nested on purpose: the top-level chunk is at Lua's 200-local limit.
   local function migrate_schema_header(path)
@@ -2220,7 +2220,7 @@ local function sync_managed_yazi_theme(window)
     updated = table.concat({
       "#:schema https://yazi-rs.github.io/schemas/theme.json",
       "",
-      "# Kaku manages the [flavor] section below so Yazi matches the current Kaku theme.",
+      "# Sumi manages the [flavor] section below so Yazi matches the current Sumi theme.",
       managed_block,
       "",
     }, "\n")
@@ -2782,7 +2782,7 @@ local function ensure_remote_mount(sshfs_cmd, remote_target, mount_path)
     return false, message
   end
 
-  local volume_name = "Kaku-" .. sanitize_mount_component(remote_target)
+  local volume_name = "Sumi-" .. sanitize_mount_component(remote_target)
   local mount_ok, _, mount_stderr = run_process({
     sshfs_cmd,
     remote_target .. ":/",
@@ -2835,7 +2835,7 @@ local function open_remote_files(window, pane)
 
   local yazi_cmd = resolve_yazi_command()
   if not yazi_cmd then
-    show_remote_files_toast(window, "Yazi not found. Run kaku init.")
+    show_remote_files_toast(window, "Yazi not found. Run sumi init.")
     return
   end
 
@@ -3033,7 +3033,7 @@ local function launch_lazygit(window, pane)
     return
   end
   -- The shell that receives this input owns the real working directory. In a
-  -- nested terminal (for example Herdr or tmux), Kaku's outer pane cwd can be
+  -- nested terminal (for example Herdr or tmux), Sumi's outer pane cwd can be
   -- stale, so do not preflight Git here. Lazygit reports a non-repository
   -- directory itself after the current shell resolves the command.
 end
@@ -3167,14 +3167,14 @@ local function tab_path_parts(tab)
   return parent, current
 end
 
--- ===== Kaku Palette =====
+-- ===== Sumi Palette =====
 -- Highlight hues sit between Aura's vivid defaults and Aura "Soft":
 -- a third of the way back toward vivid, so colors stay punchy but not
 -- fluorescent on a #15141b background. Foreground white is dimmed by
 -- ~10% from Aura's #edecee for lower glare without losing legibility.
 local KAKU = {
   BLACK = '#15141b',
-  -- Render ANSI black foregrounds as light text in Kaku Dark. ANSI black
+  -- Render ANSI black foregrounds as light text in Sumi Dark. ANSI black
   -- backgrounds are mapped back to BLACK in color_overrides below.
   ANSI_BLACK = '#c8c6cc',
   WHITE = '#d5d4d6',
@@ -3999,7 +3999,7 @@ local function is_user_light_theme()
   end
   -- 'auto' or no explicit theme selection means the bundled default
   -- should track macOS.
-  return resolve_appearance_color_scheme() == 'Kaku Light'
+  return resolve_appearance_color_scheme() == 'Sumi Light'
 end
 
 local initial_is_light_theme = is_user_light_theme()
@@ -4087,7 +4087,7 @@ wezterm.on('window-config-reloaded', function(window, pane)
   end
   local overrides = window:get_config_overrides() or {}
   local scheme = resolve_kaku_color_scheme(overrides.color_scheme or config.color_scheme)
-  local is_light = scheme == 'Kaku Light'
+  local is_light = scheme == 'Sumi Light'
   sync_claude_code_theme(is_light)
   local overrides_changed = false
 
@@ -4166,7 +4166,7 @@ config.unicode_version = 14
 -- Do NOT set config.term = 'kaku' here.
 -- Remote servers lack the 'kaku' terminfo entry, causing SSH issues like
 -- broken backspace/delete keys. Let the default 'xterm-256color' apply.
--- See: https://github.com/tw93/Kaku/issues/130
+-- See: https://github.com/chiww/Sumi/issues/130
 
 -- ===== Cursor =====
 config.default_cursor_style = 'BlinkingBar'
@@ -4179,7 +4179,7 @@ config.cursor_blink_ease_out = 'Constant'
 -- ===== Scrollback =====
 config.scrollback_lines = 10000
 
--- Optional editor for local file links. Kaku appends path[:line[:column]].
+-- Optional editor for local file links. Sumi appends path[:line[:column]].
 -- config.file_link_editor = 'zed'
 
 -- ===== Text Selection =====
@@ -4193,7 +4193,7 @@ config.selection_word_boundary = ' \t\n{}[]()"\'-'  -- Smart selection boundarie
 -- (reproducible on external displays).
 -- Internal cell quantization is handled in apply_dimensions (slack absorbed
 -- into top padding), so disabling this is safe.
--- <https://github.com/tw93/Kaku/issues/131>
+-- <https://github.com/chiww/Sumi/issues/131>
 config.use_resize_increments = false
 
 config.initial_cols = 110
@@ -4209,7 +4209,7 @@ config.text_background_opacity = 1.0
 config.text_min_contrast_ratio = 3.0
 
 -- ===== Close Protection =====
--- Default is 'SmartPrompt': Cmd+Q and the Quit Kaku menu silently quit when
+-- Default is 'SmartPrompt': Cmd+Q and the Quit Sumi menu silently quit when
 -- every pane is at a bare shell prompt, but pop a confirmation overlay when
 -- a stateful process is still running (same smart-skip logic as Cmd+W).
 -- Set to 'NeverPrompt' to quit instantly without asking, or 'AlwaysPrompt'
@@ -4242,7 +4242,7 @@ config.window_padding = get_default_padding()
 
 -- ===== Color Scheme =====
 config.color_schemes = config.color_schemes or {}
-config.color_schemes['Kaku Dark'] = {
+config.color_schemes['Sumi Dark'] = {
   -- Background
   foreground = KAKU.WHITE,
   background = KAKU.BLACK,
@@ -4334,7 +4334,7 @@ config.color_schemes['Kaku Dark'] = {
   },
 
   -- Hermes and some Rich/prompt_toolkit surfaces emit black truecolor text
-  -- on dark terminals. Keep those foregrounds readable in Kaku Dark.
+  -- on dark terminals. Keep those foregrounds readable in Sumi Dark.
   foreground_color_overrides = {
     ['#000000'] = KAKU.WHITE,
     ['#110f18'] = KAKU.WHITE,
@@ -4344,8 +4344,8 @@ config.color_schemes['Kaku Dark'] = {
   },
 }
 
--- ===== Kaku Light Theme =====
-config.color_schemes['Kaku Light'] = {
+-- ===== Sumi Light Theme =====
+config.color_schemes['Sumi Light'] = {
   foreground = '#100F0F',
   background = '#FFFCF0',
 
@@ -4430,7 +4430,7 @@ config.color_schemes['Kaku Light'] = {
   },
 
   -- Override pale agent text that is readable on dark themes but nearly
-  -- invisible against Kaku Light's cream background.
+  -- invisible against Sumi Light's cream background.
   foreground_color_overrides = {
     ['#FFFFDB'] = '#575653',  -- Hermes pale yellow text
     ['#FFFFDC'] = '#575653',  -- Hermes pale yellow text variant
@@ -4438,7 +4438,7 @@ config.color_schemes['Kaku Light'] = {
 }
 
 -- Legacy alias for compatibility
-config.color_schemes['Kaku Theme'] = config.color_schemes['Kaku Dark']
+config.color_schemes['Sumi Theme'] = config.color_schemes['Sumi Dark']
 config.color_scheme = resolve_kaku_color_scheme(config.color_scheme)
 
 config.set_environment_variables = config.set_environment_variables or {}
@@ -4449,7 +4449,7 @@ config.set_environment_variables['COLORFGBG'] = initial_is_light_theme and '0;15
 -- ===== Window Frame (theme-aware) =====
 get_window_frame_colors = function(scheme)
   scheme = resolve_kaku_color_scheme(scheme)
-  if scheme == 'Kaku Light' then
+  if scheme == 'Sumi Light' then
     return {
       active_titlebar_bg = '#FFFCF0',
       inactive_titlebar_bg = '#F8F5EA',
@@ -4488,14 +4488,14 @@ end
 
 do
   if not user_has_custom_window_frame then
-    -- Use the user's intended scheme (scanned from their kaku.lua) rather than
+    -- Use the user's intended scheme (scanned from their sumi.lua) rather than
     -- config.color_scheme, which has already been resolved against the system
     -- appearance and may not reflect a later override. Without this, on cold
     -- start a Dark-theme user on a Light system gets `#FFFCF0` titlebar/border
     -- colors painted on the first frame, producing a visible light strip at the
     -- top until window-config-reloaded re-runs build_managed_window_frame.
     config.window_frame = (function()
-      local initial_scheme = initial_is_light_theme and 'Kaku Light' or 'Kaku Dark'
+      local initial_scheme = initial_is_light_theme and 'Sumi Light' or 'Sumi Dark'
       local window_frame_colors = get_window_frame_colors(initial_scheme)
       return {
         font = wezterm.font({ family = 'JetBrains Mono', weight = 'Regular' }),
@@ -4637,14 +4637,14 @@ config.keys = (function() return {
     action = wezterm.action.SpawnTab('CurrentPaneDomain'),
   },
 
-  -- Cmd+Shift+A: open Kaku AI settings in current pane
+  -- Cmd+Shift+A: open Sumi AI settings in current pane
   {
     key = 'A',
     mods = 'CMD|SHIFT',
     action = wezterm.action.EmitEvent('run-kaku-ai-config'),
   },
 
-  -- Cmd+Shift+E: apply latest Kaku Assistant suggestion for the active pane
+  -- Cmd+Shift+E: apply latest Sumi Assistant suggestion for the active pane
   {
     key = 'E',
     mods = 'CMD|SHIFT',
@@ -4654,7 +4654,7 @@ config.keys = (function() return {
   -- Cmd+L: open AI chat overlay.
   -- Default chosen to avoid the macOS system "select previous input source"
   -- shortcut on Cmd+Shift+Space. To override, add your own binding in
-  -- ~/.config/kaku/kaku.lua with action = wezterm.action.EmitEvent('kaku-ai-chat').
+  -- ~/.config/sumi/sumi.lua with action = wezterm.action.EmitEvent('kaku-ai-chat').
   {
     key = 'l',
     mods = 'CMD',
@@ -5039,7 +5039,7 @@ wezterm.on('gui-startup', function(cmd)
   local loaded_legacy_state = false
   local sf = io.open(state_file, "r")
   if not sf and kaku_config_dir ~= kaku_state_dir then
-    -- Pre-XDG releases stored state at ~/.config/kaku regardless of
+    -- Pre-XDG releases stored state at ~/.config/sumi regardless of
     -- XDG_CONFIG_HOME. Fall back so existing users are not re-onboarded;
     -- the next write_state migrates the data to the XDG location.
     sf = io.open(kaku_state_dir .. "/state.json", "r")

@@ -1,4 +1,4 @@
-"""Convert a 24x24 single-color SVG icon into Kaku PolyCommand Rust source.
+"""Convert a 24x24 single-color SVG icon into Sumi PolyCommand Rust source.
 
 Every path becomes absolute MoveTo/LineTo/CubicTo/Close; arcs are turned into
 cubics. Coordinates are stored as BlockCoord::Frac(n, 120), a 0.2 unit grid,

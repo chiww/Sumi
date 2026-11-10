@@ -17,12 +17,12 @@ The `config` crate owns config loading, Lua integration, schema behavior, proxy 
 - `config/src/config.rs`: load/parse flow
 - `config/src/lib.rs`: config API and subscriptions
 - `config/src/proxy.rs`: proxy configuration used by AI and network-facing flows
-- `config/src/version.rs`: app version and target-triple accessors (`wezterm_version()`), not `config_version`; that number lives only in `assets/shell-integration/config_version.txt`, read by `kaku/src/init.rs` and the bundled `kaku.lua`
-- `assets/macos/Kaku.app/Contents/Resources/kaku.lua`: bundled fallback config
+- `config/src/version.rs`: app version and target-triple accessors (`wezterm_version()`), not `config_version`; that number lives only in `assets/shell-integration/config_version.txt`, read by `kaku/src/init.rs` and the bundled `sumi.lua`
+- `assets/macos/Sumi.app/Contents/Resources/sumi.lua`: bundled fallback config
 
 ## Config TUI (`kaku/src/config_tui/` and `kaku/src/tui_core/`)
 
-The config TUI is the interactive terminal UI for editing Kaku config. It lives in the `kaku` CLI crate, not the `config` crate.
+The config TUI is the interactive terminal UI for editing Sumi config. It lives in the `sumi` CLI crate, not the `config` crate.
 
 - `kaku/src/config_tui/` - TUI app: `mod.rs` (form state and main loop), `ui.rs` (rendering)
 - `kaku/src/tui_core/` - shared TUI primitives, currently `theme.rs` only (`accent`, `bg`, `muted`, `panel`, `primary`, `red`, `success`, `text_fg`)
@@ -30,7 +30,7 @@ The config TUI is the interactive terminal UI for editing Kaku config. It lives 
 
 ## AI Config TUI (`kaku/src/ai_config/`)
 
-The AI config TUI lives in the `kaku` CLI crate and shares terminal UI primitives with `config_tui`.
+The AI config TUI lives in the `sumi` CLI crate and shares terminal UI primitives with `config_tui`.
 
 - Keep `fast_model`, primary model, and proxy settings aligned between CLI config, GUI AI chat, and documentation.
 - Do not duplicate form widgets or debounce behavior outside `kaku/src/tui_core/`.
@@ -39,14 +39,14 @@ The AI config TUI lives in the `kaku` CLI crate and shares terminal UI primitive
 ## Practical Rules
 
 - Loading priority: user config first, bundled config second.
-- A running process keeps the bundled `kaku.lua` it started with (`BUNDLED_AT_START`, served by `cached_dofile`, 2026-11-09), so editing that file inside a built app needs a restart; `make dev` reads it from `assets/` as before. `brew upgrade` or a swapped build replaces the file under a running Kaku, and the old binary raises an error on any action it does not know (`wezterm.action.X`, `crates/luahelper/src/enumctor.rs`). A user's `kaku.lua` catches that with `pcall` and carries on from an empty table, so on the next reload the window lost every bundled setting: the Fancy tab bar with close buttons, and a light window frame in a dark terminal. Log lines reading `failed to load bundled defaults` mean that fallback ran.
+- A running process keeps the bundled `sumi.lua` it started with (`BUNDLED_AT_START`, served by `cached_dofile`, 2026-11-09), so editing that file inside a built app needs a restart; `make dev` reads it from `assets/` as before. `brew upgrade` or a swapped build replaces the file under a running Sumi, and the old binary raises an error on any action it does not know (`wezterm.action.X`, `crates/luahelper/src/enumctor.rs`). A user's `sumi.lua` catches that with `pcall` and carries on from an empty table, so on the next reload the window lost every bundled setting: the Fancy tab bar with close buttons, and a light window frame in a dark terminal. Log lines reading `failed to load bundled defaults` mean that fallback ran.
 - Keep reload-safe behavior for startup hooks and subscriptions.
 - Synthesized Half-intensity font rules keep the complete configured face, including weight suffixes in the family name. The renderer dims the color; reducing a named Light face to its family changes its weight (#616).
 - `color::is_light_color` re-exports the terminal core's classification so `COLORFGBG`, window chrome and DEC mode 2031 reports use the same palette policy. Keep that shared policy when changing color classification.
 - After mutating a live `TermConfig` client palette, call `pane.set_config(config)` so the terminal compares its subscribed palette snapshot and emits mode 2031 notifications. Updating only the provider bypasses the terminal's reload boundary.
-- `KAKU_CONFIG_FILE` is an output, not an input. Config loading exports it (`config/src/config.rs`) and `effective_config_file_path()` (`config/src/lib.rs`), the GUI single-instance check (`kaku-gui/src/main.rs`), `assets/shell-integration/setup_{zsh,fish}.sh`, and the bundled `kaku.lua` all read it back. Do not turn it into a config path override; the only supported override is `--config-file` (`CONFIG_FILE_OVERRIDE`).
-- Keep bundled fallback config authoritative at `assets/macos/Kaku.app/Contents/Resources/kaku.lua`.
-- Kaku Dark, Kaku Light, and the Kaku Theme alias must also resolve for standalone user configs that do not load the bundled Lua defaults. Their `src/scheme_data.rs` mirrors are checked against every bundled palette field by `builtin_kaku_scheme_mirrors_match_complete_bundled_palettes`; synchronize both when changing a Kaku palette.
+- `KAKU_CONFIG_FILE` is an output, not an input. Config loading exports it (`config/src/config.rs`) and `effective_config_file_path()` (`config/src/lib.rs`), the GUI single-instance check (`kaku-gui/src/main.rs`), `assets/shell-integration/setup_{zsh,fish}.sh`, and the bundled `sumi.lua` all read it back. Do not turn it into a config path override; the only supported override is `--config-file` (`CONFIG_FILE_OVERRIDE`).
+- Keep bundled fallback config authoritative at `assets/macos/Sumi.app/Contents/Resources/sumi.lua`.
+- Sumi Dark, Sumi Light, and the Sumi Theme alias must also resolve for standalone user configs that do not load the bundled Lua defaults. Their `src/scheme_data.rs` mirrors are checked against every bundled palette field by `builtin_kaku_scheme_mirrors_match_complete_bundled_palettes`; synchronize both when changing a Sumi palette.
 - Preserve compatibility with runtime reload callers that trigger `config::reload()` from GUI-side signals.
 - `config::reload()` can return without applying: once a config file is loaded, a watcher reloads 100ms after that file changes, and whichever reload started last wins. A test that rewrites its config file and reloads must set `automatically_reload_config = false` in that file, or a slow runner reads the old values (`ssh_pane_titles_keep_the_formatter_on_hover`). CI runs each test in its own process with nextest, so a flaky global-config test is racing a thread, not another test.
 - The current `config_version` is whatever `assets/shell-integration/config_version.txt` says; never trust a number written in a doc. Any version bump must update bundled config, release checks, docs, and migration expectations together, and add a row to `docs/config-versions.md`.
@@ -54,16 +54,16 @@ The AI config TUI lives in the `kaku` CLI crate and shares terminal UI primitive
 - Keep alternate-screen wheel scroll behavior configurable; terminal and GUI defaults must not diverge.
 - Config rewrite guards must validate every assignment the writer can replace, using the same match predicate. A later Lua override can contain user-owned settings even when the first assignment contains only a managed flag; `remote_access_checks_every_assignment_before_rewriting` covers this boundary in `kaku/src/config_tui/mod.rs`. Remote toggles must edit `effective_config_file_path()` through `kaku::utils::write_atomic`, preserving symlinks, permissions and the original bytes on a partial write failure. `kaku/tests/remote_config.rs` exercises the actual CLI with `--config-file`, a stale inherited `KAKU_CONFIG_FILE`, and a real file-size write limit.
 
-## Bundled kaku.lua Pitfalls
+## Bundled sumi.lua Pitfalls
 
 - **200-locals hard limit.** LuaJIT caps a chunk at 200 local variables, and the top-level
-  chunk of `assets/macos/Kaku.app/Contents/Resources/kaku.lua` is already at capacity.
+  chunk of `assets/macos/Sumi.app/Contents/Resources/sumi.lua` is already at capacity.
   Adding one more top-level `local` makes the whole config fail to load at startup. New
   helper functions and values must be nested inside existing functions or tables. After any
   edit, verify the file still loads:
 
   ```bash
-  luajit -e "assert(loadfile('assets/macos/Kaku.app/Contents/Resources/kaku.lua'))"
+  luajit -e "assert(loadfile('assets/macos/Sumi.app/Contents/Resources/sumi.lua'))"
   ```
 
   `scripts/check_kaku_lua_loads.sh <path>` wraps the same check and doubles as a PostToolUse hook for edits to this file.

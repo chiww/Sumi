@@ -125,7 +125,7 @@ impl SoftwareVersion {
 const NO_ERR: i32 = 0;
 /// `kLSRolesAll` from LaunchServices - matches all handler roles.
 const KLS_ROLES_ALL: u32 = !0;
-const KAKU_BUNDLE_IDENTIFIER: &str = "fun.tw93.kaku";
+const KAKU_BUNDLE_IDENTIFIER: &str = "com.github.chiww.sumi";
 
 fn set_default_role_handler_for_content_type(
     content_type: &str,

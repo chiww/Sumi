@@ -312,7 +312,7 @@ pub trait Pane: Downcast + Send + Sync {
         Progress::None
     }
     /// The program's own OSC 7501 state ("working", "blocked", "done",
-    /// "error" or "idle"), read by `kaku cli list`, `wait` and `events`.
+    /// "error" or "idle"), read by `sumi cli list`, `wait` and `events`.
     fn get_program_status(&self) -> Option<String> {
         None
     }

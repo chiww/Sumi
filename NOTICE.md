@@ -4,6 +4,14 @@ These notices used to sit at the end of `LICENSE.md`. They were moved here so
 that file contains nothing but the MIT text, which is what license detectors
 match against.
 
+## Sumi
+
+Sumi is a personal fork of [Kaku](https://github.com/tw93/Kaku) by Tw93,
+rebranded with its own name, icon and identifiers. The MIT copyright notice in
+`LICENSE.md` covers the original WezTerm and Kaku code as well as Sumi's
+changes. Sumi is not affiliated with or endorsed by the Kaku or WezTerm
+projects.
+
 ## WezTerm
 
 Kaku is a customized fork of [WezTerm](https://github.com/wez/wezterm), created

@@ -77,17 +77,17 @@ function serveLikeVercel(dir, listenPort) {
     start(path.join(root, 'crates/kaku-relay/target/debug/kaku-relay'), [], { PORT: String(relay), KAKU_RELAY_PAGE_ORIGIN: origin });
     await until(async () => { try { return (await fetch(`http://127.0.0.1:${relay}/health`)).ok; } catch { return false; } });
 
-    fs.mkdirSync(path.join(home, '.config/kaku'), { recursive: true });
+    fs.mkdirSync(path.join(home, '.config/sumi'), { recursive: true });
     fs.mkdirSync(path.join(home, 'tmp'));
-    const config = path.join(home, '.config/kaku/kaku.lua');
+    const config = path.join(home, '.config/sumi/sumi.lua');
     fs.writeFileSync(config, `return {default_prog={'/bin/zsh','-f'}, default_cwd=${JSON.stringify(home)}, restore_previous_session=false, remote={enabled=true, port=${local}, tunnel_url='ws://127.0.0.1:${relay}'}}`);
-    const app = process.env.KAKU_TEST_APP || path.join(root, 'dist/Kaku.app');
+    const app = process.env.KAKU_TEST_APP || path.join(root, 'dist/Sumi.app');
     const env = { HOME: home, XDG_CONFIG_HOME: path.join(home, '.config'), TMPDIR: path.join(home, 'tmp/') };
     start(path.join(app, 'Contents/MacOS/kaku-gui'), ['--config-file', config, 'start', '--always-new-process'], env);
-    const cli = (...args) => execFileSync(path.join(app, 'Contents/MacOS/kaku'), args, { env: { ...inheritedEnv, ...env } }).toString();
+    const cli = (...args) => execFileSync(path.join(app, 'Contents/MacOS/sumi'), args, { env: { ...inheritedEnv, ...env } }).toString();
 
     // Wait for the Mac on the relay, through the route the page asks.
-    await until(() => fs.existsSync(path.join(home, 'Library/Application Support/kaku/remote-share.json')));
+    await until(() => fs.existsSync(path.join(home, 'Library/Application Support/sumi/remote-share.json')));
     const link = cli('remote').split('\n').find(line => /#[A-Za-z0-9_-]{22}$/.test(line));
     const id = /\/([0-9a-f]{32})\//.exec(link)[1];
     const status = () => fetch(`http://127.0.0.1:${relay}/${id}/status`);

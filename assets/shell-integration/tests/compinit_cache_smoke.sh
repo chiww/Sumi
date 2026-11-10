@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
-# kaku.zsh rebuilds the completion dump only when it is older than a day and
+# sumi.zsh rebuilds the completion dump only when it is older than a day and
 # loads it with `compinit -C` otherwise. The age test is a `(#q...)` glob
 # qualifier, which zsh only honors with EXTENDED_GLOB; without it the test was
 # always true and every shell paid for a full compinit.
@@ -40,12 +40,12 @@ if [[ "$setup_status" -ne 0 ]]; then
   exit 1
 fi
 
-# Print the arguments kaku.zsh passes to compinit, and whether it leaked
+# Print the arguments sumi.zsh passes to compinit, and whether it leaked
 # EXTENDED_GLOB into the user's shell.
 compinit_call() {
   TERM=xterm-256color HOME="$test_home" ZDOTDIR="$test_home" zsh -f -c '
 compinit() { print -r -- "__KAKU_COMPINIT__:[$*]" }
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 [[ -o extendedglob ]] && print -r -- "__KAKU_EXTGLOB__:on" || print -r -- "__KAKU_EXTGLOB__:off"
 ' 2>&1
 }
@@ -91,7 +91,7 @@ compinit() {
   print -r -- "__KAKU_COMPINIT__:[$*]"
   _kaku_test_compinit "$@"
 }
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 [[ -o extendedglob ]] && print -r -- "__KAKU_EXTGLOB__:on" || print -r -- "__KAKU_EXTGLOB__:off"
 ' 2>&1
 }
@@ -110,7 +110,7 @@ expect "next shell after full check" "$out" "__KAKU_COMPINIT__:[-C]"
 touch -t 202001010000 "$dump"
 out="$(TERM=xterm-256color HOME="$test_home" ZDOTDIR="$test_home" zsh -f -c '
 compinit() { return 1 }
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 _kaku_zcompdump_stale && print -r -- "__KAKU_DUMP__:stale"
 ' 2>&1)"
 expect "failed full check" "$out" "__KAKU_DUMP__:stale"

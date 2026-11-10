@@ -137,7 +137,7 @@ where
         .unwrap_or_else(|| "responses".to_string());
     if wire_api != "responses" {
         anyhow::bail!(
-            "Codex provider `{provider_id}` uses unsupported wire_api `{wire_api}`; Kaku sent no request"
+            "Codex provider `{provider_id}` uses unsupported wire_api `{wire_api}`; Sumi sent no request"
         );
     }
     let base_url = required_string(provider.get("base_url"), "base_url", &provider_id)?;
@@ -233,7 +233,7 @@ fn resolve_builtin_openai(
             )
         }
         Some(other) => {
-            anyhow::bail!("Codex auth_mode `{other}` is unsupported; Kaku sent no request")
+            anyhow::bail!("Codex auth_mode `{other}` is unsupported; Sumi sent no request")
         }
         None => anyhow::bail!("Codex is not logged in; run `codex login`"),
     };
@@ -281,7 +281,7 @@ fn reject_unsupported_auth(provider: &toml::value::Table, provider_id: &str) -> 
     for field in ["experimental_bearer_token", "aws", "auth"] {
         if provider.contains_key(field) {
             anyhow::bail!(
-                "Codex provider `{provider_id}` uses unsupported authentication field `{field}`; Kaku sent no request"
+                "Codex provider `{provider_id}` uses unsupported authentication field `{field}`; Sumi sent no request"
             );
         }
     }
@@ -305,7 +305,7 @@ where
         .filter(|value| !value.is_empty())
         .ok_or_else(|| {
             anyhow::anyhow!(
-                "Codex provider `{provider_id}` requires environment variable `{name}` in the Kaku process"
+                "Codex provider `{provider_id}` requires environment variable `{name}` in the Sumi process"
             )
         })
 }

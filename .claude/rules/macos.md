@@ -19,7 +19,7 @@ paths:
 
 ## 默认渲染后端是 WebGpu，CGL-only 的 wake 修复护不住它
 
-bundled `kaku.lua` 设了 `front_end = 'WebGpu'`（Metal via wgpu）。`window/src/os/macos` 里的睡眠/唤醒防护（`SYSTEM_SLEEPING` flush 闸门、`BackendImpl::update`、display-change present defer）全部只作用于 CGL 路径，对默认用户是 no-op。给 sleep/wake/display-reconfig 加修复时必须同时考虑 WebGpu 路径（#458）。
+bundled `sumi.lua` 设了 `front_end = 'WebGpu'`（Metal via wgpu）。`window/src/os/macos` 里的睡眠/唤醒防护（`SYSTEM_SLEEPING` flush 闸门、`BackendImpl::update`、display-change present defer）全部只作用于 CGL 路径，对默认用户是 no-op。给 sleep/wake/display-reconfig 加修复时必须同时考虑 WebGpu 路径（#458）。
 
 WebGpu surface 失效的恢复入口在 `TermWindow::do_paint_webgpu`：休眠唤醒会让 Metal drawable 失效但窗口尺寸不变，`WebGpuState::resize` 对相同尺寸是故意 no-op（热路径），所以恢复必须走 `reconfigure_surface()` 强制 `surface.configure`，不能用 `resize(dims)` 代替。wgpu Metal 后端把 nil `nextDrawable` 映射成 `SurfaceError::Timeout`，所以 Timeout 连续出现同样要触发重配，不能永远静默跳帧。症状签名：键盘输入照常进 PTY、画面停在旧帧，说明是渲染管线死了而不是主线程卡死。
 
@@ -66,7 +66,7 @@ macOS 26 上 NSMenu 的 keyEquivalent modifier 匹配并不严格相等。给 me
 
 ### 排查 keyDown 丢失
 
-`config.debug_key_events = true` 重启 Kaku，复现按键，看 `~/.local/share/kaku/kaku-gui-log-<pid>.txt`：
+`config.debug_key_events = true` 重启 Kaku，复现按键，看 `~/.local/share/sumi/kaku-gui-log-<pid>.txt`：
 
 - grep `key_event.*CTRL`。
 - 如果只有 `key_is_down: false`、没有 `key_is_down: true`，就是 menu keyEquivalent 拦了 keyDown。

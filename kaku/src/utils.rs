@@ -366,9 +366,9 @@ mod tests {
     fn link_to_file_elsewhere() -> (tempfile::TempDir, tempfile::TempDir, std::path::PathBuf) {
         let target_dir = tempdir().expect("target dir");
         let link_dir = tempdir().expect("link dir");
-        let target = target_dir.path().join("kaku.lua");
+        let target = target_dir.path().join("sumi.lua");
         std::fs::write(&target, b"old").expect("seed target");
-        let link = link_dir.path().join("kaku.lua");
+        let link = link_dir.path().join("sumi.lua");
         std::os::unix::fs::symlink(&target, &link).expect("symlink");
         (target_dir, link_dir, link)
     }
@@ -389,14 +389,14 @@ mod tests {
 
         write_atomic(&link, b"new").expect("write atomic");
 
-        let target = target_dir.path().join("kaku.lua");
+        let target = target_dir.path().join("sumi.lua");
         assert_eq!(std::fs::read(&target).expect("read target"), b"new");
     }
 
     #[test]
     fn atomic_write_creates_a_regular_file_when_the_path_is_missing() {
         let dir = tempdir().expect("tempdir");
-        let path = dir.path().join("kaku.lua");
+        let path = dir.path().join("sumi.lua");
 
         write_atomic(&path, b"new").expect("write atomic");
 
@@ -409,8 +409,8 @@ mod tests {
     {
         let target_dir = tempdir().expect("target dir");
         let link_dir = tempdir().expect("link dir");
-        let target = target_dir.path().join("kaku.lua");
-        let link = link_dir.path().join("kaku.lua");
+        let target = target_dir.path().join("sumi.lua");
+        let link = link_dir.path().join("sumi.lua");
         std::os::unix::fs::symlink(&target, &link).expect("symlink");
         (target_dir, link_dir, link)
     }
@@ -431,7 +431,7 @@ mod tests {
 
         write_atomic(&link, b"new").expect("write atomic");
 
-        let target = target_dir.path().join("kaku.lua");
+        let target = target_dir.path().join("sumi.lua");
         assert_eq!(std::fs::read(&target).expect("read target"), b"new");
     }
 
@@ -442,13 +442,13 @@ mod tests {
         let dotfiles = home.path().join("dotfiles");
         std::fs::create_dir(&config_dir).expect("config dir");
         std::fs::create_dir(&dotfiles).expect("dotfiles dir");
-        let link = config_dir.join("kaku.lua");
-        std::os::unix::fs::symlink("../dotfiles/kaku.lua", &link).expect("symlink");
+        let link = config_dir.join("sumi.lua");
+        std::os::unix::fs::symlink("../dotfiles/sumi.lua", &link).expect("symlink");
 
         write_atomic(&link, b"new").expect("write atomic");
 
         assert_eq!(
-            std::fs::read(dotfiles.join("kaku.lua")).expect("read target"),
+            std::fs::read(dotfiles.join("sumi.lua")).expect("read target"),
             b"new"
         );
         let meta = std::fs::symlink_metadata(&link).expect("link metadata");
@@ -458,15 +458,15 @@ mod tests {
     #[test]
     fn atomic_write_through_a_symlink_into_a_missing_directory_fails_and_keeps_the_link() {
         let dir = tempdir().expect("tempdir");
-        let link = dir.path().join("kaku.lua");
-        std::os::unix::fs::symlink("missing-dir/kaku.lua", &link).expect("symlink");
+        let link = dir.path().join("sumi.lua");
+        std::os::unix::fs::symlink("missing-dir/sumi.lua", &link).expect("symlink");
 
         let result = write_atomic(&link, b"new");
 
         assert!(result.is_err(), "write into a missing directory succeeded");
         assert_eq!(
             std::fs::read_link(&link).expect("read link"),
-            std::path::PathBuf::from("missing-dir/kaku.lua")
+            std::path::PathBuf::from("missing-dir/sumi.lua")
         );
     }
 

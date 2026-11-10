@@ -1,5 +1,5 @@
 <!--
-name: 'Kaku Chat: safety'
+name: 'Sumi Chat: safety'
 description: Secrets handling, prompt-injection defense, honesty, and shell safety rules.
 kakuVersion: 0.12.0
 -->

@@ -32,9 +32,9 @@ Please include:
 ## Optional details
 
 Add anything helpful if available:
-- the diagnostic zip from `kaku doctor`: run it (in Terminal.app if Kaku is frozen) and attach `~/.local/share/kaku/diagnostics/Kaku-Diagnose.zip`
+- the diagnostic zip from `sumi doctor`: run it (in Terminal.app if Kaku is frozen) and attach `~/.local/share/sumi/diagnostics/Kaku-Diagnose.zip`
 - screenshots or recordings
-- relevant config snippet from `~/.config/kaku/kaku.lua`
+- relevant config snippet from `~/.config/sumi/sumi.lua`
 
 You can submit first with minimal info; maintainers may ask follow-up questions.
 

@@ -107,7 +107,7 @@ Use these as default scopes when the maintainer says "scan for bugs" without a p
 | Titlebar / tabs / DPI | #516, #504, #490, #483, #460 | External display + scaled resolution + tab top/bottom |
 | Window drag / menubar | #508, #456, #408, #414, #477 | Drag to menubar, lock screen, fill desktop |
 | Selection latch | #495, #487, #455 | Ctrl+L, cancel rename, mouse-reporting TUI |
-| Shell init generation | #432, #441, #450, #503, #420 | clean HOME `kaku init`, `zsh -n` generated file, non-Kaku shell |
+| Shell init generation | #432, #441, #450, #503, #420 | clean HOME `sumi init`, `zsh -n` generated file, non-Kaku shell |
 | Session restore paint | #514, #448, #482 | split + dual scrollback snapshot |
 | AI auth / overlay | #506, #501, #502, #418 | Cmd+L vs `#`, split resize, appearance flip |
 | Proxy split brain | private base_url + system proxy | loopback OpenAI-compatible smoke |

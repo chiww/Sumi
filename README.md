@@ -1,128 +1,64 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tw93/Kaku/main/assets/readme-logo.svg" />
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/tw93/Kaku/main/assets/readme-logo-light.svg" />
-    <img src="https://raw.githubusercontent.com/tw93/Kaku/main/assets/readme-logo-light.svg" alt="Kaku" width="120" />
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/sumi-lockup-reverse.svg" />
+    <img src="assets/brand/sumi-lockup-primary.svg" alt="Sumi" width="260" />
   </picture>
-  <h1>Kaku</h1>
-  <p>A modern Mac terminal that looks good, runs fast, and works with AI out of the box.</p>
-  <p>English · <a href="README_CN.md">中文</a> · <a href="README_TW.md">繁體</a> · <a href="README_JA.md">日本語</a> · <a href="README_KR.md">한국어</a> · <a href="README_DE.md">Deutsch</a> · <a href="README_FR.md">Français</a></p>
+  <h1>Sumi「墨」</h1>
+  <p><strong>落笔，即入心流。</strong></p>
+  <p>基于 <a href="https://github.com/tw93/Kaku">Kaku</a> 打磨的个人 Mac 终端。<br/>给每天写命令、改代码的自己，留一个顺手的工作台。</p>
+  <p><em>A terminal of your own. Customized from Kaku, built on WezTerm.</em></p>
   <p>
-    <a href="https://kaku.fun">Website</a> ·
-    <a href="https://kaku.fun/docs/">Docs</a> ·
-    <a href="https://kaku.fun/compare">Compare</a> ·
-    <a href="https://github.com/tw93/Kaku/releases/latest">Download</a>
+    <a href="https://github.com/chiww/Sumi/releases/latest">下载</a> ·
+    <a href="docs/configuration.md">配置</a> ·
+    <a href="docs/faq.md">FAQ</a> ·
+    <a href="LICENSE.md">MIT License</a>
   </p>
-  <a href="https://kaku.fun"><img src="https://img.shields.io/badge/website-kaku.fun-287A3D?style=flat-square" alt="Website"></a>
-  <a href="https://github.com/tw93/Kaku/stargazers"><img src="https://img.shields.io/github/stars/tw93/Kaku?style=flat-square" alt="Stars"></a>
-  <a href="https://github.com/tw93/Kaku/releases"><img src="https://img.shields.io/github/v/tag/tw93/Kaku?label=version&style=flat-square" alt="Version"></a>
-  <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
-  <a href="https://github.com/tw93/Kaku/commits"><img src="https://img.shields.io/github/commit-activity/m/tw93/Kaku?style=flat-square" alt="Commits"></a>
-  <a href="https://x.com/HiTw93"><img src="https://img.shields.io/badge/follow-Tw93-red?style=flat-square&logo=x" alt="Twitter"></a>
 </div>
 
-<p align="center">
-  <img src="assets/kaku.jpg" alt="Kaku Screenshot" width="1000" />
-</p>
+## 和 Kaku 的不同
 
-## Why
+- **简体中文界面**：菜单、命令面板、确认对话框、`sumi config` 设置界面、AI 浮层都有中文。设置 `config.language = "zh-CN"`，或保持 `"auto"` 跟随系统。
+- **行高预设**：`sumi config` 的 Line Height 提供 1.0–1.6 的常用档位，以及自定义输入。
+- **独立身份**：独立的应用名、图标、Bundle ID（`com.github.chiww.sumi`）、命令（`sumi`）和配置目录（`~/.config/sumi`），可以和原版 Kaku 同时安装，互不干扰。
+- **更新来源**：应用内检查更新指向本仓库的 Releases。
 
-Kaku (書く, かく) means "to write" in Japanese. It is a macOS terminal based on WezTerm, with fonts, themes, shell integration, and Mac shortcuts already configured, while preserving full Lua customization.
+## 安装
 
-Kaku is for writing code, alongside [Waza](https://github.com/tw93/Waza) (技) for engineering habits and [Kami](https://github.com/tw93/Kami) (紙) for documents.
+从 [Releases](https://github.com/chiww/Sumi/releases/latest) 下载 `Sumi.dmg`，打开后把 Sumi 拖进「应用程序」。
 
-## Quick Start
-
-Download the [Kaku DMG](https://github.com/tw93/Kaku/releases/latest), open it, and drag Kaku into Applications. Or install with Homebrew:
+当前构建未经 Apple 公证。第一次打开如果提示「无法验证开发者」，在 Finder 里右键 Sumi →「打开」，或执行：
 
 ```bash
-brew install --cask kaku
+xattr -cr /Applications/Sumi.app
 ```
 
-Open Kaku to set up shell integration, install missing optional tools with `kaku init`, and check your installed version with `kaku --version`.
+首次启动会引导配置 shell 集成，之后在终端里可以直接使用 `sumi` 命令。
 
-## Features
+## 常用命令
 
-- **Ready to use**: JetBrains Mono, automatic dark and light themes, copy on select, and familiar Mac shortcuts
-- **Tabs and panes**: Split your workspace, jump between tabs with Tab Navigator, and restore windows, panes, and working directories when you reopen Kaku
-- **Right-click menu**: Paste, search, open AI chat, split or close the clicked pane, and open or close tabs without remembering shortcuts
-- **Clickable links**: `Cmd + Click` opens URLs and file paths, and URLs automatically wrapped by the terminal keep their full address
-- **AI-friendly**: See which agent is working and on what at the top right, get notified when Claude Code needs you, and use an optional assistant for command suggestions and chat
-- **Remote access**: Run `kaku remote` to get a link, open it in any browser on another computer, and keep using the Kaku on this Mac
-- **Shell tools**: Built-in zsh completion, syntax highlighting, and directory jumping, with shortcuts for optional Lazygit and Yazi installations
-- **Lua configuration**: Customize fonts, themes, shortcuts, and terminal behavior using WezTerm's Lua configuration system
+| 命令 | 作用 |
+| --- | --- |
+| `sumi` | 打开主菜单 |
+| `sumi config` | 设置界面：主题、字体、字号、行高等 |
+| `sumi ai` | 配置 AI 助手（使用你自己的 API Key 或 Codex 登录） |
+| `sumi init` | 安装或更新 shell 集成 |
+| `sumi doctor` | 诊断并生成诊断包 |
+| `sumi reset` | 移除 Sumi 写入的 shell 配置 |
+| `k` | 在任意终端里和 AI 对话 |
 
-## Usage Guide
+配置文件位于 `~/.config/sumi/sumi.lua`，兼容 WezTerm 风格的 Lua 配置。完整选项见 [docs/configuration.md](docs/configuration.md)。
 
-| Action | Shortcut |
-| :--- | :--- |
-| New Tab | `Cmd + T` |
-| New Window | `Cmd + N` |
-| Close Tab/Pane | `Cmd + W` |
-| Navigate Tabs | `Cmd + Shift + [` / `]` or `Cmd + 1-9` |
-| Navigate Panes | `Cmd + Opt + Arrows` |
-| Split Pane Vertical | `Cmd + D` |
-| Split Pane Horizontal | `Cmd + Shift + D` |
-| Open Settings Panel | `Cmd + ,` |
-| AI Settings | `Cmd + Shift + A` |
-| AI Chat | `Cmd + L` |
-| Apply AI Suggestion | `Cmd + Shift + E` |
-| Open Lazygit | `Cmd + Shift + G` |
-| Yazi File Manager | `Cmd + Shift + Y` or `y` |
-| Clear Screen | `Cmd + K` |
+## 从源码构建
 
-## Kaku AI
+```bash
+make dev                 # 调试运行
+./scripts/build.sh       # 生成 dist/Sumi.app 与 dist/Sumi.dmg
+```
 
-Configure your own AI service with `kaku ai` to use the built-in assistant. Kaku does not provide or relay the AI service.
+需要 Rust（版本见 `rust-toolchain.toml`）与 Xcode Command Line Tools。
 
-- **Command suggestions**: When a command fails, the configured assistant can suggest a fix, and `Cmd + Shift + E` pastes it at the prompt for review
-- **Natural language to command**: Type `# <description>` at the prompt and press Enter, and the assistant places the generated command at the prompt for you to review and run
-- **Chat**: Press `Cmd + L` to discuss terminal output or work with project files and tools, or run `kaku chat` from another shell to access the same conversation store
-- **AI Tools Config**: Manage settings for Claude Code, Codex, Gemini CLI, Copilot CLI, Kimi Code, and more
+## Credits
 
-For authentication, models, API Mode, and tool settings, see the [AI assistant docs](docs/features.md).
+Sumi 从 [Kaku](https://github.com/tw93/Kaku)（Tw93）出发，Kaku 基于 [WezTerm](https://github.com/wezterm/wezterm)（Wez Furlong）。感谢两个项目的作者与贡献者。
 
-## FAQ
-
-- **Is there a Windows or Linux version?** Not currently, Kaku is macOS-only
-- **How is Kaku different from iTerm2, Warp, Ghostty, or WezTerm?** See [kaku.fun/compare](https://kaku.fun/compare)
-- **Can I use transparent windows?** Yes, set `config.window_background_opacity` in `~/.config/kaku/kaku.lua`
-- **The `kaku` command is missing.** Run `/Applications/Kaku.app/Contents/MacOS/kaku init --update-only && exec zsh -l`, then `kaku doctor`
-
-## Docs
-
-- [Keybindings](docs/keybindings.md) - full shortcut reference
-- [Features](docs/features.md) - AI assistant, remote access, lazygit, yazi, remote files, shell suite
-- [Configuration](docs/configuration.md) - themes, fonts, custom keybindings, Lua API
-- [CLI Reference](docs/cli.md) - `kaku ai`, `kaku config`, `kaku doctor`, and more
-- [FAQ](docs/faq.md) - common questions and troubleshooting
-
-## Background
-
-I heavily rely on the CLI for both work and personal projects. Tools I've built, like [Mole](https://github.com/tw93/mole) and [Pake](https://github.com/tw93/pake), reflect this.
-
-I used Alacritty for years and learned to value speed and simplicity. As my workflow shifted toward AI-assisted coding, I wanted stronger tab and pane ergonomics. I also explored Kitty, Ghostty, Warp, and iTerm2. Each is strong in different areas, but I still wanted a setup that matched my own balance of performance, defaults, and control.
-
-WezTerm is robust and highly hackable, and I am grateful for its engine and ecosystem. So I built Kaku to be that environment: fast, polished, and ready to work.
-
-## Contributors
-
-Big thanks to all contributors who helped build Kaku. Go follow them! ❤️
-
-<a href="https://github.com/tw93/Kaku/graphs/contributors">
-  <img src="./CONTRIBUTORS.svg?v=2" width="1000" />
-</a>
-
-## Support
-
-- The most direct way to support me is getting [Mole for Mac](https://mole.fit), my paid Mac cleanup app
-- If Kaku helped you, give it a star, [share it](https://x.com/intent/tweet?url=https://github.com/tw93/Kaku&text=Kaku%20-%20A%20modern%2C%20AI-friendly%20Mac%20terminal.), or open an issue or PR
-- I have two cats, TangYuan and Coke, and if Kaku has been helpful to you, feel free to treat them to <a href="https://cats.tw93.fun?name=Kaku" target="_blank">canned food 🥩</a>
-
-These lovely people already did 🐱
-
-<a href="https://cats.tw93.fun?name=Kaku"><img src="https://raw.githubusercontent.com/tw93/sponsors/main/assets/sponsors.svg" width="1000" loading="lazy" /></a>
-
-## License
-
-MIT License. Please feel free to use and contribute to the development. Attribution for WezTerm and the bundled fonts is in [NOTICE.md](NOTICE.md).
+本项目保留上游的 [LICENSE](LICENSE.md) 及相关第三方声明。Sumi 为个人二次开发版本，与 Kaku、WezTerm 官方无关。

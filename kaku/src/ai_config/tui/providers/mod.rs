@@ -1,4 +1,4 @@
-//! Provider configuration, usage scraping, and quota formatting for `kaku ai`.
+//! Provider configuration, usage scraping, and quota formatting for `sumi ai`.
 //!
 //! This submodule isolates the AI-tool usage subsystem (Antigravity sqlite /
 //! protobuf probing, Codex/Claude/Kimi/Copilot/Gemini fetchers, OAuth
@@ -89,42 +89,42 @@ pub(super) struct UsageSummaryUpdate {
 pub(super) fn codex_usage_cache_path() -> PathBuf {
     config::HOME_DIR
         .join(".cache")
-        .join("kaku")
+        .join("sumi")
         .join("codex_usage.json")
 }
 
 pub(super) fn claude_usage_cache_path() -> PathBuf {
     config::HOME_DIR
         .join(".cache")
-        .join("kaku")
+        .join("sumi")
         .join("claude_usage.json")
 }
 
 pub(super) fn copilot_usage_cache_path() -> PathBuf {
     config::HOME_DIR
         .join(".cache")
-        .join("kaku")
+        .join("sumi")
         .join("copilot_usage.json")
 }
 
 pub(super) fn kimi_usage_cache_path() -> PathBuf {
     config::HOME_DIR
         .join(".cache")
-        .join("kaku")
+        .join("sumi")
         .join("kimi_usage.json")
 }
 
 pub(super) fn antigravity_usage_cache_path() -> PathBuf {
     config::HOME_DIR
         .join(".cache")
-        .join("kaku")
+        .join("sumi")
         .join("antigravity_usage.json")
 }
 
 pub(super) fn assistant_models_cache_path() -> PathBuf {
     config::HOME_DIR
         .join(".cache")
-        .join("kaku")
+        .join("sumi")
         .join("assistant_models.json")
 }
 

@@ -1,13 +1,13 @@
-//! `kaku chat` subcommand: thin wrapper around the bundled `k` binary.
+//! `sumi chat` subcommand: thin wrapper around the bundled `k` binary.
 //!
-//! Why this exists when `k` is already on PATH after `kaku init`:
+//! Why this exists when `k` is already on PATH after `sumi init`:
 //!
-//! - **Discoverability**: `kaku --help` should show the full AI story
+//! - **Discoverability**: `sumi --help` should show the full AI story
 //!   (`ai` to configure, `chat` to talk). New users find `chat` here without
 //!   knowing about the 1-letter `k` shortcut.
 //! - **PATH-independent**: works even when the user has not run
-//!   `kaku init` or is on a shell without managed integration.
-//! - **One chat entry point**: we `execvp` `Kaku.app/Contents/MacOS/k`, a
+//!   `sumi init` or is on a shell without managed integration.
+//! - **One chat entry point**: we `execvp` `Sumi.app/Contents/MacOS/k`, a
 //!   symlink to `kaku-gui` that starts the chat CLI under that name. Same
 //!   chat engine, same args, and exec replaces this process in place.
 
@@ -42,14 +42,14 @@ impl ChatCommand {
     }
 }
 
-/// Locate the `k` binary that ships next to this `kaku` binary, falling back
+/// Locate the `k` binary that ships next to this `sumi` binary, falling back
 /// to common install locations. Mirrors the discovery order used by
-/// `init.rs` so behavior stays predictable across `kaku init`, `kaku chat`,
+/// `init.rs` so behavior stays predictable across `sumi init`, `sumi chat`,
 /// and the standalone `k` shell wrapper.
 fn resolve_k_binary() -> anyhow::Result<PathBuf> {
     let mut candidates: Vec<PathBuf> = Vec::new();
 
-    // 1. Same directory as the running `kaku` binary (the bundled case).
+    // 1. Same directory as the running `sumi` binary (the bundled case).
     if let Ok(exe) = std::env::current_exe() {
         candidates.push(exe.with_file_name("k"));
         if let Ok(canonical) = std::fs::canonicalize(&exe) {
@@ -63,11 +63,11 @@ fn resolve_k_binary() -> anyhow::Result<PathBuf> {
     // 2. Standard macOS install locations.
     #[cfg(target_os = "macos")]
     {
-        candidates.push(PathBuf::from("/Applications/Kaku.app/Contents/MacOS/k"));
+        candidates.push(PathBuf::from("/Applications/Sumi.app/Contents/MacOS/k"));
         candidates.push(
             config::HOME_DIR
                 .join("Applications")
-                .join("Kaku.app")
+                .join("Sumi.app")
                 .join("Contents")
                 .join("MacOS")
                 .join("k"),
@@ -81,8 +81,8 @@ fn resolve_k_binary() -> anyhow::Result<PathBuf> {
     }
 
     Err(anyhow!(
-        "could not locate the `k` chat binary. Run `kaku init` after \
-         installing Kaku, or invoke `k` directly if it is on PATH."
+        "could not locate the `k` chat binary. Run `sumi init` after \
+         installing Sumi, or invoke `k` directly if it is on PATH."
     ))
 }
 

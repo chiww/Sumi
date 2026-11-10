@@ -46,26 +46,26 @@ if grep -Fq ": command not found" <<<"$setup_out"; then
   fail "setup_fish.sh ran a command while generating its files"
 fi
 
-kaku_fish="$HOME/.config/kaku/fish/kaku.fish"
+kaku_fish="$HOME/.config/sumi/fish/sumi.fish"
 [[ -f "$kaku_fish" ]] || fail "managed init file not created at $kaku_fish"
 grep -Fq 'if begin; test $_kaku_in_kaku = 1; or set -q KAKU_PROMPT_EVERYWHERE; end; and command -q starship' \
   "$kaku_fish" \
-  || fail "generated kaku.fish did not preserve the runtime Kaku session guard"
-grep -Fq 'set -l capability_file "$HOME/.config/kaku/ai_inline_capability"' \
+  || fail "generated sumi.fish did not preserve the runtime Sumi session guard"
+grep -Fq 'set -l capability_file "$HOME/.config/sumi/ai_inline_capability"' \
   "$kaku_fish" \
-  || fail "generated kaku.fish did not read the inline AI capability"
+  || fail "generated sumi.fish did not read the inline AI capability"
 
 if command -v fish >/dev/null 2>&1; then
   fish_bin="$(command -v fish)"
-  mouse_reset="$(env HOME="$HOME" TERM_PROGRAM=Kaku "$fish_bin" --no-config -c '
-    source "$HOME/.config/kaku/fish/kaku.fish" >/dev/null
+  mouse_reset="$(env HOME="$HOME" TERM_PROGRAM=Sumi "$fish_bin" --no-config -c '
+    source "$HOME/.config/sumi/fish/sumi.fish" >/dev/null
     __kaku_semantic_precmd
   ')"
   [[ "$mouse_reset" == $'\e[?1000;1002;1003;1004;1005;1006;1007;1016l\e[?25h\e]133;A\a' ]] \
     || fail "prompt did not reset stale mouse/focus reporting and show the cursor before its marker"
 
   outside_reset="$(env HOME="$HOME" TERM_PROGRAM=Apple_Terminal "$fish_bin" --no-config -c '
-    source "$HOME/.config/kaku/fish/kaku.fish" >/dev/null
+    source "$HOME/.config/sumi/fish/sumi.fish" >/dev/null
     set -gx TMUX ""
     set -gx KAKU_SESSION 1
     __kaku_semantic_precmd
@@ -92,16 +92,16 @@ EOF
     PATH="$starship_stub_dir:/usr/bin:/bin" \
     "$fish_bin" --no-config "$kaku_fish"
   [[ ! -s "$starship_marker" ]] \
-    || fail "generated kaku.fish initialized Starship outside Kaku"
+    || fail "generated sumi.fish initialized Starship outside Sumi"
 
   env \
     HOME="$HOME" \
-    TERM_PROGRAM="Kaku" \
+    TERM_PROGRAM="Sumi" \
     KAKU_STARSHIP_TEST_MARKER="$starship_marker" \
     PATH="$starship_stub_dir:/usr/bin:/bin" \
     "$fish_bin" --no-config "$kaku_fish"
   [[ "$(cat "$starship_marker")" == "initialized" ]] \
-    || fail "generated kaku.fish did not initialize Starship inside Kaku"
+    || fail "generated sumi.fish did not initialize Starship inside Sumi"
 else
   echo "warning: fish not found; skipping runtime Starship guard check" >&2
 fi

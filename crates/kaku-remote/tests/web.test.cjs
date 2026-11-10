@@ -435,7 +435,7 @@ test('a removed device forgets its pairing and an expired link keeps nothing', a
   assert.equal(await late.p.evaluate(() => connections.length), 1);
 });
 
-test('a new browser shows the code kaku remote shows and pairs once it is allowed', async t => {
+test('a new browser shows the code sumi remote shows and pairs once it is allowed', async t => {
   const mac = await newMac();
   const secret = Buffer.alloc(16, 13);
   const { p, errors } = await page(t, pairingLink(mac, secret));

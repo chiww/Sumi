@@ -18,7 +18,7 @@ use std::path::Path;
 pub(in crate::ai_config::tui) fn parse_kaku_assistant_config(raw: &str) -> KakuAssistantConfig {
     let parsed = raw.parse::<toml::Value>().unwrap_or_else(|e| {
         log::warn!("failed to parse assistant.toml: {}", e);
-        push_ui_error("Kaku Assistant config TOML is malformed");
+        push_ui_error("Sumi Assistant config TOML is malformed");
         toml::Value::Table(Default::default())
     });
 
@@ -245,7 +245,7 @@ pub(in crate::ai_config::tui) fn extract_kaku_assistant_fields(raw: &str) -> Vec
 
 pub(in crate::ai_config::tui) fn render_kaku_assistant_config(cfg: &KakuAssistantConfig) -> String {
     let mut out = String::new();
-    out.push_str("# Kaku Assistant configuration\n");
+    out.push_str("# Sumi Assistant configuration\n");
     out.push_str(
         "# enabled: true enables command analysis suggestions; false disables requests.\n",
     );

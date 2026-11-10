@@ -194,6 +194,7 @@ fn normalize_bell_notification_source(value: &str) -> Option<String> {
         .trim_start_matches("Bell from ")
         .trim();
     if first_line.is_empty()
+        || first_line.eq_ignore_ascii_case("sumi")
         || first_line.eq_ignore_ascii_case("kaku")
         || first_line.eq_ignore_ascii_case("wezterm")
         || first_line.eq_ignore_ascii_case("bell")
@@ -428,14 +429,14 @@ fn lookup_kaku_toast(event_name: &str) -> Option<&'static str> {
         ),
         (
             "kaku-toast-lazygit-missing",
-            "Lazygit not found. Run kaku init",
+            "Lazygit not found. Run sumi init",
         ),
         (
             "kaku-toast-lazygit-dispatch-failed",
             "Lazygit: Dispatch failed",
         ),
         ("kaku-toast-yazi-no-pane", "Yazi: No active pane"),
-        ("kaku-toast-yazi-missing", "Yazi not found. Run kaku init"),
+        ("kaku-toast-yazi-missing", "Yazi not found. Run sumi init"),
         ("kaku-toast-yazi-dispatch-failed", "Yazi: Dispatch failed"),
     ];
     KAKU_TOAST_MAP
@@ -449,17 +450,17 @@ fn lookup_ai_toast(event_name: &str) -> Option<&'static str> {
     const AI_TOAST_MAP: &[(&str, &str)] = &[
         (
             "kaku-toast-ai-ready",
-            "Kaku Assistant suggestion ready. Press Cmd+Shift+E",
+            "Sumi Assistant suggestion ready. Press Cmd+Shift+E",
         ),
-        ("kaku-toast-ai-unavailable", "Kaku Assistant unavailable"),
+        ("kaku-toast-ai-unavailable", "Sumi Assistant unavailable"),
         (
             "kaku-toast-ai-missing-key",
-            "Run kaku ai to set up Kaku Assistant.",
+            "Run sumi ai to set up Sumi Assistant.",
         ),
         ("kaku-toast-ai-no-pane", "No active pane"),
         ("kaku-toast-ai-no-suggestion", "No executable suggestion"),
         ("kaku-toast-ai-send-failed", "Failed to apply suggestion"),
-        ("kaku-toast-ai-info", "Kaku Assistant update"),
+        ("kaku-toast-ai-info", "Sumi Assistant update"),
     ];
     AI_TOAST_MAP
         .iter()
@@ -1242,7 +1243,7 @@ impl TermWindow {
     fn should_reload_config_for_user_var(name: &str, _window_contains_pane: bool) -> bool {
         // We used to require `window_contains_pane && name == "KAKU_CONFIG_CHANGED"`
         // to avoid duplicate reloads when multiple windows are open. However, when
-        // a user exits `kaku config` very quickly (e.g. by hitting ESC), the pane
+        // a user exits `sumi config` very quickly (e.g. by hitting ESC), the pane
         // might already be removed from Mux before the OSC 1337 is processed by
         // `emit_user_var_event`, meaning `window_contains_pane` evaluates to false.
         // This caused the config reload to be dropped. By returning true globally
@@ -1327,7 +1328,7 @@ impl TermWindow {
 
         if focused && wezterm_toast_notification::take_blocked_notice() {
             self.show_toast_for(
-                "Notifications are off for Kaku. Turn them on in Kaku > Notification Settings"
+                "Notifications are off for Sumi. Turn them on in Sumi > Notification Settings"
                     .to_string(),
                 8000,
             );
@@ -1433,7 +1434,7 @@ impl TermWindow {
         match RenderState::new(ctx, &self.fonts, &self.render_metrics, ATLAS_SIZE) {
             Ok(render_state) => {
                 log::debug!(
-                    "OpenGL initialized! {} Kaku version: {}",
+                    "OpenGL initialized! {} Sumi version: {}",
                     render_info,
                     config::wezterm_version(),
                 );
@@ -1954,7 +1955,7 @@ impl TermWindow {
         crate::startup_trace::mark("  Window::new_window start");
         let window = Window::new_window(
             &get_window_class(),
-            "kaku",
+            "sumi",
             geometry,
             Some(&config),
             Rc::clone(&fontconfig),
@@ -2658,7 +2659,7 @@ impl TermWindow {
                                 })
                                 .unwrap_or((None, None, String::new(), None));
                         ToastNotification {
-                            title: "Kaku".to_string(),
+                            title: "Sumi".to_string(),
                             message: bell_notification_message(
                                 last_command.as_deref(),
                                 reported_program.as_deref(),
@@ -2706,7 +2707,7 @@ impl TermWindow {
                         is_inactive,
                     ) {
                         ToastNotification {
-                            title: title.unwrap_or_else(|| "Kaku".to_string()),
+                            title: title.unwrap_or_else(|| "Sumi".to_string()),
                             message: body,
                             url: None,
                             timeout: Some(Duration::from_secs(5)),
@@ -3768,7 +3769,7 @@ impl TermWindow {
         let value = match kaku_gui_lib::inline_ai_control::decode_control_value(&name, &value) {
             Some(value) => value.to_string(),
             None => {
-                log::warn!("Ignored unauthenticated Kaku control user var {name}");
+                log::warn!("Ignored unauthenticated Sumi control user var {name}");
                 return;
             }
         };
@@ -5195,10 +5196,10 @@ impl TermWindow {
                 } else if let Some(msg) = lookup_kaku_toast(name) {
                     self.show_toast(msg.to_string());
                 } else if name == "kaku-toast-ai-analyzing" {
-                    let message = "Kaku Assistant analyzing command";
+                    let message = "Sumi Assistant analyzing command";
                     self.show_ai_progress_toast(message.to_string(), ai_toast_lifetime_ms(message));
                 } else if name == "kaku-toast-ai-generating" {
-                    let message = "Kaku generating command";
+                    let message = "Sumi generating command";
                     self.show_ai_progress_toast(message.to_string(), ai_toast_lifetime_ms(message));
                 } else if name == "kaku-toast-ai-clear-progress" {
                     self.clear_ai_progress_toast();
@@ -5217,10 +5218,10 @@ impl TermWindow {
                     match Connection::get() {
                         Some(conn) => match conn.set_default_terminal() {
                             Ok(()) => {
-                                self.show_toast("Kaku is now the default terminal".to_string());
+                                self.show_toast("Sumi is now the default terminal".to_string());
                             }
                             Err(err) => {
-                                log::error!("Failed to set Kaku as default terminal: {err:#}");
+                                log::error!("Failed to set Sumi as default terminal: {err:#}");
                                 self.show_toast("Failed to set default terminal".to_string());
                             }
                         },
@@ -7053,7 +7054,7 @@ mod tests {
 
     #[test]
     fn bundled_hooks_preserve_hotkey_layers_and_follow_the_effective_theme() -> anyhow::Result<()> {
-        let source = include_str!("../../../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+        let source = include_str!("../../../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let update = source
             .split("local function update_window_config(")
             .nth(1)
@@ -7073,7 +7074,7 @@ mod tests {
         let lua = mlua::Lua::new();
         lua.load(format!(
             r#"
-local config = {{color_scheme = 'Kaku Dark'}}
+local config = {{color_scheme = 'Sumi Dark'}}
 local callback
 local wezterm = {{on = function(_, fn) callback = fn end}}
 local window_font_theme, window_has_managed_font_override = {{}}, {{}}
@@ -7088,7 +7089,7 @@ local build_font_config = function(light)
   return 'light-font', {{'light-rule'}}
 end
 local build_managed_window_frame = function(scheme)
-  assert(scheme == 'Kaku Light')
+  assert(scheme == 'Sumi Light')
   return {{marker = 'light-frame'}}
 end
 local window_frame_matches_theme = function() return false end
@@ -7101,7 +7102,7 @@ local window = {{
   get_config_overrides = function() return overrides end,
   get_dimensions = function() return {{is_hotkey_window = true}} end,
   effective_config = function()
-    return {{color_scheme = 'Kaku Light', macos_global_hotkey_appearance = appearance}}
+    return {{color_scheme = 'Sumi Light', macos_global_hotkey_appearance = appearance}}
   end,
   set_config_overrides = function(_, value) overrides = value; writes = writes + 1 end,
 }}
@@ -7553,7 +7554,7 @@ assert(overrides.window_padding.top == 0 and overrides.hide_tab_bar_if_only_one_
         ] {
             assert!(
                 show(h, background),
-                "{:?} shows while Kaku is in the background",
+                "{:?} shows while Sumi is in the background",
                 h
             );
             assert!(
@@ -7675,7 +7676,7 @@ assert(overrides.window_padding.top == 0 and overrides.hide_tab_bar_if_only_one_
         }
 
         let mut theme = base.clone();
-        theme.color_scheme = Some("Kaku Light".into());
+        theme.color_scheme = Some("Sumi Light".into());
         assert_eq!(key(&base), key(&theme));
 
         let source = include_str!("resize.rs");

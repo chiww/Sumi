@@ -202,7 +202,7 @@ pub fn build_default_schemes() -> HashMap<String, Palette> {
 
 /// Scheme names that Kaku defines itself. Settings lists them under their fixed
 /// labels, so [`user_color_schemes`] never reports them.
-const KAKU_OWN_SCHEMES: [&str; 3] = ["Kaku Dark", "Kaku Light", "Kaku Theme"];
+const KAKU_OWN_SCHEMES: [&str; 3] = ["Sumi Dark", "Sumi Light", "Sumi Theme"];
 
 /// Names of the color schemes the user provides.
 ///
@@ -606,8 +606,8 @@ pub fn user_config_path() -> PathBuf {
     CONFIG_DIRS
         .first()
         .cloned()
-        .unwrap_or_else(|| HOME_DIR.join(".config").join("kaku"))
-        .join("kaku.lua")
+        .unwrap_or_else(|| HOME_DIR.join(".config").join("sumi"))
+        .join("sumi.lua")
 }
 
 fn effective_config_file_path_from(
@@ -769,21 +769,21 @@ fn minimal_user_config_template() -> &'static str {
 
 local function resolve_bundled_config()
   local resource_dir = wezterm.executable_dir:gsub('MacOS/?$', 'Resources')
-  local bundled = resource_dir .. '/kaku.lua'
+  local bundled = resource_dir .. '/sumi.lua'
   local f = io.open(bundled, 'r')
   if f then
     f:close()
     return bundled
   end
 
-  local dev_bundled = wezterm.executable_dir .. '/../../assets/macos/Kaku.app/Contents/Resources/kaku.lua'
+  local dev_bundled = wezterm.executable_dir .. '/../../assets/macos/Sumi.app/Contents/Resources/sumi.lua'
   f = io.open(dev_bundled, 'r')
   if f then
     f:close()
     return dev_bundled
   end
 
-  local app_bundled = '/Applications/Kaku.app/Contents/Resources/kaku.lua'
+  local app_bundled = '/Applications/Sumi.app/Contents/Resources/sumi.lua'
   f = io.open(app_bundled, 'r')
   if f then
     f:close()
@@ -791,7 +791,7 @@ local function resolve_bundled_config()
   end
 
   local home = os.getenv('HOME') or ''
-  local home_bundled = home .. '/Applications/Kaku.app/Contents/Resources/kaku.lua'
+  local home_bundled = home .. '/Applications/Sumi.app/Contents/Resources/sumi.lua'
   f = io.open(home_bundled, 'r')
   if f then
     f:close()
@@ -809,21 +809,21 @@ if bundled then
   if ok and type(loaded) == 'table' then
     config = loaded
   else
-    wezterm.log_error('Kaku: failed to load bundled defaults from ' .. bundled .. ': ' .. tostring(loaded))
+    wezterm.log_error('Sumi: failed to load bundled defaults from ' .. bundled .. ': ' .. tostring(loaded))
   end
 else
-  wezterm.log_error('Kaku: bundled defaults not found')
+  wezterm.log_error('Sumi: bundled defaults not found')
 end
 
--- New installs start in Kaku Dark. Pick another theme in Settings, or change this line:
--- 'Kaku Light', or 'Auto' to follow macOS appearance.
-config.color_scheme = 'Kaku Dark'
+-- New installs start in Sumi Dark. Pick another theme in Settings, or change this line:
+-- 'Sumi Light', or 'Auto' to follow macOS appearance.
+config.color_scheme = 'Sumi Dark'
 
 -- User overrides:
--- Kaku intentionally keeps WezTerm-compatible Lua API names
+-- Sumi intentionally keeps WezTerm-compatible Lua API names
 -- for maximum compatibility, so `wezterm.*` here is expected.
 -- Full API docs: https://wezfurlong.org/wezterm/config/lua/
--- Kaku options:  https://github.com/tw93/Kaku/blob/main/docs/configuration.md
+-- Sumi options:  https://github.com/chiww/Sumi/blob/main/docs/configuration.md
 --
 -- Changes apply automatically when you save this file.
 -- Every example below differs from the default, so uncommenting it takes effect.
@@ -887,7 +887,7 @@ config.color_scheme = 'Kaku Dark'
 -- })
 --
 -- AI assistant settings (provider, model, API key) live in
--- ~/.config/kaku/assistant.toml, not in this file.
+-- ~/.config/sumi/assistant.toml, not in this file.
 
 return config
 "#
@@ -899,7 +899,7 @@ fn xdg_config_home_from(home_dir: &Path, xdg_config_home: Option<OsString>) -> P
         .filter(|value| !value.is_empty())
         .map(PathBuf::from)
         .unwrap_or_else(|| home_dir.join(".config"))
-        .join("kaku")
+        .join("sumi")
 }
 
 fn config_dirs_from(
@@ -915,7 +915,7 @@ fn config_dirs_from(
             std::env::split_paths(&d)
                 // `XDG_CONFIG_DIRS` may contain empty segments (e.g. `::`).
                 .filter(|path| !path.as_os_str().is_empty())
-                .map(|path| path.join("kaku")),
+                .map(|path| path.join("sumi")),
         );
     }
 
@@ -935,28 +935,28 @@ fn config_dirs() -> Vec<PathBuf> {
 mod tests {
     #[test]
     fn builtin_kaku_scheme_mirrors_match_complete_bundled_palettes() {
-        let source = include_str!("../../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+        let source = include_str!("../../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let constants = source
             .split_once("local KAKU = {")
-            .expect("Kaku constants")
+            .expect("Sumi constants")
             .1
             .split_once("\n}")
-            .expect("end of Kaku constants")
+            .expect("end of Sumi constants")
             .0;
         let schemes = source
             .split_once("config.color_schemes = config.color_schemes or {}")
-            .expect("Kaku schemes")
+            .expect("Sumi schemes")
             .1
             .split_once("config.color_scheme = resolve_kaku_color_scheme")
-            .expect("end of Kaku schemes")
+            .expect("end of Sumi schemes")
             .0;
         // Evaluate only palette literals, without startup handlers or user config.
         let lua = mlua::Lua::new();
         let palettes: std::collections::HashMap<String, crate::Palette> = lua.load(format!(
             "local config = {{ color_schemes = {{}} }}\nlocal KAKU = {{{constants}\n}}\n{schemes}\nreturn config.color_schemes"
         )).eval().expect("bundled palette literals");
-        for name in ["Kaku Dark", "Kaku Light", "Kaku Theme"] {
-            let expected = palettes.get(name).expect("bundled Kaku palette");
+        for name in ["Sumi Dark", "Sumi Light", "Sumi Theme"] {
+            let expected = palettes.get(name).expect("bundled Sumi palette");
             assert_eq!(
                 crate::ColorSchemeRegistry::new().get(name),
                 Some(expected.clone()),
@@ -968,13 +968,13 @@ mod tests {
     #[test]
     fn builtin_kaku_schemes_work_without_loading_bundled_defaults() {
         for (name, background) in [
-            ("Kaku Dark", (0x15, 0x14, 0x1b)),
-            ("Kaku Light", (0xff, 0xfc, 0xf0)),
-            ("Kaku Theme", (0x15, 0x14, 0x1b)),
+            ("Sumi Dark", (0x15, 0x14, 0x1b)),
+            ("Sumi Light", (0xff, 0xfc, 0xf0)),
+            ("Sumi Theme", (0x15, 0x14, 0x1b)),
         ] {
             let mut config = crate::Config::default();
             config.color_scheme = Some(name.to_string());
-            let palette = config.resolve_color_scheme().expect("built-in Kaku scheme");
+            let palette = config.resolve_color_scheme().expect("built-in Sumi scheme");
             assert_eq!(palette.background, Some(background.into()));
             assert_eq!(
                 config
@@ -983,7 +983,7 @@ mod tests {
                     .background,
                 Some(background.into())
             );
-            if name != "Kaku Theme" {
+            if name != "Sumi Theme" {
                 assert!(crate::ColorSchemeRegistry::available_schemes().contains(&name));
             }
             assert_eq!(crate::build_default_schemes().get(name), Some(&palette));
@@ -993,14 +993,14 @@ mod tests {
     #[test]
     fn user_kaku_scheme_definition_takes_priority_over_builtin() {
         let mut config = crate::Config::default();
-        config.color_scheme = Some("Kaku Light".to_string());
+        config.color_scheme = Some("Sumi Light".to_string());
         let palette = crate::Palette {
             background: Some((0x12, 0x34, 0x56).into()),
             ..Default::default()
         };
         config
             .color_schemes
-            .insert("Kaku Light".into(), palette.clone());
+            .insert("Sumi Light".into(), palette.clone());
         assert_eq!(config.resolve_color_scheme(), Some(palette));
     }
 
@@ -1010,21 +1010,21 @@ mod tests {
     fn empty_xdg_config_home_uses_default_home_config_dir() {
         let home = PathBuf::from("/tmp/kaku-home");
         let path = xdg_config_home_from(&home, Some(OsString::new()));
-        assert_eq!(path, home.join(".config").join("kaku"));
+        assert_eq!(path, home.join(".config").join("sumi"));
     }
 
     #[test]
     fn missing_xdg_config_home_uses_default_home_config_dir() {
         let home = PathBuf::from("/tmp/kaku-home");
         let path = xdg_config_home_from(&home, None);
-        assert_eq!(path, home.join(".config").join("kaku"));
+        assert_eq!(path, home.join(".config").join("sumi"));
     }
 
     #[test]
     fn valid_xdg_config_home_is_used() {
         let home = PathBuf::from("/tmp/kaku-home");
         let path = xdg_config_home_from(&home, Some(OsString::from("/custom/config")));
-        assert_eq!(path, PathBuf::from("/custom/config").join("kaku"));
+        assert_eq!(path, PathBuf::from("/custom/config").join("sumi"));
     }
 
     #[cfg(unix)]
@@ -1039,9 +1039,9 @@ mod tests {
         assert_eq!(
             dirs,
             vec![
-                home.join(".config").join("kaku"),
-                PathBuf::from("/etc/xdg").join("kaku"),
-                PathBuf::from("/usr/local/etc/xdg").join("kaku"),
+                home.join(".config").join("sumi"),
+                PathBuf::from("/etc/xdg").join("sumi"),
+                PathBuf::from("/usr/local/etc/xdg").join("sumi"),
             ]
         );
     }
@@ -1051,7 +1051,7 @@ mod tests {
     fn missing_xdg_config_dirs_returns_primary_only() {
         let home = PathBuf::from("/tmp/kaku-home");
         let dirs = config_dirs_from(&home, Some(OsString::from("/custom/config")), None);
-        assert_eq!(dirs, vec![PathBuf::from("/custom/config").join("kaku")]);
+        assert_eq!(dirs, vec![PathBuf::from("/custom/config").join("sumi")]);
     }
 
     #[cfg(unix)]
@@ -1063,46 +1063,46 @@ mod tests {
             Some(OsString::from("/custom/config")),
             Some(OsString::new()),
         );
-        assert_eq!(dirs, vec![PathBuf::from("/custom/config").join("kaku")]);
+        assert_eq!(dirs, vec![PathBuf::from("/custom/config").join("sumi")]);
     }
 
     #[test]
     fn effective_config_file_path_prefers_override() {
         let path = effective_config_file_path_from(
-            Some(PathBuf::from("/override/kaku.lua")),
-            Some(OsString::from("/loaded/kaku.lua")),
-            PathBuf::from("/default/kaku.lua"),
+            Some(PathBuf::from("/override/sumi.lua")),
+            Some(OsString::from("/loaded/sumi.lua")),
+            PathBuf::from("/default/sumi.lua"),
         );
-        assert_eq!(path, PathBuf::from("/override/kaku.lua"));
+        assert_eq!(path, PathBuf::from("/override/sumi.lua"));
     }
 
     #[test]
     fn effective_config_file_path_uses_loaded_when_no_override() {
         let path = effective_config_file_path_from(
             None,
-            Some(OsString::from("/loaded/kaku.lua")),
-            PathBuf::from("/default/kaku.lua"),
+            Some(OsString::from("/loaded/sumi.lua")),
+            PathBuf::from("/default/sumi.lua"),
         );
-        assert_eq!(path, PathBuf::from("/loaded/kaku.lua"));
+        assert_eq!(path, PathBuf::from("/loaded/sumi.lua"));
     }
 
     #[test]
     fn effective_config_file_path_falls_back_to_default() {
-        let path = effective_config_file_path_from(None, None, PathBuf::from("/default/kaku.lua"));
-        assert_eq!(path, PathBuf::from("/default/kaku.lua"));
+        let path = effective_config_file_path_from(None, None, PathBuf::from("/default/sumi.lua"));
+        assert_eq!(path, PathBuf::from("/default/sumi.lua"));
     }
 
     #[test]
     fn bundled_kaku_lua_defaults_missing_theme_to_appearance() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains(
                 "if not scheme or scheme == '' then\n    return resolve_appearance_color_scheme()"
             ),
-            "bundled kaku.lua should resolve a missing color_scheme via appearance"
+            "bundled sumi.lua should resolve a missing color_scheme via appearance"
         );
     }
 
@@ -1114,11 +1114,11 @@ mod tests {
         // already have a user config without this line, so they keep the
         // bundled default that follows macOS appearance.
         assert!(
-            content.contains("\nconfig.color_scheme = 'Kaku Dark'\n"),
-            "generated user config should start new installs in Kaku Dark"
+            content.contains("\nconfig.color_scheme = 'Sumi Dark'\n"),
+            "generated user config should start new installs in Sumi Dark"
         );
         assert!(
-            content.contains("'Kaku Light'") && content.contains("'Auto'"),
+            content.contains("'Sumi Light'") && content.contains("'Auto'"),
             "generated user config should name the other theme choices"
         );
     }
@@ -1138,20 +1138,20 @@ mod tests {
     #[test]
     fn bundled_kaku_lua_uses_config_for_remember_last_cwd() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("return config.remember_last_cwd ~= false"),
-            "bundled kaku.lua should read remember_last_cwd from the parsed config table"
+            "bundled sumi.lua should read remember_last_cwd from the parsed config table"
         );
     }
 
     #[test]
     fn bundled_kaku_lua_multi_pane_titles_keep_full_segments() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content
@@ -1161,7 +1161,7 @@ mod tests {
                 && content.contains("local w = (#segs - 1) * sep_width")
                 && content
                     .contains("local avail = budget - math.max(0, #segments - 1) * sep_width"),
-            "bundled kaku.lua should keep the multi-pane tab title path"
+            "bundled sumi.lua should keep the multi-pane tab title path"
         );
         assert!(
             !content.contains("local w = (#segs - 1) * 3")
@@ -1177,7 +1177,7 @@ mod tests {
     #[test]
     fn bundled_kaku_lua_tab_titles_fit_narrow_width_budgets() -> anyhow::Result<()> {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let source = std::fs::read_to_string(&bundled)?;
         let lua = crate::lua::make_lua_context(&bundled)?;
         let wezterm: mlua::Table = lua.load("return require 'wezterm'").eval()?;
@@ -1419,7 +1419,7 @@ return tab, {{ tab }}, panes, effective_config
     #[test]
     fn bundled_kaku_lua_pane_titles_are_opt_in_and_keep_manual_renames() -> anyhow::Result<()> {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let source = std::fs::read_to_string(&bundled)?;
         let lua = crate::lua::make_lua_context(&bundled)?;
         let wezterm: mlua::Table = lua.load("return require 'wezterm'").eval()?;
@@ -1487,38 +1487,38 @@ assert(title_text() == split_fallback)
     #[test]
     fn bundled_kaku_lua_foreground_process_tab_titles_default_to_off() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("config.tab_title_show_foreground_process = false")
                 && content.contains("tab_title_show_foreground_process == true"),
-            "foreground process tab titles should stay opt-in in bundled kaku.lua"
+            "foreground process tab titles should stay opt-in in bundled sumi.lua"
         );
     }
 
     #[test]
     fn bundled_kaku_lua_maps_claude_versioned_executables() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("is_version_like_process_name(name)")
                 && content.contains("lowered:find('/claude/versions/', 1, true)")
                 && content.contains("return 'claude'"),
-            "bundled kaku.lua should title Claude Code versioned executables as claude"
+            "bundled sumi.lua should title Claude Code versioned executables as claude"
         );
     }
 
     #[test]
     fn bundled_kaku_lazygit_dispatch_does_not_require_outer_pane_git_cwd() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
         let launch_start = content
             .find("local function launch_lazygit(window, pane)")
-            .expect("bundled kaku.lua should define launch_lazygit");
+            .expect("bundled sumi.lua should define launch_lazygit");
         let launch = &content[launch_start..];
         let launch_end = launch
             .find("\nlocal function launch_yazi")
@@ -1542,8 +1542,8 @@ assert(title_text() == split_fallback)
     #[test]
     fn bundled_kaku_lua_sets_colorfgbg_from_user_theme_scan() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("local initial_is_light_theme = is_user_light_theme()")
@@ -1557,8 +1557,8 @@ assert(title_text() == split_fallback)
     #[test]
     fn bundled_kaku_lua_closes_fullscreen_last_window_on_cmd_w() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("local is_full_screen = dims and dims.is_full_screen")
@@ -1570,46 +1570,46 @@ assert(title_text() == split_fallback)
     #[test]
     fn bundled_kaku_lua_defaults_close_confirmation_to_smart_prompt() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("config.tab_close_confirmation = 'SmartPrompt'")
                 && content.contains("config.pane_close_confirmation = 'SmartPrompt'")
                 && content.contains("config.window_close_confirmation = 'SmartPrompt'"),
-            "bundled kaku.lua should default tab, pane, and window close confirmation to SmartPrompt"
+            "bundled sumi.lua should default tab, pane, and window close confirmation to SmartPrompt"
         );
     }
 
     #[test]
     fn bundled_kaku_lua_defaults_smart_tab_to_suggestion_first() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("config.smart_tab_mode = 'suggestion_first'"),
-            "bundled kaku.lua should default Smart Tab to suggestion-first"
+            "bundled sumi.lua should default Smart Tab to suggestion-first"
         );
     }
 
     #[test]
     fn bundled_kaku_lua_enables_minimum_text_contrast() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("config.text_min_contrast_ratio = 3.0"),
-            "bundled kaku.lua should guard against low-contrast terminal text"
+            "bundled sumi.lua should guard against low-contrast terminal text"
         );
     }
 
     #[test]
     fn bundled_kaku_dark_maps_black_foregrounds_to_readable_text() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("ANSI_BLACK = '#c8c6cc'")
@@ -1617,19 +1617,19 @@ assert(title_text() == split_fallback)
                 && content.contains("['#000000'] = KAKU.WHITE")
                 && content.contains("['#15141b'] = KAKU.WHITE")
                 && content.contains("['#1c1c1c'] = KAKU.WHITE"),
-            "Kaku Dark should render Hermes black foregrounds as readable light text"
+            "Sumi Dark should render Hermes black foregrounds as readable light text"
         );
     }
 
     #[test]
     fn bundled_kaku_light_keeps_claude_selection_visibly_blue() {
         let bundled = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(&bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(&bundled).expect("read bundled sumi.lua");
 
         assert!(
             content.contains("['#205EA6'] = '#C9DDF0'"),
-            "Kaku Light should not flatten Claude Code's blue selected row into the cream background"
+            "Sumi Light should not flatten Claude Code's blue selected row into the cream background"
         );
     }
 
@@ -1686,9 +1686,9 @@ brights = ["#6b6478", "#ea586c", "#45b787", "#eed045", "#8fb2c9", "#d1c2d3", "#9
         defined.insert("Zulu".to_string(), Palette::default());
         defined.insert("Inline Theme".to_string(), Palette::default());
         // Kaku's own entries are listed under their fixed labels instead.
-        defined.insert("Kaku Dark".to_string(), Palette::default());
-        defined.insert("Kaku Light".to_string(), Palette::default());
-        defined.insert("Kaku Theme".to_string(), Palette::default());
+        defined.insert("Sumi Dark".to_string(), Palette::default());
+        defined.insert("Sumi Light".to_string(), Palette::default());
+        defined.insert("Sumi Theme".to_string(), Palette::default());
 
         let names = super::collect_user_color_schemes(std::slice::from_ref(&dir), &defined);
 
@@ -1700,7 +1700,7 @@ brights = ["#6b6478", "#ea586c", "#45b787", "#eed045", "#8fb2c9", "#d1c2d3", "#9
     #[test]
     fn user_color_schemes_tolerate_missing_directories() {
         let names = super::collect_user_color_schemes(
-            &[PathBuf::from("/nonexistent/kaku/colors")],
+            &[PathBuf::from("/nonexistent/sumi/colors")],
             &HashMap::new(),
         );
         assert!(names.is_empty());

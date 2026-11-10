@@ -294,7 +294,7 @@
   const params = new URLSearchParams(location.hash.slice(1));
   // #t=<token>: a page on this Mac, plain WebSocket to Kaku on loopback.
   // Through the relay a browser is paired: #<one-time secret> from
-  // `kaku remote` pairs it once (older Kaku wrote #p=<secret>&m=<its key>),
+  // `sumi remote` pairs it once (older Kaku wrote #p=<secret>&m=<its key>),
   // and the browser keeps its own signing key, which it cannot export, in
   // IndexedDB. Fragments are never sent to servers, and are erased from the
   // address at once.
@@ -389,7 +389,7 @@
         if (!bareSecret) macPub = fromBase64Url(params.get("m"));
         if (secret.length !== 16 || (macPub && macPub.length !== 65)) throw new Error();
       } catch (_) {
-        showMessage("This pairing link is incomplete. Run kaku remote on the Mac for a new one.");
+        showMessage("This pairing link is incomplete. Run sumi remote on the Mac for a new one.");
         return;
       }
       const known = await loadDevice();
@@ -401,22 +401,22 @@
       device = { macPub, keys, publicKey: new Uint8Array(await crypto.subtle.exportKey("raw", keys.publicKey)), knownMacPub: known && known.macPub };
       pairing = { secret };
     } else if (params.has("k")) {
-      showMessage("This link is from an earlier Kaku. Run kaku remote on the Mac to pair this browser.");
+      showMessage("This link is from an earlier Kaku. Run sumi remote on the Mac to pair this browser.");
       return;
     } else {
       const known = await loadDevice();
       if (known && known.keys && known.macPub) device = known;
     }
     if (!device) {
-      showMessage("Pair this browser first: run kaku remote on the Mac and open the link it shows.");
+      showMessage("Pair this browser first: run sumi remote on the Mac and open the link it shows.");
       return;
     }
   }
   let paired = !pairing;
-  // Waiting for Enter in `kaku remote` on the Mac: only the handshake's
+  // Waiting for Enter in `sumi remote` on the Mac: only the handshake's
   // messages go out meanwhile.
   let pendingPair = false;
-  // The six digits `kaku remote` shows for this browser: an HMAC under the
+  // The six digits `sumi remote` shows for this browser: an HMAC under the
   // link's secret of this browser's key, as the Mac computes it.
   const pairingCode = async () => {
     const label = enc.encode("kaku-remote pairing code");
@@ -1189,7 +1189,7 @@
   // pane's current modes. Plain characters and IME text arrive via onData.
   const NAMED = new Set(["Enter", "Tab", "Escape", "Backspace", "Delete", "Insert", "Home", "End",
     "PageUp", "PageDown", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"]);
-  // Kaku's editing shortcuts (bundled kaku.lua), sent as the keys Kaku
+  // Kaku's editing shortcuts (bundled sumi.lua), sent as the keys Kaku
   // turns them into. Cmd+R stays the browser's reload.
   const MAC_SHORTCUTS = {
     "meta+Backspace": { key: "u", ctrl: true },        // delete to line start
@@ -2406,7 +2406,7 @@
         helpList.append(note);
       }
       note.textContent = paired
-        ? "Bookmark this address to return in this browser. To add another browser, run kaku remote on the Mac."
+        ? "Bookmark this address to return in this browser. To add another browser, run sumi remote on the Mac."
         : "Pairing this browser with the Mac.";
     }
     if (!on) refocus();
@@ -3923,7 +3923,7 @@
       : fetch(location.pathname, { method: "HEAD", cache: "no-store" });
     asked.then((res) => {
       if (ws && ws.readyState === WebSocket.OPEN) return;
-      if (res.status === 404) setNotice("Kaku on the Mac is offline", "Open Kaku on the Mac, or run kaku doctor there.", { stale: true, brand: true });
+      if (res.status === 404) setNotice("Kaku on the Mac is offline", "Open Kaku on the Mac, or run sumi doctor there.", { stale: true, brand: true });
     }).catch(() => {
       if (ws && ws.readyState === WebSocket.OPEN) return;
       setNotice("No connection", "Check this device's network.", { stale: true });
@@ -4125,7 +4125,7 @@
         pendingPair = true;
         clearTimeout(handshakeTimer);
         pairingCode().then((code) => {
-          if (ws === socket && pendingPair) setNotice("Confirm " + code + " on your Mac", "Press Enter where you ran kaku remote if it shows the same code.");
+          if (ws === socket && pendingPair) setNotice("Confirm " + code + " on your Mac", "Press Enter where you ran sumi remote if it shows the same code.");
         });
         return;
       }
@@ -4165,31 +4165,31 @@
       pendingPair = false;
       if (!relay && (ev.code === 4403 || ev.code === 1008)) {
         linkRejected = true;
-        setNotice("This link no longer works", "Run kaku remote on the Mac for the new one.", { stale: true });
+        setNotice("This link no longer works", "Run sumi remote on the Mac for the new one.", { stale: true });
         return;
       }
       // Only the Mac's sealed note removes this browser; a bare close code
       // (a relay, or a message that did not open) is retried a few times.
       if (socket.revoked || ((ev.code === 4403 || ev.code === 1008) && ++refusals >= 3)) {
         linkRejected = true;
-        setNotice(socket.revoked ? "This browser is not paired" : "Kaku refused this browser", "Run kaku remote on the Mac to pair again.", { stale: true });
+        setNotice(socket.revoked ? "This browser is not paired" : "Kaku refused this browser", "Run sumi remote on the Mac to pair again.", { stale: true });
         return;
       }
       if (ev.code === 4409) {
         linkRejected = true;
-        setNotice("Not confirmed on the Mac", "Run kaku remote on the Mac for a new link.", { stale: true });
+        setNotice("Not confirmed on the Mac", "Run sumi remote on the Mac for a new link.", { stale: true });
         return;
       }
       if (ev.code === 4429) {
         linkRejected = true;
-        setNotice("Another browser opened this link first", "Do not confirm it on the Mac. Run kaku remote there for a new link.", { stale: true });
+        setNotice("Another browser opened this link first", "Do not confirm it on the Mac. Run sumi remote there for a new link.", { stale: true });
         return;
       }
       // Still waiting for Enter: reconnect at once and wait again.
       if (wasPending) retry = 0;
       if (ev.code === 4401) {
         linkRejected = true;
-        setNotice("This pairing link has expired", "Run kaku remote on the Mac for a new one.", { stale: true });
+        setNotice("This pairing link has expired", "Run sumi remote on the Mac for a new one.", { stale: true });
         return;
       }
       if (ev.code === 4426) {
@@ -4255,12 +4255,12 @@
   notThisMac = (socket) => {
     linkRejected = true;
     if (ws === socket) socket.close();
-    setNotice("Could not verify the Mac", "Run kaku remote on the Mac to pair again.", { stale: true });
+    setNotice("Could not verify the Mac", "Run sumi remote on the Mac to pair again.", { stale: true });
   };
   linkExpired = (socket) => {
     linkRejected = true;
     if (ws === socket) socket.close();
-    setNotice("This pairing link has expired", "Run kaku remote on the Mac for a new one.", { stale: true });
+    setNotice("This pairing link has expired", "Run sumi remote on the Mac for a new one.", { stale: true });
   };
 })();
 </script>

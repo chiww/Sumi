@@ -41,8 +41,8 @@ HOME="$tmp_home" \
   KAKU_VENDOR_DIR="$tmp_vendor" \
   bash "$SHELL_DIR/setup_zsh.sh" --update-only >/dev/null
 
-kaku_zsh="$tmp_home/.config/kaku/zsh/kaku.zsh"
-[[ -f "$kaku_zsh" ]] || fail "kaku.zsh was not generated"
+kaku_zsh="$tmp_home/.config/sumi/zsh/sumi.zsh"
+[[ -f "$kaku_zsh" ]] || fail "sumi.zsh was not generated"
 
 cat >"$tmp_bin/ssh" <<'EOF'
 #!/bin/sh

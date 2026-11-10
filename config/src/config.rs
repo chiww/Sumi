@@ -380,7 +380,7 @@ pub struct Config {
     pub webgpu_preferred_adapter: Option<GpuInfo>,
 
     /// Deprecated and ignored: WSL domains only exist on Windows. Kept so a
-    /// `kaku.lua` shared with a Windows WezTerm setup still loads, with a
+    /// `sumi.lua` shared with a Windows WezTerm setup still loads, with a
     /// warning instead of a hard error.
     #[dynamic(default, deprecated = "WSL domains only exist on Windows")]
     pub wsl_domains: Option<wezterm_dynamic::Value>,
@@ -1231,14 +1231,14 @@ impl Config {
 
         let mut paths = vec![];
         for dir in CONFIG_DIRS.iter() {
-            paths.push(PathPossibility::optional(dir.join("kaku.lua")))
+            paths.push(PathPossibility::optional(dir.join("sumi.lua")))
         }
 
         if cfg!(target_os = "macos") {
             if let Ok(exe_name) = std::env::current_exe() {
                 if let Some(contents_dir) = exe_name.parent().and_then(|p| p.parent()) {
                     paths.push(PathPossibility::optional(
-                        contents_dir.join("Resources").join("kaku.lua"),
+                        contents_dir.join("Resources").join("sumi.lua"),
                     ));
                 }
             }
@@ -1268,7 +1268,7 @@ impl Config {
             }
         }
 
-        // We didn't find (or were asked to skip) a kaku.lua file, so
+        // We didn't find (or were asked to skip) a sumi.lua file, so
         // update the environment to make it simpler to understand this
         // state.
         std::env::remove_var("KAKU_CONFIG_FILE");
@@ -1482,7 +1482,7 @@ impl Config {
                         anyhow::anyhow!(
                             "Config error: You may have forgotten to define the config variable.\n\
                              \n\
-                             In kaku.lua, you need to create the config table first:\n\
+                             In sumi.lua, you need to create the config table first:\n\
                              \n\
                              local wezterm = require 'wezterm'\n\
                              local config = {{}}  -- or wezterm.config_builder()\n\
@@ -2148,7 +2148,7 @@ impl Config {
         cmd.env("COLORTERM", "truecolor");
         // TERM_PROGRAM and TERM_PROGRAM_VERSION are an emerging
         // de-facto standard for identifying the terminal.
-        cmd.env("TERM_PROGRAM", "Kaku");
+        cmd.env("TERM_PROGRAM", "Sumi");
         cmd.env("TERM_PROGRAM_VERSION", crate::wezterm_version());
         // Sync East Asian Ambiguous width with go-runewidth (used by bubbletea/lipgloss
         // Go TUI programs). Without this, go-runewidth auto-detects CJK locale and treats
@@ -2308,7 +2308,7 @@ pub fn default_hyperlink_rules() -> Vec<hyperlink::Rule> {
         // Emails and scheme'd URLs are longer matches and keep priority.
         // The allowlist deliberately excludes TLDs that collide with common
         // file suffixes (sh, md, rs, py, js, go, cc, so, in, pl, pm, ml, tf,
-        // zip, mov, app) so deploy.sh or dist/Kaku.app never become web
+        // zip, mov, app) so deploy.sh or dist/Sumi.app never become web
         // links; .app in particular is wall-to-wall macOS bundle names in a
         // terminal. Lookarounds are ASCII-only so domains adjacent to CJK
         // text stay clickable, and a sentence-final dot stays out of the
@@ -2466,20 +2466,20 @@ mod tests {
     #[test]
     fn hotkey_inheritance_appearance_and_palette_derive_once() {
         use wezterm_dynamic::ToDynamic;
-        let source = "return {font_size=13,color_scheme='Kaku Dark',window_background_image='bg.png',macos_global_hotkey_appearance={font_size=19,color_scheme='Kaku Light',colors={cursor_bg='#123456'},enable_tab_bar=false}}";
+        let source = "return {font_size=13,color_scheme='Sumi Dark',window_background_image='bg.png',macos_global_hotkey_appearance={font_size=19,color_scheme='Sumi Light',colors={cursor_bg='#123456'},enable_tab_bar=false}}";
         let ordinary = hotkey_fixture(source, &wezterm_dynamic::Value::Null, false);
         for _ in 0..3 {
             let hotkey = hotkey_fixture(source, &wezterm_dynamic::Value::Null, true);
             assert_eq!(ordinary.font_size, 13.0);
             assert_eq!(hotkey.font_size, 19.0);
             assert!(!hotkey.enable_tab_bar);
-            assert_eq!(hotkey.color_scheme.as_deref(), Some("Kaku Light"));
+            assert_eq!(hotkey.color_scheme.as_deref(), Some("Sumi Light"));
             assert_ne!(
                 hotkey.resolved_palette.to_dynamic(),
                 ordinary.resolved_palette.to_dynamic()
             );
             let light = hotkey_fixture(
-                "return {color_scheme='Kaku Light',colors={cursor_bg='#123456'}}",
+                "return {color_scheme='Sumi Light',colors={cursor_bg='#123456'}}",
                 &wezterm_dynamic::Value::Null,
                 false,
             );
@@ -2558,8 +2558,8 @@ mod tests {
     #[test]
     fn hotkey_inheritance_partial_colors_overlay_base_before_new_scheme_derivation() {
         use wezterm_dynamic::ToDynamic;
-        let source = "return {color_scheme='Kaku Dark',colors={foreground='#112233',selection_bg='#abcdef'},macos_global_hotkey_appearance={color_scheme='Kaku Light',colors={cursor_bg='#445566'}}}";
-        let expected = hotkey_fixture("return {color_scheme='Kaku Light',colors={foreground='#112233',selection_bg='#abcdef',cursor_bg='#445566'}}", &wezterm_dynamic::Value::Null,false);
+        let source = "return {color_scheme='Sumi Dark',colors={foreground='#112233',selection_bg='#abcdef'},macos_global_hotkey_appearance={color_scheme='Sumi Light',colors={cursor_bg='#445566'}}}";
+        let expected = hotkey_fixture("return {color_scheme='Sumi Light',colors={foreground='#112233',selection_bg='#abcdef',cursor_bg='#445566'}}", &wezterm_dynamic::Value::Null,false);
         for _ in 0..3 {
             let config = hotkey_fixture(source, &wezterm_dynamic::Value::Null, true);
             assert_eq!(
@@ -2571,7 +2571,7 @@ mod tests {
                 expected.resolved_palette.to_dynamic()
             );
         }
-        let config = hotkey_fixture(source,&hotkey_overrides("return {macos_global_hotkey_appearance={color_scheme='Kaku Light',colors={cursor_bg='#445566'}}}"),true);
+        let config = hotkey_fixture(source,&hotkey_overrides("return {macos_global_hotkey_appearance={color_scheme='Sumi Light',colors={cursor_bg='#445566'}}}"),true);
         assert_eq!(
             config.resolved_palette.to_dynamic(),
             expected.resolved_palette.to_dynamic()
@@ -2581,7 +2581,7 @@ mod tests {
     #[test]
     fn hotkey_inheritance_all_typed_appearance_fields_apply_and_nil_is_empty() {
         use wezterm_dynamic::{ToDynamic, Value};
-        let fields = "font=wezterm.font('Menlo'),font_rules={},font_size=19,line_height=1.4,color_scheme='Kaku Light',colors={cursor_bg='#112233'},window_background_opacity=0.7,text_background_opacity=0.8,macos_window_background_blur=12,window_frame={border_left_width='3px'},enable_tab_bar=false,hide_tab_bar_if_only_one_tab=false,tab_bar_at_bottom=true,use_fancy_tab_bar=false,enable_scroll_bar=true";
+        let fields = "font=wezterm.font('Menlo'),font_rules={},font_size=19,line_height=1.4,color_scheme='Sumi Light',colors={cursor_bg='#112233'},window_background_opacity=0.7,text_background_opacity=0.8,macos_window_background_blur=12,window_frame={border_left_width='3px'},enable_tab_bar=false,hide_tab_bar_if_only_one_tab=false,tab_bar_at_bottom=true,use_fancy_tab_bar=false,enable_scroll_bar=true";
         let expected = hotkey_fixture(
             &format!("local wezterm=require('wezterm');return {{{fields}}}"),
             &Value::Null,
@@ -2753,7 +2753,7 @@ mod tests {
     #[test]
     fn bundled_tool_launchers_type_only_into_shells() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
-        let bundled = root.join("assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+        let bundled = root.join("assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let script = std::fs::read_to_string(root.join("scripts/test_yazi_launcher.lua"))
             .expect("read the launcher test script");
         let lua = mlua::Lua::new();
@@ -2769,7 +2769,7 @@ mod tests {
 
     #[test]
     fn bundled_lua_with_hotkey_follow_mouse_compiles() {
-        let source = include_str!("../../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+        let source = include_str!("../../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         mlua::Lua::new()
             .load(source)
             .into_function()
@@ -2778,7 +2778,7 @@ mod tests {
 
     #[test]
     fn bundled_resize_hook_preserves_hotkey_overrides_and_ordinary_cleanup() {
-        let source = include_str!("../../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+        let source = include_str!("../../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let start = source.find("local resize_state_by_window =").unwrap();
         let end = start
             + source[start..]
@@ -2850,7 +2850,7 @@ mod tests {
 
     #[test]
     fn bundled_reload_hook_preserves_hotkey_and_updates_ordinary_theme() {
-        let source = include_str!("../../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+        let source = include_str!("../../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let start = source.find("wezterm.on('window-config-reloaded',").unwrap();
         let end = start
             + source[start..]
@@ -2863,7 +2863,7 @@ mod tests {
               assert(event == 'window-config-reloaded')
               reload = callback
             end }}
-            local config = {{ color_scheme = 'Kaku Dark', window_frame = {{}} }}
+            local config = {{ color_scheme = 'Sumi Dark', window_frame = {{}} }}
             local window_font_theme = {{}}
             local window_has_managed_font_override = {{}}
             local window_has_managed_window_frame_override = {{}}
@@ -2903,13 +2903,13 @@ mod tests {
             assert(ordinary.writes == 1 and syncs == 1 and layouts == 1)
             assert(ordinary.overrides.font.light == false)
             assert(ordinary.overrides.font_rules[1] == false)
-            assert(ordinary.overrides.window_frame.scheme == 'Kaku Dark')
+            assert(ordinary.overrides.window_frame.scheme == 'Sumi Dark')
             reload(ordinary, nil)
             assert(ordinary.writes == 1)
-            config.color_scheme = 'Kaku Light'
+            config.color_scheme = 'Sumi Light'
             reload(ordinary, nil)
             assert(ordinary.writes == 2 and ordinary.overrides.font.light == true)
-            assert(ordinary.overrides.window_frame.scheme == 'Kaku Light')
+            assert(ordinary.overrides.window_frame.scheme == 'Sumi Light')
             user_has_custom_font, user_has_custom_window_frame = true, true
             reload(ordinary, nil)
             assert(ordinary.writes == 3)
@@ -3311,8 +3311,8 @@ mod tests {
             "building main.rs",
             "loaded libfoo.so",
             "regenerated Makefile.in",
-            "open dist/Kaku.app",
-            "plain Kaku.app name",
+            "open dist/Sumi.app",
+            "plain Sumi.app name",
             // Method calls and namespace identifiers, not domains.
             "tensor model.to(device) done",
             "print df.info() output",
@@ -3343,7 +3343,7 @@ mod tests {
     #[test]
     fn deprecated_language_field_still_loads() {
         // V0.11.0 shipped `config.language`; the i18n revert (b4d779a) removed
-        // the field. It must remain a tolerated deprecated field so a kaku.lua
+        // the field. It must remain a tolerated deprecated field so a sumi.lua
         // carrying `config.language` still loads on upgrade with a warning
         // instead of failing config validation with a hard error.
         use std::collections::BTreeMap;
@@ -3377,7 +3377,7 @@ mod tests {
 
     #[test]
     fn windows_only_keys_still_load() {
-        // Kaku dropped its Windows code; a kaku.lua shared with a Windows
+        // Kaku dropped its Windows code; a sumi.lua shared with a Windows
         // WezTerm setup may still set these, and must load with a warning
         // rather than fail on unknown fields.
         use std::collections::BTreeMap;
@@ -3421,7 +3421,7 @@ mod tests {
 
         let options = FromDynamicOptions::default();
 
-        // snake_case variants (written by kaku config TUI)
+        // snake_case variants (written by sumi config TUI)
         let val = Value::String("completion_first".into());
         assert_eq!(
             super::SmartTabMode::from_dynamic(&val, options).unwrap(),
@@ -3671,7 +3671,7 @@ mod tests {
     fn colorfgbg_matches_final_resolved_palette() {
         // (background rgb, expected COLORFGBG, stale value pre-seeded via
         // set_environment_variables that the palette must override — mirrors
-        // the bundled kaku.lua line that hard-codes COLORFGBG from the scheme
+        // the bundled sumi.lua line that hard-codes COLORFGBG from the scheme
         // name and may disagree with the final resolved background.)
         let cases = [
             ((232, 240, 232), "0;15", "15;0"),
@@ -3700,7 +3700,7 @@ mod tests {
 }
 
 fn default_term() -> String {
-    // WezTerm sets `wezterm` here, but `kaku` causes SSH issues since its
+    // WezTerm sets `wezterm` here, but `sumi` causes SSH issues since its
     // terminfo doesn't exist on remote servers. So we default to `xterm-256color`.
     "xterm-256color".into()
 }
@@ -3740,26 +3740,26 @@ fn default_font_size() -> f64 {
 
 pub(crate) fn compute_cache_dir() -> anyhow::Result<PathBuf> {
     if let Some(runtime) = dirs_next::cache_dir() {
-        return Ok(runtime.join("kaku"));
+        return Ok(runtime.join("sumi"));
     }
 
-    Ok(crate::HOME_DIR.join(".local/share/kaku"))
+    Ok(crate::HOME_DIR.join(".local/share/sumi"))
 }
 
 pub(crate) fn compute_data_dir() -> anyhow::Result<PathBuf> {
     if let Some(runtime) = dirs_next::data_dir() {
-        return Ok(runtime.join("kaku"));
+        return Ok(runtime.join("sumi"));
     }
 
-    Ok(crate::HOME_DIR.join(".local/share/kaku"))
+    Ok(crate::HOME_DIR.join(".local/share/sumi"))
 }
 
 pub(crate) fn compute_runtime_dir() -> anyhow::Result<PathBuf> {
     if let Some(runtime) = dirs_next::runtime_dir() {
-        return Ok(runtime.join("kaku"));
+        return Ok(runtime.join("sumi"));
     }
 
-    Ok(crate::HOME_DIR.join(".local/share/kaku"))
+    Ok(crate::HOME_DIR.join(".local/share/sumi"))
 }
 
 pub fn pki_dir() -> anyhow::Result<PathBuf> {

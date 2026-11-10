@@ -205,7 +205,7 @@ fn builtin_kaku_theme(config: &Config) -> Option<CachedTheme> {
         .as_deref()
         .filter(|_| scheme_name_is_authoritative)
     {
-        Some("Kaku Dark") | Some("Kaku Theme") => {
+        Some("Sumi Dark") | Some("Sumi Theme") => {
             // The color_scheme field might hold "Kaku Dark" either because:
             //   (a) the user explicitly chose Kaku Dark, OR
             //   (b) the user chose Auto, but the TUI process evaluated the Lua
@@ -222,7 +222,7 @@ fn builtin_kaku_theme(config: &Config) -> Option<CachedTheme> {
             }
             return Some(cached_theme(dark));
         }
-        Some("Kaku Light") => return Some(cached_theme(light)),
+        Some("Sumi Light") => return Some(cached_theme(light)),
         _ => {}
     }
 
@@ -264,11 +264,11 @@ fn parse_color_scheme_selection_line(line: &str) -> Option<ColorSchemeSelection>
     }
 
     let rhs = color_scheme_assignment_rhs(trimmed)?;
-    if rhs_starts_with_quoted_literal(rhs, "Kaku Light") {
+    if rhs_starts_with_quoted_literal(rhs, "Sumi Light") {
         return Some(ColorSchemeSelection::Light);
     }
-    if rhs_starts_with_quoted_literal(rhs, "Kaku Dark")
-        || rhs_starts_with_quoted_literal(rhs, "Kaku Theme")
+    if rhs_starts_with_quoted_literal(rhs, "Sumi Dark")
+        || rhs_starts_with_quoted_literal(rhs, "Sumi Theme")
     {
         return Some(ColorSchemeSelection::Dark);
     }
@@ -447,11 +447,11 @@ mod tests {
     #[test]
     fn user_colors_override_the_scheme_name() {
         let mut config = config::Config::default_config();
-        config.color_scheme = Some("Kaku Light".to_string());
+        config.color_scheme = Some("Sumi Light".to_string());
         assert_eq!(
             builtin_kaku_theme(&config).map(|theme| theme.palette.is_light),
             Some(true),
-            "a plain Kaku Light config still resolves by name"
+            "a plain Sumi Light config still resolves by name"
         );
 
         config.colors = Some(config::Palette {
@@ -486,20 +486,20 @@ mod tests {
     #[test]
     fn detects_light_dark_and_auto_assignments() {
         assert_eq!(
-            parse_color_scheme_selection_line("config.color_scheme = 'Kaku Light'"),
+            parse_color_scheme_selection_line("config.color_scheme = 'Sumi Light'"),
             Some(ColorSchemeSelection::Light)
         );
         assert_eq!(
-            parse_color_scheme_selection_line("config.color_scheme = \"Kaku Dark\""),
+            parse_color_scheme_selection_line("config.color_scheme = \"Sumi Dark\""),
             Some(ColorSchemeSelection::Dark)
         );
         assert_eq!(
             parse_color_scheme_selection_line(
-                "config.color_scheme = (wezterm.gui and wezterm.gui.get_appearance() or 'Dark'):find('Dark') and 'Kaku Dark' or 'Kaku Light'"
+                "config.color_scheme = (wezterm.gui and wezterm.gui.get_appearance() or 'Dark'):find('Dark') and 'Sumi Dark' or 'Sumi Light'"
             ),
             Some(ColorSchemeSelection::Auto)
         );
-        // The bundled kaku.lua uses resolve_kaku_color_scheme which
+        // The bundled sumi.lua uses resolve_kaku_color_scheme which
         // internally delegates to get_appearance. The Rust-side detection
         // must recognize this wrapper as Auto too.
         assert_eq!(
@@ -521,8 +521,8 @@ mod tests {
     #[test]
     fn last_color_scheme_assignment_wins() {
         let content = "\
-config.color_scheme = (wezterm.gui and wezterm.gui.get_appearance() or 'Dark'):find('Dark') and 'Kaku Dark' or 'Kaku Light'
-config.color_scheme = 'Kaku Light'
+config.color_scheme = (wezterm.gui and wezterm.gui.get_appearance() or 'Dark'):find('Dark') and 'Sumi Dark' or 'Sumi Light'
+config.color_scheme = 'Sumi Light'
 ";
 
         assert_eq!(
@@ -534,7 +534,7 @@ config.color_scheme = 'Kaku Light'
     #[test]
     fn last_unknown_assignment_overrides_earlier_auto() {
         let content = "\
-config.color_scheme = (wezterm.gui and wezterm.gui.get_appearance() or 'Dark'):find('Dark') and 'Kaku Dark' or 'Kaku Light'
+config.color_scheme = (wezterm.gui and wezterm.gui.get_appearance() or 'Dark'):find('Dark') and 'Sumi Dark' or 'Sumi Light'
 config.color_scheme = some_runtime_value
 ";
 

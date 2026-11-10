@@ -17,7 +17,7 @@ import time
 import unittest
 
 
-BINARY = str(Path(sys.argv.pop(1) if len(sys.argv) > 1 else "dist/Kaku.app/Contents/MacOS/kaku").absolute())
+BINARY = str(Path(sys.argv.pop(1) if len(sys.argv) > 1 else "dist/Sumi.app/Contents/MacOS/sumi").absolute())
 ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
 

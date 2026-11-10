@@ -25,16 +25,16 @@ NC='\033[0m'
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Thin entrypoint: delegate to `kaku init` whenever possible.
+# Thin entrypoint: delegate to `sumi init` whenever possible.
 if [[ "${KAKU_INIT_INTERNAL:-0}" != "1" ]]; then
 	if [[ -n "${KAKU_BIN:-}" && -x "${KAKU_BIN}" ]]; then
 		exec "${KAKU_BIN}" init --shell fish "$@"
 	fi
 
 	for candidate in \
-		"$SCRIPT_DIR/../MacOS/kaku" \
-		"/Applications/Kaku.app/Contents/MacOS/kaku" \
-		"$HOME/Applications/Kaku.app/Contents/MacOS/kaku"; do
+		"$SCRIPT_DIR/../MacOS/sumi" \
+		"/Applications/Sumi.app/Contents/MacOS/sumi" \
+		"$HOME/Applications/Sumi.app/Contents/MacOS/sumi"; do
 		if [[ -x "$candidate" ]]; then
 			exec "$candidate" init --shell fish "$@"
 		fi
@@ -46,12 +46,12 @@ if [[ -d "$SCRIPT_DIR/vendor" ]]; then
 	RESOURCES_DIR="$SCRIPT_DIR"
 elif [[ -d "$SCRIPT_DIR/../vendor" ]]; then
 	RESOURCES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-elif [[ -d "/Applications/Kaku.app/Contents/Resources/vendor" ]]; then
-	RESOURCES_DIR="/Applications/Kaku.app/Contents/Resources"
-elif [[ -d "$HOME/Applications/Kaku.app/Contents/Resources/vendor" ]]; then
-	RESOURCES_DIR="$HOME/Applications/Kaku.app/Contents/Resources"
+elif [[ -d "/Applications/Sumi.app/Contents/Resources/vendor" ]]; then
+	RESOURCES_DIR="/Applications/Sumi.app/Contents/Resources"
+elif [[ -d "$HOME/Applications/Sumi.app/Contents/Resources/vendor" ]]; then
+	RESOURCES_DIR="$HOME/Applications/Sumi.app/Contents/Resources"
 else
-	echo -e "${YELLOW}Error: Could not locate Kaku resources (vendor directory missing).${NC}"
+	echo -e "${YELLOW}Error: Could not locate Sumi resources (vendor directory missing).${NC}"
 	exit 1
 fi
 
@@ -65,10 +65,10 @@ if [[ ! -f "$TOOL_INSTALL_SCRIPT" ]]; then
 	TOOL_INSTALL_SCRIPT="$RESOURCES_DIR/install_cli_tools.sh"
 fi
 
-USER_CONFIG_DIR="$HOME/.config/kaku/fish"
-KAKU_INIT_FILE="$USER_CONFIG_DIR/kaku.fish"
-KAKU_TMUX_DIR="$HOME/.config/kaku/tmux"
-KAKU_TMUX_FILE="$KAKU_TMUX_DIR/kaku.tmux.conf"
+USER_CONFIG_DIR="$HOME/.config/sumi/fish"
+KAKU_INIT_FILE="$USER_CONFIG_DIR/sumi.fish"
+KAKU_TMUX_DIR="$HOME/.config/sumi/tmux"
+KAKU_TMUX_FILE="$KAKU_TMUX_DIR/sumi.tmux.conf"
 STARSHIP_CONFIG="$HOME/.config/starship.toml"
 YAZI_CONFIG_DIR="$HOME/.config/yazi"
 YAZI_CONFIG_FILE="$YAZI_CONFIG_DIR/yazi.toml"
@@ -79,7 +79,7 @@ YAZI_WRAPPER_FILE="$USER_CONFIG_DIR/bin/yazi"
 KAKU_YAZI_THEME_MARKER_START="# ===== Kaku Yazi Flavor (managed) ====="
 KAKU_YAZI_THEME_MARKER_END="# ===== End Kaku Yazi Flavor (managed) ====="
 FISH_CONF_D_DIR="$HOME/.config/fish/conf.d"
-FISH_CONF_D_FILE="$FISH_CONF_D_DIR/kaku.fish"
+FISH_CONF_D_FILE="$FISH_CONF_D_DIR/sumi.fish"
 TMUXRC="$HOME/.tmux.conf"
 BACKUP_SUFFIX=".kaku-backup-$(date +%s)"
 TMUXRC_BACKED_UP=0
@@ -127,9 +127,9 @@ write_through() {
 
 default_kaku_config_path() {
 	if [[ -n "${XDG_CONFIG_HOME:-}" ]]; then
-		printf '%s\n' "${XDG_CONFIG_HOME}/kaku/kaku.lua"
+		printf '%s\n' "${XDG_CONFIG_HOME}/sumi/sumi.lua"
 	else
-		printf '%s\n' "${HOME}/.config/kaku/kaku.lua"
+		printf '%s\n' "${HOME}/.config/sumi/sumi.lua"
 	fi
 }
 
@@ -167,11 +167,11 @@ resolve_kaku_flavor_from_config() {
 			' "$config_file"
 		)"
 		if [[ -n "$scheme_line" ]]; then
-			if [[ "$scheme_line" == *"Kaku Light"* ]]; then
+			if [[ "$scheme_line" == *"Sumi Light"* ]]; then
 				printf '%s\n' "kaku-light"
 				return
 			fi
-			if [[ "$scheme_line" == *"Kaku Dark"* || "$scheme_line" == *"Kaku Theme"* ]]; then
+			if [[ "$scheme_line" == *"Sumi Dark"* || "$scheme_line" == *"Sumi Theme"* ]]; then
 				printf '%s\n' "kaku-dark"
 				return
 			fi
@@ -268,7 +268,7 @@ sync_kaku_yazi_flavors() {
 		cp "$source_dir/flavor.toml" "$target_dir/flavor.toml"
 	done
 
-	echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Refreshed Kaku yazi flavors ${NC}(dark + light)${NC}"
+	echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Refreshed Sumi yazi flavors ${NC}(dark + light)${NC}"
 }
 
 ensure_kaku_yazi_theme() {
@@ -288,7 +288,7 @@ ensure_kaku_yazi_theme() {
 # Add your own theme overrides in other sections if needed.
 $(kaku_yazi_theme_block "$managed_flavor")
 EOF
-		echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Initialized yazi theme ${NC}(managed Kaku flavor: $managed_flavor)${NC}"
+		echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Initialized yazi theme ${NC}(managed Sumi flavor: $managed_flavor)${NC}"
 		return
 	fi
 
@@ -319,7 +319,7 @@ EOF
 		return
 	fi
 	write_through "${tmp_theme}.next" "$YAZI_THEME_FILE"
-	echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Updated yazi theme ${NC}(managed Kaku flavor: $managed_flavor)${NC}"
+	echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Updated yazi theme ${NC}(managed Sumi flavor: $managed_flavor)${NC}"
 }
 
 install_yazi_wrapper() {
@@ -348,9 +348,9 @@ system_kaku_flavor() {
 
 default_kaku_config_path() {
 	if [[ -n "${XDG_CONFIG_HOME:-}" ]]; then
-		printf '%s\n' "${XDG_CONFIG_HOME}/kaku/kaku.lua"
+		printf '%s\n' "${XDG_CONFIG_HOME}/sumi/sumi.lua"
 	else
-		printf '%s\n' "${HOME}/.config/kaku/kaku.lua"
+		printf '%s\n' "${HOME}/.config/sumi/sumi.lua"
 	fi
 }
 
@@ -376,11 +376,11 @@ resolve_kaku_flavor_from_config() {
 			' "$config_file"
 		)"
 		if [[ -n "$scheme_line" ]]; then
-			if [[ "$scheme_line" == *"Kaku Light"* ]]; then
+			if [[ "$scheme_line" == *"Sumi Light"* ]]; then
 				printf '%s\n' "kaku-light"
 				return
 			fi
-			if [[ "$scheme_line" == *"Kaku Dark"* || "$scheme_line" == *"Kaku Theme"* ]]; then
+			if [[ "$scheme_line" == *"Sumi Dark"* || "$scheme_line" == *"Sumi Theme"* ]]; then
 				printf '%s\n' "kaku-dark"
 				return
 			fi
@@ -610,7 +610,7 @@ install_kaku_terminfo() {
 
 install_kaku_terminfo
 
-echo -e "${BOLD}Setting up Kaku Fish Shell Environment${NC}"
+echo -e "${BOLD}Setting up Sumi Fish Shell Environment${NC}"
 
 # 1. Prepare User Config Directory
 mkdir -p "$USER_CONFIG_DIR"
@@ -714,13 +714,13 @@ ensure_kaku_yazi_theme
 install_yazi_wrapper
 
 # 3. Configure tmux (Optional)
-TMUX_SOURCE_LINE='source-file "$HOME/.config/kaku/tmux/kaku.tmux.conf" # Kaku tmux Integration'
+TMUX_SOURCE_LINE='source-file "$HOME/.config/sumi/tmux/sumi.tmux.conf" # Sumi tmux Integration'
 
 write_kaku_tmux_file() {
 	mkdir -p "$KAKU_TMUX_DIR"
 	cat <<'EOF' >"$KAKU_TMUX_FILE"
 # Kaku tmux Integration - DO NOT EDIT MANUALLY
-# This file is managed by Kaku.app. Any changes may be overwritten.
+# This file is managed by Sumi.app. Any changes may be overwritten.
 
 set -g mouse on
 bind-key -n S-WheelUpPane if-shell -F '#{pane_in_mode}' 'send-keys -X -N 5 scroll-up' 'copy-mode -e -u'
@@ -749,7 +749,7 @@ BEGIN { replaced = 0; extra = 0 }
 	}
 
 	if ($0 ~ /^[[:space:]]*source-file[[:space:]]+/ &&
-	    $0 ~ /kaku\/tmux\/kaku\.tmux\.conf/) {
+	    $0 ~ /sumi\/tmux\/sumi\.tmux\.conf/) {
 		if (!replaced) {
 			print source_line
 			replaced = 1
@@ -773,7 +773,7 @@ END {
 		if ! cmp -s "$TMUXRC" "$tmp_file"; then
 			backup_tmuxrc_once
 			write_through "$tmp_file" "$TMUXRC"
-			echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Updated Kaku source line in .tmux.conf"
+			echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Updated Sumi source line in .tmux.conf"
 		else
 			rm -f "$tmp_file"
 		fi
@@ -783,14 +783,14 @@ END {
 			if ! cmp -s "$TMUXRC" "$tmp_file"; then
 				backup_tmuxrc_once
 				write_through "$tmp_file" "$TMUXRC"
-				echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Removed duplicate Kaku source line(s) from .tmux.conf"
+				echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Removed duplicate Sumi source line(s) from .tmux.conf"
 			else
 				rm -f "$tmp_file"
 			fi
 		else
 			rm -f "$tmp_file"
 			if [[ "$awk_status" != "3" ]]; then
-				echo -e "${YELLOW}Warning: failed to normalize Kaku source line in .tmux.conf; leaving it unchanged.${NC}"
+				echo -e "${YELLOW}Warning: failed to normalize Sumi source line in .tmux.conf; leaving it unchanged.${NC}"
 			fi
 		fi
 	fi
@@ -805,7 +805,7 @@ has_kaku_tmux_source_line() {
 		return 0
 	fi
 
-	grep -Eq '^[[:space:]]*source-file[[:space:]].*kaku/tmux/kaku\.tmux\.conf([[:space:]]|$)' "$TMUXRC"
+	grep -Eq '^[[:space:]]*source-file[[:space:]].*sumi/tmux/sumi\.tmux\.conf([[:space:]]|$)' "$TMUXRC"
 }
 
 ensure_kaku_tmux_integration() {
@@ -848,22 +848,22 @@ ensure_kaku_tmux_integration
 # 4. Generate Kaku Fish Init File
 cat <<'EOF' >"$KAKU_INIT_FILE"
 # Kaku Fish Integration - DO NOT EDIT MANUALLY
-# This file is managed by Kaku.app. Any changes may be overwritten.
+# This file is managed by Sumi.app. Any changes may be overwritten.
 
 # === PATH ===
-fish_add_path "$HOME/.config/kaku/fish/bin"
+fish_add_path "$HOME/.config/sumi/fish/bin"
 
 # === Kaku session ===
 # tmux rewrites TERM_PROGRAM, so a tmux session started from Kaku needs the
 # exported marker to still count as Kaku. Other terminals set their own
 # TERM_PROGRAM, so a leaked marker is dropped there (#503).
-if test "$TERM_PROGRAM" = "Kaku"
+if test "$TERM_PROGRAM" = "Sumi"
     set -gx KAKU_SESSION 1
 else if not set -q TMUX
     set -e KAKU_SESSION
 end
 set -l _kaku_in_kaku 0
-if test "$TERM_PROGRAM" = "Kaku"; or begin; set -q TMUX; and set -q KAKU_SESSION; end
+if test "$TERM_PROGRAM" = "Sumi"; or begin; set -q TMUX; and set -q KAKU_SESSION; end
     set _kaku_in_kaku 1
 end
 
@@ -938,7 +938,7 @@ end
 function __kaku_semantic_precmd --on-event fish_prompt
     # Recover input modes and the cursor abandoned by a crashed TUI or
     # disconnected SSH (#551).
-    if test "$TERM_PROGRAM" = Kaku; or begin; test -n "$TMUX"; and test -n "$KAKU_SESSION"; end
+    if test "$TERM_PROGRAM" = Sumi; or begin; test -n "$TMUX"; and test -n "$KAKU_SESSION"; end
         printf '\033[?1000;1002;1003;1004;1005;1006;1007;1016l\033[?25h'
     end
     printf '\033]133;A\007'
@@ -969,7 +969,7 @@ end
 # Authenticate Kaku's privileged control messages so arbitrary PTY output
 # cannot trigger local AI requests or reuse the user's assistant credentials.
 function __kaku_set_ai_user_var
-    set -l capability_file "$HOME/.config/kaku/ai_inline_capability"
+    set -l capability_file "$HOME/.config/sumi/ai_inline_capability"
     test -r "$capability_file"; or return 1
     # read reports EOF as failure when the file lacks a trailing newline,
     # but still fills the variable; accept that case (#511).
@@ -1099,7 +1099,7 @@ abbr -a .... 'cd ../../..'
 
 # yazi launcher - cd into the directory yazi is in when you exit.
 function y
-    set -l yazi_cmd "$HOME/.config/kaku/fish/bin/yazi"
+    set -l yazi_cmd "$HOME/.config/sumi/fish/bin/yazi"
     if not test -x "$yazi_cmd"
         set yazi_cmd (command -v yazi 2>/dev/null; or true)
     end
@@ -1118,36 +1118,36 @@ end
 # k - AI chat CLI bundled with Kaku.
 function k
     set -l k_cmd ""
-    for _candidate in "$HOME/Applications/Kaku.app/Contents/MacOS/k" "/Applications/Kaku.app/Contents/MacOS/k"
+    for _candidate in "$HOME/Applications/Sumi.app/Contents/MacOS/k" "/Applications/Sumi.app/Contents/MacOS/k"
         if test -x "$_candidate"
             set k_cmd "$_candidate"
             break
         end
     end
     if test -z "$k_cmd"
-        echo "k: Kaku app not found. Install Kaku from https://github.com/tw93/Kaku"
+        echo "k: Sumi app not found. Install Sumi from https://github.com/chiww/Sumi"
         return 127
     end
     $k_cmd $argv
 end
 EOF
 
-echo -e "  ${GREEN}✓${NC} ${BOLD}Script${NC}      Generated kaku.fish init script"
+echo -e "  ${GREEN}✓${NC} ${BOLD}Script${NC}      Generated sumi.fish init script"
 
 # 5. Install fish conf.d entry point
 mkdir -p "$FISH_CONF_D_DIR"
 cat <<EOF >"$FISH_CONF_D_FILE"
-# Kaku shell integration -- managed. Remove with: kaku reset
-set -l _kaku_fish_init "\$HOME/.config/kaku/fish/kaku.fish"
+# Kaku shell integration -- managed. Remove with: sumi reset
+set -l _kaku_fish_init "\$HOME/.config/sumi/fish/sumi.fish"
 if test -f \$_kaku_fish_init
     source \$_kaku_fish_init
 end
 EOF
 
-echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Installed ${NC}~/.config/fish/conf.d/kaku.fish${NC}"
+echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Installed ${NC}~/.config/fish/conf.d/sumi.fish${NC}"
 
 echo ""
-echo -e "${GREEN}${BOLD}Kaku Fish setup complete!${NC}"
+echo -e "${GREEN}${BOLD}Sumi Fish setup complete!${NC}"
 echo ""
-echo "Restart fish or run: source ~/.config/fish/conf.d/kaku.fish"
-echo "Roll back anytime with: kaku reset"
+echo "Restart fish or run: source ~/.config/fish/conf.d/sumi.fish"
+echo "Roll back anytime with: sumi reset"

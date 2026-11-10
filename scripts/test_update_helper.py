@@ -40,7 +40,7 @@ def make_app(path: Path, marker: str, version: str):
     macos = path / "Contents/MacOS"
     macos.mkdir(parents=True)
     (path / "Contents/marker").write_text(marker)
-    cli = macos / "kaku"
+    cli = macos / "sumi"
     cli.write_text("#!/bin/bash\nexit 0\n")
     cli.chmod(0o755)
     with open(path / "Contents/Info.plist", "wb") as f:
@@ -55,17 +55,17 @@ class UpdateHelperTests(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
-        target = root / "Applications/Kaku.app"
+        target = root / "Applications/Sumi.app"
         make_app(target, "old", "0.27.1")
-        new_app = root / "staged/Kaku.app"
+        new_app = root / "staged/Sumi.app"
         if new_app_exists:
             make_app(new_app, "new", "0.28.0")
         if lock_owner is not None:
-            lock = root / "Applications/Kaku.app.updating"
+            lock = root / "Applications/Sumi.app.updating"
             lock.mkdir()
             (lock / "pid").write_text(f"{lock_owner}\n")
         if stale_incoming:
-            make_app(root / "Applications/Kaku.app.incoming.1.1", "stale", "0.0.1")
+            make_app(root / "Applications/Sumi.app.incoming.1.1", "stale", "0.0.1")
         work = root / "work"
         work.mkdir()
         (root / "running").write_text("".join(f"{p}\n" for p in running))
@@ -126,7 +126,7 @@ class UpdateHelperTests(unittest.TestCase):
         return (target / "Contents/marker").read_text()
 
     def leftovers(self, target, kind):
-        return list(target.parent.glob(f"Kaku.app.{kind}.*"))
+        return list(target.parent.glob(f"Sumi.app.{kind}.*"))
 
     def test_stages_the_new_app_before_stopping_kaku(self):
         proc, root, target, log = self.run_helper()
@@ -136,7 +136,7 @@ class UpdateHelperTests(unittest.TestCase):
         self.assertLess(log.index("stage new app"), log.index("swap in new app"))
         self.assertEqual(self.leftovers(target, "incoming"), [])
         self.assertEqual(self.leftovers(target, "backup"), [])
-        self.assertFalse((root / "Applications/Kaku.app.updating").exists())
+        self.assertFalse((root / "Applications/Sumi.app.updating").exists())
 
     def test_a_second_helper_leaves_a_running_update_alone(self):
         proc, root, target, log = self.run_helper(lock_owner=os.getpid())
@@ -144,13 +144,13 @@ class UpdateHelperTests(unittest.TestCase):
         self.assertEqual(self.marker(target), "old")
         self.assertNotIn("kill", (root / "calls").read_text())
         self.assertIn("another update is already running", log)
-        self.assertTrue((root / "Applications/Kaku.app.updating").exists())
+        self.assertTrue((root / "Applications/Sumi.app.updating").exists())
 
     def test_takes_over_a_lock_left_by_a_dead_helper(self):
         proc, root, target, log = self.run_helper(lock_owner=99999999)
         self.assertEqual(proc.returncode, 0, log + proc.stderr)
         self.assertEqual(self.marker(target), "new")
-        self.assertFalse((root / "Applications/Kaku.app.updating").exists())
+        self.assertFalse((root / "Applications/Sumi.app.updating").exists())
 
     def test_a_signal_between_the_renames_still_leaves_an_app(self):
         proc, root, target, log = self.run_helper(interrupt_mid_swap=True)
@@ -198,14 +198,14 @@ class UpdateHelperTests(unittest.TestCase):
         self.assertNotIn("kill", (root / "calls").read_text())
         with open(root / "job.plist", "rb") as f:
             job = plistlib.load(f)
-        self.assertTrue(job["Label"].startswith("fun.tw93.kaku.update."))
+        self.assertTrue(job["Label"].startswith("com.github.chiww.sumi.update."))
         self.assertTrue(job["RunAtLoad"] and job["AbandonProcessGroup"] and job["LaunchOnlyOnce"])
         lint = subprocess.run(["/usr/bin/plutil", "-lint", str(root / "job.plist")], capture_output=True)
         self.assertEqual(lint.returncode, 0, lint.stdout)
         self.assertNotIn("KeepAlive", job)
         self.assertEqual(job["ProgramArguments"][1:],
                          [str(root / "updates/apply-staged-1.sh"), str(target),
-                          str(root / "staged/Kaku.app"), str(root / "work")])
+                          str(root / "staged/Sumi.app"), str(root / "work")])
         environment = job["EnvironmentVariables"]
         self.assertEqual(environment["KAKU_UPDATE_JOB_LABEL"], job["Label"])
         self.assertEqual(environment["HOME"], str(root))
@@ -221,15 +221,15 @@ class UpdateHelperTests(unittest.TestCase):
         self.assertIn("launchd job refused, applying inline", log)
 
     def test_the_job_applies_the_update_and_unloads_itself(self):
-        proc, root, target, log = self.run_helper(inline=False, job_label="fun.tw93.kaku.update.fixture")
+        proc, root, target, log = self.run_helper(inline=False, job_label="com.github.chiww.sumi.update.fixture")
         self.assertEqual(proc.returncode, 0, log + proc.stderr)
         self.assertEqual(self.marker(target), "new")
         calls = root / "calls"
         self.assertNotIn("bootstrap", calls.read_text())
         deadline = time.time() + 10
-        while "remove fun.tw93.kaku.update.fixture" not in calls.read_text() and time.time() < deadline:
+        while "remove com.github.chiww.sumi.update.fixture" not in calls.read_text() and time.time() < deadline:
             time.sleep(0.2)
-        self.assertIn("launchctl remove fun.tw93.kaku.update.fixture", calls.read_text())
+        self.assertIn("launchctl remove com.github.chiww.sumi.update.fixture", calls.read_text())
 
 
 if __name__ == "__main__":

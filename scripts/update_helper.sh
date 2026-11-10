@@ -22,17 +22,17 @@ TARGET_APP="$TARGET_APP_NORM"
 NEW_APP="$NEW_APP_NORM"
 BACKUP_APP="${TARGET_APP}.backup.$(date +%s).$$"
 TARGET_GUI="$TARGET_APP/Contents/MacOS/kaku-gui"
-TARGET_CLI="$TARGET_APP/Contents/MacOS/kaku"
+TARGET_CLI="$TARGET_APP/Contents/MacOS/sumi"
 
-# Validate that paths end with Kaku.app for safety (allow trailing slashes).
-# Final component match mirrors Rust Path::ends_with("Kaku.app") semantics.
-# After stripping trailing slashes, the final component must be Kaku.app
-if [[ ! "$TARGET_APP_NORM" == */Kaku.app && ! "$TARGET_APP_NORM" == Kaku.app ]]; then
-    echo "Error: TARGET_APP must end with Kaku.app" >&2
+# Validate that paths end with Sumi.app for safety (allow trailing slashes).
+# Final component match mirrors Rust Path::ends_with("Sumi.app") semantics.
+# After stripping trailing slashes, the final component must be Sumi.app
+if [[ ! "$TARGET_APP_NORM" == */Sumi.app && ! "$TARGET_APP_NORM" == Sumi.app ]]; then
+    echo "Error: TARGET_APP must end with Sumi.app" >&2
     exit 1
 fi
-if [[ ! "$NEW_APP_NORM" == */Kaku.app && ! "$NEW_APP_NORM" == Kaku.app ]]; then
-    echo "Error: NEW_APP must end with Kaku.app" >&2
+if [[ ! "$NEW_APP_NORM" == */Sumi.app && ! "$NEW_APP_NORM" == Sumi.app ]]; then
+    echo "Error: NEW_APP must end with Sumi.app" >&2
     exit 1
 fi
 
@@ -164,7 +164,7 @@ install_kaku_wrapper_fallback() {
       ;;
   esac
 
-  wrapper_path="$home_dir/.config/kaku/$wrapper_shell/bin/kaku"
+  wrapper_path="$home_dir/.config/sumi/$wrapper_shell/bin/sumi"
   wrapper_dir="${wrapper_path%/*}"
   /bin/mkdir -p "$wrapper_dir"
 
@@ -178,14 +178,14 @@ fi
 
 for candidate in \
   "$TARGET_CLI" \
-  "/Applications/Kaku.app/Contents/MacOS/kaku" \
-  "\${HOME:-}/Applications/Kaku.app/Contents/MacOS/kaku"; do
+  "/Applications/Sumi.app/Contents/MacOS/sumi" \
+  "\${HOME:-}/Applications/Sumi.app/Contents/MacOS/sumi"; do
   if [[ -n "\$candidate" && -x "\$candidate" ]]; then
     exec "\$candidate" "\$@"
   fi
 done
 
-  echo "kaku: Kaku.app not found. Expected /Applications/Kaku.app." >&2
+  echo "kaku: Sumi.app not found. Expected /Applications/Sumi.app." >&2
   exit 127
 EOF
 
@@ -204,7 +204,7 @@ detach_to_launchd() {
     return 1
   fi
   local label plist name
-  label="fun.tw93.kaku.update.$(date +%s).$$"
+  label="com.github.chiww.sumi.update.$(date +%s).$$"
   plist="$WORK_DIR/$label.plist"
   printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' \
     '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
@@ -227,7 +227,7 @@ detach_to_launchd() {
     return 1
   fi
   # The job gets launchd's bare environment otherwise; keep what the helper
-  # and `kaku init` read from the caller.
+  # and `sumi init` read from the caller.
   for name in $(compgen -e); do
     case "$name" in
       HOME | USER | LOGNAME | SHELL | ZDOTDIR | PATH | TMPDIR | LANG | LC_* | XDG_* | KAKU_*)
@@ -325,9 +325,9 @@ log "refresh shell integration"
 if "$TARGET_CLI" init --update-only >>"$LOG_FILE" 2>&1; then
   log "shell integration refreshed"
 else
-  log "warning: failed to refresh shell integration via kaku init"
+  log "warning: failed to refresh shell integration via sumi init"
   if fallback_wrapper_path="$(install_kaku_wrapper_fallback)"; then
-    log "installed fallback kaku wrapper at ${fallback_wrapper_path:-~/.config/kaku/<unknown>/bin/kaku}"
+    log "installed fallback kaku wrapper at ${fallback_wrapper_path:-~/.config/sumi/<unknown>/bin/sumi}"
   else
     log "warning: failed to install fallback kaku wrapper"
   fi
@@ -336,7 +336,7 @@ fi
 # Write update completed marker with new version
 NEW_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$TARGET_APP/Contents/Info.plist" 2>/dev/null || echo "")
 if [[ -n "$NEW_VERSION" ]]; then
-  DATA_DIR="${XDG_DATA_HOME:-$HOME/Library/Application Support}/kaku"
+  DATA_DIR="${XDG_DATA_HOME:-$HOME/Library/Application Support}/sumi"
   /bin/mkdir -p "$DATA_DIR" 2>/dev/null
   printf '%s\n' "$NEW_VERSION" > "$DATA_DIR/update_completed"
   log "wrote update_completed marker: $NEW_VERSION"
@@ -361,13 +361,13 @@ else
   log "open path failed (exit code: $?), trying open -a"
   sleep 1
   # Method 2: open by app name
-  if /usr/bin/open -a Kaku 2>>"$LOG_FILE"; then
+  if /usr/bin/open -a Sumi 2>>"$LOG_FILE"; then
     log "relaunch via open -a succeeded"
   else
     log "open -a failed (exit code: $?), trying osascript"
     sleep 1
     # Method 3: AppleScript as last resort
-    /usr/bin/osascript -e 'tell application "Kaku" to activate' 2>>"$LOG_FILE" || log "osascript also failed"
+    /usr/bin/osascript -e 'tell application "Sumi" to activate' 2>>"$LOG_FILE" || log "osascript also failed"
   fi
 fi
 

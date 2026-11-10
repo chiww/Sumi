@@ -22,7 +22,7 @@ const SUPPORTED_LOCALES: &[&str] = &["en", "zh-CN"];
 /// Resolve the locale that Kaku should run under.
 ///
 /// Resolution order:
-/// 1. `config_language` (the value of `config.language` from `kaku.lua`),
+/// 1. `config_language` (the value of `config.language` from `sumi.lua`),
 ///    unless it equals [`LANGUAGE_AUTO`] or is empty.
 /// 2. `$LC_ALL`, `$LC_MESSAGES`, `$LANG` (first non-empty wins).
 /// 3. [`FALLBACK_LOCALE`].

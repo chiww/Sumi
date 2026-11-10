@@ -1,4 +1,4 @@
-# Kaku i18n bundle: English (source-of-truth language).
+# Sumi i18n bundle: English (source-of-truth language).
 #
 # Conventions:
 #   - Keys are dot-namespaced: <scope>.<context>.<key>.
@@ -13,9 +13,9 @@
 
 ai:
   approval:
-    title: "Kaku AI Needs Confirmation"
+    title: "Sumi AI Needs Confirmation"
   task_complete:
-    title: "Kaku AI Task Complete"
+    title: "Sumi AI Task Complete"
   header:
     user: "  You"
     assistant: "  AI"
@@ -27,7 +27,7 @@ tab:
   empty_pane: "no pane"
 
 commands:
-  # Hard-coded NSMenuItems in the Kaku app menu (not CommandDef entries).
+  # Hard-coded NSMenuItems in the Sumi app menu (not CommandDef entries).
   menu:
     settings: "Settings..."
     check_for_updates: "Check for Updates..."
@@ -35,14 +35,14 @@ commands:
     services: "Services"
 
 init:
-  k_wrapper_conflict: "k: %{path} already exists and does not appear to be a Kaku wrapper; skipping."
+  k_wrapper_conflict: "k: %{path} already exists and does not appear to be a Sumi wrapper; skipping."
 
 overlay:
   confirm_close:
     pane: "Close this pane?\nThe running process in this pane will be terminated."
     tab: "Close this tab?\nAll panes in this tab will be terminated."
-    update: "Update Kaku now?\nAll windows will close and running tasks will stop."
-    quit: "Quit Kaku?\nAll open tabs and panes will be closed."
+    update: "Update Sumi now?\nAll windows will close and running tasks will stop."
+    quit: "Quit Sumi?\nAll open tabs and panes will be closed."
   launcher:
     pane_encoding: "Pane Encoding"
     pane_encoding_help: "Select encoding  |  Enter = set  |  Esc = back  |  / = filter"

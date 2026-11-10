@@ -1,10 +1,10 @@
-//! System proxy detection for `kaku update`-style curl invocations.
+//! System proxy detection for `sumi update`-style curl invocations.
 //!
 //! When Kaku is launched from the menu bar or a notification, the process
 //! env inherited from launchd has no proxy vars, so curl cannot reach the
 //! internet through a user-configured proxy. This module resolves the
 //! macOS system proxy from Network Settings via `/usr/sbin/scutil --proxy`
-//! and exposes it for the update code paths in both `kaku` and `kaku-gui`.
+//! and exposes it for the update code paths in both `sumi` and `kaku-gui`.
 //!
 //! On non-macOS platforms `scutil` will simply fail to spawn and the
 //! detection returns `None`, which is the correct fallback.

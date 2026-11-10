@@ -1,5 +1,5 @@
 <!--
-name: 'Kaku Chat: root cause and verification'
+name: 'Sumi Chat: root cause and verification'
 description: How to diagnose, how to plan multi-step work, and the verification triggers that force a re-check before sending.
 kakuVersion: 0.12.0
 -->

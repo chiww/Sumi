@@ -33,8 +33,8 @@ GITHUB_REPO="${GITHUB_REPO:-tw93/Kaku}"
 NIGHTLY_TAG="${NIGHTLY_TAG:-nightly}"
 PROFILE="${PROFILE:-release-opt}"
 OUT_DIR="${OUT_DIR:-$REPO_ROOT/dist}"
-DMG_PATH="$OUT_DIR/Kaku.dmg"
-DMG_ASSET_NAME="Kaku-nightly.dmg"
+DMG_PATH="$OUT_DIR/Sumi.dmg"
+DMG_ASSET_NAME="Sumi-nightly.dmg"
 DMG_ASSET_PATH="$OUT_DIR/$DMG_ASSET_NAME"
 UPLOAD_ONLY=0
 FEATURES=""
@@ -111,7 +111,7 @@ if [[ "$UPLOAD_ONLY" -eq 0 ]]; then
     BUILD_STATUS=${PIPESTATUS[0]}
     set -e
     [[ "$BUILD_STATUS" -ne 0 ]] && die "build.sh failed with exit code $BUILD_STATUS"
-    log "Build complete: $OUT_DIR/Kaku.app + $DMG_PATH"
+    log "Build complete: $OUT_DIR/Sumi.app + $DMG_PATH"
 
     log "Notarizing and stapling..."
     OUT_DIR="$OUT_DIR" ./scripts/notarize.sh
@@ -145,11 +145,11 @@ trap 'rm -f "$LOCK" "$NOTES_FILE"' EXIT
 cat > "$NOTES_FILE" <<EOF
 <div align="center">
   <img src="https://raw.githubusercontent.com/tw93/Kaku/main/assets/logo.png" alt="Kaku Logo" width="120" height="120" />
-  <h1 style="margin: 12px 0 6px;">Kaku Nightly</h1>
+  <h1 style="margin: 12px 0 6px;">Sumi Nightly</h1>
   <p><em>A fast, out-of-the-box terminal built for AI coding.</em></p>
 </div>
 
-> Preview build from \`main\` at \`$SHORT_SHA\`, $BUILD_DATE, based on v$CARGO_VERSION. Notarized: open the DMG and drag Kaku to Applications. It may be unstable; for the stable build use the latest tagged release.
+> Preview build from \`main\` at \`$SHORT_SHA\`, $BUILD_DATE, based on v$CARGO_VERSION. Notarized: open the DMG and drag Sumi to Applications. It may be unstable; for the stable build use the latest tagged release.
 
 ### Changelog
 

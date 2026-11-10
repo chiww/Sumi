@@ -26,7 +26,7 @@ pub fn k_main() {
     // The `k` CLI does not load the full Kaku Lua config (it would be
     // wasteful for a one-shot chat invocation). Locale is resolved from the
     // process environment only; `config.language` is honored inside the
-    // desktop app and the `kaku` CLI.
+    // desktop app and the `sumi` CLI.
     rust_i18n::set_locale(&config::i18n::resolve_locale(config::i18n::LANGUAGE_AUTO));
     let cli = Cli::parse();
     let args = CliArgs {

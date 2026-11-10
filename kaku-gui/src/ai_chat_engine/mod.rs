@@ -1428,7 +1428,7 @@ mod tests {
         // prompt. Catches a missing include_str! path or an over-eager
         // metadata stripper.
         let prompt = build_system_prompt();
-        assert!(prompt.contains("Kaku AI"), "missing voice fragment");
+        assert!(prompt.contains("Sumi AI"), "missing voice fragment");
         assert!(
             prompt.contains("SHELL SAFETY") || prompt.contains("SAFETY"),
             "missing safety fragment"

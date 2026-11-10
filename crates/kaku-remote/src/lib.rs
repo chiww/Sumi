@@ -308,7 +308,7 @@ pub fn read_state() -> anyhow::Result<RemoteState> {
     serde_json::from_str(&data).context("invalid state file")
 }
 
-/// What the relay bridge last saw, for `kaku doctor`. Holds nothing secret:
+/// What the relay bridge last saw, for `sumi doctor`. Holds nothing secret:
 /// no token, key or relay id.
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, Default, PartialEq)]
 pub struct RelayStatus {
@@ -321,7 +321,7 @@ pub struct RelayStatus {
     /// The Kaku that wrote it; the file outlives it when it quits.
     #[serde(default)]
     pub pid: u32,
-    /// Unix seconds of the attempt this records, so `kaku remote` can tell
+    /// Unix seconds of the attempt this records, so `sumi remote` can tell
     /// that the bridge tried again after a new access code was saved.
     #[serde(default)]
     pub checked: u64,
@@ -420,7 +420,7 @@ static WEB_DIRTY: std::sync::OnceLock<web::WebDirty> = std::sync::OnceLock::new(
 static SOLE_LOCK: std::sync::OnceLock<std::fs::File> = std::sync::OnceLock::new();
 
 /// Called once at GUI startup. Remote access stays off until the user turns
-/// it on (`kaku remote` writes `remote.enabled`); the bridge then starts on
+/// it on (`sumi remote` writes `remote.enabled`); the bridge then starts on
 /// that config reload, and stops, ending every web session, when it is
 /// turned off again.
 pub fn start() {
@@ -484,7 +484,7 @@ fn follow_config() {
     use std::sync::atomic::Ordering;
     if !configuration().remote.enabled {
         if !RUNNING.load(Ordering::SeqCst) {
-            // A state file left by an earlier run would tell `kaku remote`
+            // A state file left by an earlier run would tell `sumi remote`
             // that sharing is on.
             remove_state_unless_live_owner(&state_path());
         }
@@ -496,10 +496,10 @@ fn follow_config() {
 }
 
 /// One Kaku per data directory serves remote access. A second one (a copy
-/// opened from a build folder, or `kaku start` starting another GUI) shares
+/// opened from a build folder, or `sumi start` starting another GUI) shares
 /// the identity, so it registered with the relay as the same Mac and took
 /// the browser over to its own terminals; it also overwrote the state file
-/// `kaku remote` reads. It now waits for the first to quit and takes over.
+/// `sumi remote` reads. It now waits for the first to quit and takes over.
 fn launch_when_sole() {
     let path = config::DATA_DIR.join("remote.lock");
     match hold_sole_lock(&SOLE_LOCK, &path) {
@@ -649,7 +649,7 @@ fn launch() {
         .expect("spawn kaku-remote thread");
 }
 
-/// Bind the local page's port, then record the state `kaku remote` reads.
+/// Bind the local page's port, then record the state `sumi remote` reads.
 /// The token and port go into the state only once the port is Kaku's: with
 /// another app (another account, a sandboxed one) holding it, the printed
 /// link would hand that app the token and a page of its own to type into.
@@ -722,7 +722,7 @@ mod relay_status_tests {
     use super::*;
 
     /// Another app on the port must not be handed the token in the link
-    /// `kaku remote` prints.
+    /// `sumi remote` prints.
     #[tokio::test]
     async fn a_port_held_by_another_app_keeps_the_token_out_of_the_state() {
         let squatter = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();

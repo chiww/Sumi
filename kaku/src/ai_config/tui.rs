@@ -1,4 +1,4 @@
-//! Interactive TUI for `kaku ai`.
+//! Interactive TUI for `sumi ai`.
 
 use crate::assistant_config;
 use crate::utils::{is_jsonc_path, open_path_in_editor, parse_json_or_jsonc, write_atomic};
@@ -46,7 +46,7 @@ pub(crate) enum Tool {
 impl Tool {
     fn label(&self) -> &'static str {
         match self {
-            Tool::KakuAssistant => "Kaku Assistant",
+            Tool::KakuAssistant => "Sumi Assistant",
             Tool::ClaudeCode => "Claude Code",
             Tool::Codex => "Codex",
             Tool::Kimi => "Kimi Code",
@@ -64,7 +64,7 @@ impl Tool {
             Tool::KakuAssistant => assistant_config::assistant_toml_path().unwrap_or_else(|_| {
                 config::HOME_DIR
                     .join(".config")
-                    .join("kaku")
+                    .join("sumi")
                     .join("assistant.toml")
             }),
             Tool::ClaudeCode => home.join(".claude").join("settings.json"),
@@ -1230,10 +1230,10 @@ fn title_case_first(s: &str) -> String {
     }
 }
 
-/// Fetch models.dev data, cached to ~/.cache/kaku/models.json.
+/// Fetch models.dev data, cached to ~/.cache/sumi/models.json.
 /// No TTL - use `r` key in TUI to force refresh.
 fn load_models_dev_json() -> Option<serde_json::Value> {
-    let cache_dir = config::HOME_DIR.join(".cache").join("kaku");
+    let cache_dir = config::HOME_DIR.join(".cache").join("sumi");
     let cache_path = cache_dir.join("models.json");
 
     // Use cache if exists
@@ -1249,7 +1249,7 @@ fn load_models_dev_json() -> Option<serde_json::Value> {
 
 /// Force fetch from models.dev and update cache.
 fn fetch_models_dev_json() -> Option<serde_json::Value> {
-    let cache_dir = config::HOME_DIR.join(".cache").join("kaku");
+    let cache_dir = config::HOME_DIR.join(".cache").join("sumi");
     let cache_path = cache_dir.join("models.json");
 
     let output = match std::process::Command::new("curl")
@@ -2086,9 +2086,9 @@ impl App {
             self.field_index = 0;
         }
         self.set_status(if self.assistant_collapsed {
-            "Kaku Assistant hidden"
+            "Sumi Assistant hidden"
         } else {
-            "Kaku Assistant expanded"
+            "Sumi Assistant expanded"
         });
     }
 
@@ -2709,18 +2709,18 @@ impl App {
     /// Open a shell command in a new Kaku tab (preferred) or fall back to Terminal.app.
     fn open_in_terminal(&mut self, cmd: &str) {
         // Prefer a new tab in the current Kaku window.
-        // kaku cli spawn reads WEZTERM_PANE from the environment to target the right window.
+        // sumi cli spawn reads WEZTERM_PANE from the environment to target the right window.
         // Append `exec $SHELL` so the pane stays alive after the command finishes.
         let shell = std::env::var("SHELL").unwrap_or_else(|_| "/bin/zsh".to_string());
         let shell_cmd = format!("{}; exec \"{}\"", cmd, shell);
-        let kaku_status = std::process::Command::new("kaku")
+        let kaku_status = std::process::Command::new("sumi")
             .args(["cli", "spawn", "--", &shell, "-c", &shell_cmd])
             .stdin(std::process::Stdio::null())
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
             .status();
         if kaku_status.as_ref().is_ok_and(|status| status.success()) {
-            self.set_status("Opening in new Kaku tab...");
+            self.set_status("Opening in new Sumi tab...");
             return;
         }
 
@@ -2777,7 +2777,7 @@ fn save_field(tool: Tool, field_key: &str, new_val: &str) -> anyhow::Result<()> 
         parse_json_or_jsonc(&raw).with_context(|| format!("parse {}", path.display()))?;
 
     match tool {
-        Tool::KakuAssistant => unreachable!("Kaku Assistant is handled before JSON parsing"),
+        Tool::KakuAssistant => unreachable!("Sumi Assistant is handled before JSON parsing"),
         Tool::Antigravity => return Ok(()),
         Tool::Gemini => {
             if field_key == "Model" {
@@ -2975,7 +2975,7 @@ fn save_field(tool: Tool, field_key: &str, new_val: &str) -> anyhow::Result<()> 
     let output = serde_json::to_string_pretty(&parsed).context("serialize config")?;
     if is_jsonc_path(&path) {
         log::info!(
-            "Note: {} comments will be removed when Kaku rewrites this file.",
+            "Note: {} comments will be removed when Sumi rewrites this file.",
             path.display()
         );
     }
@@ -4569,7 +4569,7 @@ provider = "managed:kimi-code"
         assert!(saved.contains("base_url = \"https://my-proxy.example.com/v1\""));
     }
 
-    /// The GUI reads what `kaku ai` writes; both sides assert this fixture.
+    /// The GUI reads what `sumi ai` writes; both sides assert this fixture.
     /// The CLI half also re-reads its own rendered file, so a rewrite through
     /// the TUI must not drop anything the GUI depends on.
     #[test]
@@ -4810,7 +4810,7 @@ provider = "managed:kimi-code"
         std::fs::write(
             &path,
             concat!(
-                "# Kaku assistant configuration\n",
+                "# Sumi assistant configuration\n",
                 "enabled = true\n",
                 "model = \"gpt-5.4-mini\"\n",
                 "# Custom option kept across saves\n",
@@ -4823,7 +4823,7 @@ provider = "managed:kimi-code"
         let saved = std::fs::read_to_string(&path).expect("read saved config");
 
         assert!(
-            saved.contains("# Kaku assistant configuration"),
+            saved.contains("# Sumi assistant configuration"),
             "{}",
             saved
         );

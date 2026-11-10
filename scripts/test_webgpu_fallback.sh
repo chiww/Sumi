@@ -22,8 +22,8 @@ EOF
 
 STRICT=0
 FORCE_KILL_EXISTING=0
-BINARY="/Applications/Kaku.app/Contents/MacOS/kaku-gui"
-BASE_CONFIG="/Applications/Kaku.app/Contents/Resources/kaku.lua"
+BINARY="/Applications/Sumi.app/Contents/MacOS/kaku-gui"
+BASE_CONFIG="/Applications/Sumi.app/Contents/Resources/sumi.lua"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -76,7 +76,7 @@ cfg_file="$tmp_dir/kaku-fallback.lua"
 log_file="$tmp_dir/kaku-fallback.log"
 vmmap_file="$tmp_dir/vmmap.txt"
 summary_file="$tmp_dir/vmmap-summary.txt"
-class_name="fun.tw93.kaku.fallback.$RANDOM.$RANDOM"
+class_name="com.github.chiww.sumi.fallback.$RANDOM.$RANDOM"
 
 cleanup() {
   local exit_code=$?
@@ -107,7 +107,7 @@ if [[ -n "$before_pids" ]]; then
     before_pids=""
   else
     echo "Found existing kaku-gui process(es): $before_pids" >&2
-    echo "Close Kaku first, or rerun with --force-kill-existing." >&2
+    echo "Close Sumi first, or rerun with --force-kill-existing." >&2
     exit 1
   fi
 fi

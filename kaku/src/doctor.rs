@@ -32,7 +32,7 @@ impl DoctorCommand {
         if self.fix {
             text = run_auto_fix_and_rerun_report(self.shell);
         } else if self.prompt_fix && should_offer_auto_fix(&report) {
-            match prompt_yes_no("Run safe auto-fix now with `kaku init --update-only`? [Y/n] ") {
+            match prompt_yes_no("Run safe auto-fix now with `sumi init --update-only`? [Y/n] ") {
                 Ok(true) => text = run_auto_fix_and_rerun_report(self.shell),
                 Ok(false) => {}
                 Err(err) => eprintln!("Auto-fix prompt skipped: {}", err),
@@ -82,7 +82,7 @@ fn prompt_yes_no(question: &str) -> anyhow::Result<bool> {
 }
 
 fn run_auto_fix_and_rerun_report(shell: Option<ManagedShell>) -> String {
-    println!("Auto-fix: running `kaku init --update-only`");
+    println!("Auto-fix: running `sumi init --update-only`");
     let init_cmd = crate::init::InitCommand {
         update_only: true,
         shell,
@@ -221,11 +221,11 @@ fn build_health_group(overall_status: DoctorStatus, summary: &DoctorSummary) -> 
             "Summary: {} ok, {} warn, {} fail, {} info",
             summary.ok, summary.warn, summary.fail, summary.info
         ),
-        format!("Kaku version: {}", doctor_version_string()),
+        format!("Sumi version: {}", doctor_version_string()),
     ];
 
     if summary.fail > 0 || summary.warn > 0 {
-        details.push("Run `kaku init --update-only` after fixing shell or PATH issues".to_string());
+        details.push("Run `sumi init --update-only` after fixing shell or PATH issues".to_string());
     }
 
     let checks = vec![DoctorCheck {
@@ -233,13 +233,13 @@ fn build_health_group(overall_status: DoctorStatus, summary: &DoctorSummary) -> 
         status: overall_status,
         summary: match overall_status {
             DoctorStatus::Ok => "No blocking issues detected".to_string(),
-            DoctorStatus::Warn => "Kaku works but setup is incomplete".to_string(),
-            DoctorStatus::Fail => "Kaku command entry is broken or missing".to_string(),
+            DoctorStatus::Warn => "Sumi works but setup is incomplete".to_string(),
+            DoctorStatus::Fail => "Sumi command entry is broken or missing".to_string(),
             DoctorStatus::Info => "Informational only".to_string(),
         },
         details,
         fix: if overall_status.severity_rank() >= DoctorStatus::Warn.severity_rank() {
-            Some("kaku init --update-only".to_string())
+            Some("sumi init --update-only".to_string())
         } else {
             None
         },
@@ -254,8 +254,8 @@ fn build_health_group(overall_status: DoctorStatus, summary: &DoctorSummary) -> 
 
 fn init_update_command(shell: Option<ManagedShell>) -> String {
     match shell {
-        Some(shell) => format!("kaku init --update-only --shell {}", shell.name()),
-        None => "kaku init --update-only".to_string(),
+        Some(shell) => format!("sumi init --update-only --shell {}", shell.name()),
+        None => "sumi init --update-only".to_string(),
     }
 }
 
@@ -268,7 +268,7 @@ fn build_environment_group(
     let shell = std::env::var("SHELL").ok();
     let shell_supported = shell_kind.is_managed();
     let mut shell_details = vec![
-        "Kaku shell integration supports zsh and fish for PATH injection and managed shell config"
+        "Sumi shell integration supports zsh and fish for PATH injection and managed shell config"
             .to_string(),
         "Doctor reports the current process environment. GUI-launched apps can differ from a Terminal login shell."
             .to_string(),
@@ -299,7 +299,7 @@ fn build_environment_group(
             (Some(selected), None) => format!("Selected {} via --shell", selected.name()),
             (None, Some(value)) if shell_supported => {
                 // Diagnosis follows the persisted selection, not $SHELL; say
-                // so when they disagree (e.g. chsh to bash after `kaku init`).
+                // so when they disagree (e.g. chsh to bash after `sumi init`).
                 match crate::shell::persisted_managed_shell() {
                     Some(persisted) if !value.ends_with(persisted.name()) => format!(
                         "Checking selected {} integration (SHELL is {value})",
@@ -332,7 +332,7 @@ fn build_environment_group(
             format!("Run `{init_command}` and restart zsh with `exec zsh -l`")
         };
         checks.push(DoctorCheck {
-            title: "PATH Contains Kaku Managed Bin",
+            title: "PATH Contains Sumi Managed Bin",
             status: if path_has_managed_bin {
                 DoctorStatus::Ok
             } else {
@@ -344,8 +344,8 @@ fn build_environment_group(
                 format!("PATH is missing {}", bin_dir_display)
             },
             details: vec![
-                format!("Kaku command wrapper is expected at {}/kaku", bin_dir_display),
-                "This PATH entry is normally added by Kaku shell integration on startup".to_string(),
+                format!("Sumi command wrapper is expected at {}/sumi", bin_dir_display),
+                "This PATH entry is normally added by Sumi shell integration on startup".to_string(),
                 "PATH in Doctor reflects the current process environment and can differ between GUI and Terminal launches."
                     .to_string(),
             ],
@@ -361,7 +361,7 @@ fn build_environment_group(
                 .join(".config")
                 .join("fish")
                 .join("conf.d")
-                .join("kaku.fish");
+                .join("sumi.fish");
             checks.push(DoctorCheck {
                 title: "Fish conf.d Entry Point",
                 status: DoctorStatus::Info,
@@ -371,7 +371,7 @@ fn build_environment_group(
                     format!("Not present: {}", conf_d.display())
                 },
                 details: vec![format!(
-                    "Fish loads Kaku integration via {}",
+                    "Fish loads Sumi integration via {}",
                     conf_d.display()
                 )],
                 fix: None,
@@ -391,12 +391,12 @@ fn build_environment_group(
         }
     } else {
         checks.push(DoctorCheck {
-            title: "PATH Contains Kaku Managed Bin",
+            title: "PATH Contains Sumi Managed Bin",
             status: DoctorStatus::Info,
-            summary: "Current shell is not managed by Kaku; skipping shell-specific PATH check"
+            summary: "Current shell is not managed by Sumi; skipping shell-specific PATH check"
                 .to_string(),
             details: vec![
-                "Kaku shell integration manages PATH for zsh and fish.".to_string(),
+                "Sumi shell integration manages PATH for zsh and fish.".to_string(),
                 "For other shells, add the kaku bin directory to PATH manually.".to_string(),
             ],
             fix: None,
@@ -440,7 +440,7 @@ fn wrapper_check(
         } else if exists {
             Some(format!("Run `chmod +x {}`", path.display()))
         } else {
-            Some("Run `kaku init --update-only`".to_string())
+            Some("Run `sumi init --update-only`".to_string())
         },
     }
 }
@@ -456,10 +456,10 @@ fn build_shell_integration_group(
             title: "Shell Integration",
             status: DoctorStatus::Info,
             summary: format!(
-                "Current shell ({}) is not managed by Kaku; shell-specific checks skipped",
+                "Current shell ({}) is not managed by Sumi; shell-specific checks skipped",
                 shell_kind.name()
             ),
-            details: vec!["Kaku shell integration supports zsh and fish.".to_string()],
+            details: vec!["Sumi shell integration supports zsh and fish.".to_string()],
             fix: None,
         });
         return DoctorGroup {
@@ -496,7 +496,7 @@ fn build_shell_integration_group(
         } else {
             format!("Missing {}", init_file.display())
         },
-        details: vec!["Kaku writes PATH and shell integration to this managed file".to_string()],
+        details: vec!["Sumi writes PATH and shell integration to this managed file".to_string()],
         fix: if init_exists {
             None
         } else {
@@ -509,12 +509,12 @@ fn build_shell_integration_group(
     }
 
     checks.push(wrapper_check(
-        "Kaku Wrapper Script",
+        "Sumi Wrapper Script",
         managed_wrapper_path(shell_kind),
         DoctorStatus::Fail,
         vec![
-            "The `kaku` shell command is provided by this wrapper".to_string(),
-            "Wrapper is generated by `kaku init` before shell setup runs".to_string(),
+            "The `sumi` shell command is provided by this wrapper".to_string(),
+            "Wrapper is generated by `sumi init` before shell setup runs".to_string(),
         ],
     ));
 
@@ -524,7 +524,7 @@ fn build_shell_integration_group(
         DoctorStatus::Warn,
         vec![
             "The `k` command launches AI chat from any terminal".to_string(),
-            "Created alongside the kaku wrapper by `kaku init`".to_string(),
+            "Created alongside the kaku wrapper by `sumi init`".to_string(),
         ],
     ));
 
@@ -533,22 +533,22 @@ fn build_shell_integration_group(
             .join(".config")
             .join("fish")
             .join("conf.d")
-            .join("kaku.fish");
+            .join("sumi.fish");
         let source_check = check_fish_conf_d_source_line(&conf_d);
         let mut details = vec![
             format!("Checked {}", conf_d.display()),
-            "Fish loads Kaku integration via this conf.d file on startup".to_string(),
+            "Fish loads Sumi integration via this conf.d file on startup".to_string(),
         ];
         if !source_check.has_valid_source
             && !source_check.missing_file
             && source_check.read_error.is_none()
         {
             details.push(
-                "Expected an active line that sources ~/.config/kaku/fish/kaku.fish".to_string(),
+                "Expected an active line that sources ~/.config/sumi/fish/sumi.fish".to_string(),
             );
         }
         checks.push(DoctorCheck {
-            title: "fish conf.d Sources Kaku Init",
+            title: "fish conf.d Sources Sumi Init",
             status: if source_check.read_error.is_some() {
                 DoctorStatus::Fail
             } else if source_check.has_valid_source {
@@ -561,9 +561,9 @@ fn build_shell_integration_group(
             } else if source_check.missing_file {
                 format!("Missing {}", conf_d.display())
             } else if source_check.has_valid_source {
-                format!("Found valid Kaku source entry in {}", conf_d.display())
+                format!("Found valid Sumi source entry in {}", conf_d.display())
             } else {
-                format!("No valid Kaku source entry in {}", conf_d.display())
+                format!("No valid Sumi source entry in {}", conf_d.display())
             },
             details,
             fix: if source_check.has_valid_source {
@@ -576,7 +576,7 @@ fn build_shell_integration_group(
         let zshrc = zshrc_path();
         let source_check = check_zshrc_source_line(&zshrc);
         checks.push(DoctorCheck {
-            title: "zshrc Sources Kaku Init",
+            title: "zshrc Sources Sumi Init",
             status: if source_check.read_error.is_some() {
                 DoctorStatus::Fail
             } else if source_check.has_active_lines() && !source_check.has_legacy_guarded_lines() {
@@ -590,24 +590,24 @@ fn build_shell_integration_group(
                 format!("No zshrc file found at {}", zshrc.display())
             } else if source_check.has_legacy_guarded_lines() {
                 format!(
-                    "Found {} active Kaku source line(s), including {} legacy guarded line(s) in {}",
+                    "Found {} active Sumi source line(s), including {} legacy guarded line(s) in {}",
                     source_check.guarded_active_lines + source_check.unguarded_active_lines,
                     source_check.guarded_active_lines,
                     zshrc.display()
                 )
             } else if source_check.has_active_lines() {
                 format!(
-                    "Found {} active Kaku source line(s) in {}",
+                    "Found {} active Sumi source line(s) in {}",
                     source_check.guarded_active_lines + source_check.unguarded_active_lines,
                     zshrc.display()
                 )
             } else {
-                format!("No active Kaku source line in {}", zshrc.display())
+                format!("No active Sumi source line in {}", zshrc.display())
             },
             details: source_check.details(&zshrc),
             fix: if source_check.read_error.is_some() {
                 Some(format!(
-                    "Fix permissions or path access for {} then run `kaku doctor` again",
+                    "Fix permissions or path access for {} then run `sumi doctor` again",
                     zshrc.display()
                 ))
             } else if source_check.has_active_lines() && !source_check.has_legacy_guarded_lines() {
@@ -634,7 +634,7 @@ fn build_runtime_group(shell_kind: &ShellKind) -> DoctorGroup {
         .find(|p| config::is_executable_file(p))
         .cloned();
     checks.push(DoctorCheck {
-        title: "Kaku App Binary",
+        title: "Sumi App Binary",
         status: if existing.is_some() {
             DoctorStatus::Ok
         } else {
@@ -642,7 +642,7 @@ fn build_runtime_group(shell_kind: &ShellKind) -> DoctorGroup {
         },
         summary: match &existing {
             Some(path) => format!("Found executable {}", path.display()),
-            None => "Kaku CLI binary not found in known locations".to_string(),
+            None => "Sumi CLI binary not found in known locations".to_string(),
         },
         details: candidates
             .iter()
@@ -651,7 +651,7 @@ fn build_runtime_group(shell_kind: &ShellKind) -> DoctorGroup {
         fix: if existing.is_some() {
             None
         } else {
-            Some("Install Kaku.app to /Applications or ~/Applications".to_string())
+            Some("Install Sumi.app to /Applications or ~/Applications".to_string())
         },
     });
 
@@ -700,10 +700,10 @@ fn build_local_network_check() -> DoctorCheck {
         });
 
     let mut details = vec![
-        "If LAN access works in Terminal or iTerm2 but fails in Kaku, compare the two launch contexts before changing shell or PATH setup.".to_string(),
+        "If LAN access works in Terminal or iTerm2 but fails in Sumi, compare the two launch contexts before changing shell or PATH setup.".to_string(),
         "Run these in both apps: `route -n get <ip>`, `netstat -rn | grep <subnet>`, `ifconfig`, `scutil --nwi`, `ping -v <ip>`, `nc -vz <ip> 22`.".to_string(),
-        "Check macOS System Settings > Privacy & Security > Local Network and confirm Kaku is allowed.".to_string(),
-        "Compare launching Kaku from Finder/Dock versus Terminal, for example `open -na /Applications/Kaku.app`.".to_string(),
+        "Check macOS System Settings > Privacy & Security > Local Network and confirm Sumi is allowed.".to_string(),
+        "Compare launching Sumi from Finder/Dock versus Terminal, for example `open -na /Applications/Sumi.app`.".to_string(),
     ];
 
     if let Some(bundle) = app_bundle {
@@ -713,14 +713,14 @@ fn build_local_network_check() -> DoctorCheck {
         ));
     } else {
         details.push(
-            "No installed Kaku.app bundle was detected in the standard locations.".to_string(),
+            "No installed Sumi.app bundle was detected in the standard locations.".to_string(),
         );
     }
 
     DoctorCheck {
         title: "Local Network Troubleshooting",
         status: DoctorStatus::Info,
-        summary: "Use this when local-network access differs between Kaku and other terminals"
+        summary: "Use this when local-network access differs between Sumi and other terminals"
             .to_string(),
         details,
         fix: None,
@@ -742,7 +742,7 @@ fn build_remote_check() -> DoctorCheck {
     let Ok(state) = kaku_remote::read_state() else {
         return check(
             DoctorStatus::Info,
-            "Not running: remote access is off, or Kaku is not open".to_string(),
+            "Not running: remote access is off, or Sumi is not open".to_string(),
             Vec::new(),
             None,
         );
@@ -789,7 +789,7 @@ fn build_remote_check() -> DoctorCheck {
                 format!("Not connected to {relay} for {}", elapsed(s.since)),
                 details,
                 Some(
-                    "Kaku retries on its own, at least every 30 seconds. If this lasts, check this Mac's network and any proxy or VPN in front of it."
+                    "Sumi retries on its own, at least every 30 seconds. If this lasts, check this Mac's network and any proxy or VPN in front of it."
                         .to_string(),
                 ),
             )
@@ -890,7 +890,7 @@ fn zsh_init_defers_autosuggestions_to_provider(content: &str, provider: &str) ->
 
 fn build_zsh_external_autosuggest_check(init_file: &Path, provider: &str) -> DoctorCheck {
     let fix = format!(
-        "Run `kaku init --update-only` to regenerate {} with {} autosuggest compatibility, then restart zsh with `exec zsh -l`",
+        "Run `sumi init --update-only` to regenerate {} with {} autosuggest compatibility, then restart zsh with `exec zsh -l`",
         init_file.display(),
         provider
     );
@@ -900,7 +900,7 @@ fn build_zsh_external_autosuggest_check(init_file: &Path, provider: &str) -> Doc
             "Checked {} for the provider marker and bundled zsh-autosuggestions source line",
             init_file.display()
         ),
-        "When compatibility is active, Kaku keeps Tab bound but leaves it in completion-only mode to avoid widget recursion.".to_string(),
+        "When compatibility is active, Sumi keeps Tab bound but leaves it in completion-only mode to avoid widget recursion.".to_string(),
     ];
 
     let init_content = match fs::read_to_string(init_file) {
@@ -977,7 +977,7 @@ fn group_status(checks: &[DoctorCheck]) -> DoctorStatus {
 
 fn render_text_report(report: &DoctorReport) -> String {
     let mut out = String::new();
-    out.push_str("Kaku Doctor\n");
+    out.push_str("Sumi Doctor\n");
     out.push_str(&format!(
         "Status: {} {}\n",
         report.overall_status.icon(),
@@ -1047,7 +1047,7 @@ impl ZshrcSourceCheck {
         }
         if !self.has_active_lines() {
             details.push(
-                "Expected an active line that sources ~/.config/kaku/zsh/kaku.zsh".to_string(),
+                "Expected an active line that sources ~/.config/sumi/zsh/sumi.zsh".to_string(),
             );
         } else {
             details.push(format!(
@@ -1057,18 +1057,18 @@ impl ZshrcSourceCheck {
         }
         if self.has_legacy_guarded_lines() {
             details.push(
-                "Found older Kaku-specific guarded source line variants; `kaku init --update-only` will normalize them."
+                "Found older Sumi-specific guarded source line variants; `sumi init --update-only` will normalize them."
                     .to_string(),
             );
         }
         if self.malformed_escaped_path_lines > 0 {
             details.push(format!(
-                "Found {} malformed Kaku source line(s) with escaped absolute paths (for example, \"\\/Users/...\"), which prevents loading kaku.zsh",
+                "Found {} malformed Sumi source line(s) with escaped absolute paths (for example, \"\\/Users/...\"), which prevents loading sumi.zsh",
                 self.malformed_escaped_path_lines
             ));
         }
         if self.commented_example {
-            details.push("Found a commented Kaku source line".to_string());
+            details.push("Found a commented Sumi source line".to_string());
         }
         details
     }
@@ -1097,7 +1097,7 @@ fn check_zshrc_source_line(zshrc: &Path) -> ZshrcSourceCheck {
     // the remaining risk until legacy guarded variants are removed.
     for line in content.lines() {
         let trimmed = line.trim_start();
-        if trimmed.starts_with('#') && trimmed.contains("kaku/zsh/kaku.zsh") {
+        if trimmed.starts_with('#') && trimmed.contains("sumi/zsh/sumi.zsh") {
             result.commented_example = true;
             continue;
         }
@@ -1145,12 +1145,12 @@ fn check_fish_conf_d_source_line(path: &Path) -> FishConfSourceCheck {
             continue;
         }
 
-        if trimmed.contains("kaku/fish/kaku.fish") && contains_source_command(trimmed) {
+        if trimmed.contains("sumi/fish/sumi.fish") && contains_source_command(trimmed) {
             result.has_valid_source = true;
             break;
         }
 
-        if trimmed.contains("_kaku_fish_init") && trimmed.contains("kaku/fish/kaku.fish") {
+        if trimmed.contains("_kaku_fish_init") && trimmed.contains("sumi/fish/sumi.fish") {
             has_kaku_init_var = true;
         }
 
@@ -1172,7 +1172,7 @@ fn contains_source_command(line: &str) -> bool {
 }
 
 fn is_active_kaku_source_line(trimmed_line: &str) -> bool {
-    if trimmed_line.starts_with('#') || !trimmed_line.contains("kaku/zsh/kaku.zsh") {
+    if trimmed_line.starts_with('#') || !trimmed_line.contains("sumi/zsh/sumi.zsh") {
         return false;
     }
     contains_source_command(trimmed_line)
@@ -1189,12 +1189,19 @@ fn is_legacy_guarded_kaku_source_line(trimmed_line: &str) -> bool {
         .flat_map(|c| c.to_lowercase())
         .collect::<String>();
 
-    let has_kaku_comparison = compact.contains("==\"kaku\"")
-        || compact.contains("=='kaku'")
-        || compact.contains("==kaku")
-        || compact.contains("=\"kaku\"")
-        || compact.contains("='kaku'")
-        || compact.contains("=kaku");
+    // TERM stays `kaku` (the terminfo entry); TERM_PROGRAM is `sumi`.
+    let has_kaku_comparison = ["kaku", "sumi"].iter().any(|name| {
+        [
+            format!("==\"{name}\""),
+            format!("=='{name}'"),
+            format!("=={name}"),
+            format!("=\"{name}\""),
+            format!("='{name}'"),
+            format!("={name}"),
+        ]
+        .iter()
+        .any(|pattern| compact.contains(pattern.as_str()))
+    });
     let has_term_guard =
         (compact.contains("${term") || compact.contains("$term")) && has_kaku_comparison;
     let has_term_program_guard = compact.contains("term_program") && has_kaku_comparison;
@@ -1203,7 +1210,7 @@ fn is_legacy_guarded_kaku_source_line(trimmed_line: &str) -> bool {
 }
 
 fn is_malformed_escaped_kaku_source_line(trimmed_line: &str) -> bool {
-    if trimmed_line.starts_with('#') || !trimmed_line.contains("kaku/zsh/kaku.zsh") {
+    if trimmed_line.starts_with('#') || !trimmed_line.contains("sumi/zsh/sumi.zsh") {
         return false;
     }
     if !contains_source_command(trimmed_line) {
@@ -1235,8 +1242,8 @@ fn probe_wrapper(wrapper: &Path) -> DoctorCheck {
                 "Skipped probe because wrapper is missing: {}",
                 wrapper.display()
             ),
-            vec!["Generate the wrapper first with `kaku init`".to_string()],
-            Some("Run `kaku init --update-only`".to_string()),
+            vec!["Generate the wrapper first with `sumi init`".to_string()],
+            Some("Run `sumi init --update-only`".to_string()),
         );
     }
 
@@ -1255,7 +1262,7 @@ fn probe_wrapper(wrapper: &Path) -> DoctorCheck {
                 DoctorStatus::Fail,
                 format!("Failed to execute wrapper: {}", err),
                 vec![format!("Command: {} --version", wrapper.display())],
-                Some("Restore wrapper permissions or rerun `kaku init --update-only`".to_string()),
+                Some("Restore wrapper permissions or rerun `sumi init --update-only`".to_string()),
             );
         }
     };
@@ -1291,7 +1298,7 @@ fn probe_wrapper(wrapper: &Path) -> DoctorCheck {
             let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
             wrapper_check(
                 DoctorStatus::Ok,
-                "Wrapper can launch Kaku binary".to_string(),
+                "Wrapper can launch Sumi binary".to_string(),
                 if stdout.is_empty() {
                     vec![format!(
                         "Command succeeded: {} --version",
@@ -1316,14 +1323,14 @@ fn probe_wrapper(wrapper: &Path) -> DoctorCheck {
                 DoctorStatus::Fail,
                 format!("Wrapper exited with status {}", output.status),
                 details,
-                Some("Check Kaku.app location then run `kaku init --update-only`".to_string()),
+                Some("Check Sumi.app location then run `sumi init --update-only`".to_string()),
             )
         }
         Err(err) => wrapper_check(
             DoctorStatus::Fail,
             format!("Failed to execute wrapper: {}", err),
             vec![format!("Command: {} --version", wrapper.display())],
-            Some("Restore wrapper permissions or rerun `kaku init --update-only`".to_string()),
+            Some("Restore wrapper permissions or rerun `sumi init --update-only`".to_string()),
         ),
     }
 }
@@ -1333,7 +1340,7 @@ fn probe_login_shell_integration(shell_kind: &ShellKind) -> DoctorCheck {
         ShellKind::Fish => (
             "Login Fish Integration Probe",
             "Doctor does not execute `fish -l` because interactive login startup files can run user-defined commands, plugin managers, and network actions.",
-            "Start a new fish session and verify `echo $PATH` includes ~/.config/kaku/fish/bin if you need end-to-end runtime validation.",
+            "Start a new fish session and verify `echo $PATH` includes ~/.config/sumi/fish/bin if you need end-to-end runtime validation.",
         ),
         ShellKind::Zsh => (
             "Login Zsh Integration Probe",
@@ -1342,8 +1349,8 @@ fn probe_login_shell_integration(shell_kind: &ShellKind) -> DoctorCheck {
         ),
         _ => (
             "Login Shell Integration Probe",
-            "Doctor skips login shell probe for shells not managed by Kaku.",
-            "Kaku shell integration supports zsh and fish. Other shells are not managed.",
+            "Doctor skips login shell probe for shells not managed by Sumi.",
+            "Sumi shell integration supports zsh and fish. Other shells are not managed.",
         ),
     };
 
@@ -1371,28 +1378,28 @@ fn managed_bin_dir(shell_kind: &ShellKind) -> PathBuf {
     };
     home_dir()
         .join(".config")
-        .join("kaku")
+        .join("sumi")
         .join(shell_dir)
         .join("bin")
 }
 
 fn managed_wrapper_path(shell_kind: &ShellKind) -> PathBuf {
-    managed_bin_dir(shell_kind).join("kaku")
+    managed_bin_dir(shell_kind).join("sumi")
 }
 
 fn managed_init_file(shell_kind: &ShellKind) -> PathBuf {
     if *shell_kind == ShellKind::Fish {
         home_dir()
             .join(".config")
-            .join("kaku")
+            .join("sumi")
             .join("fish")
-            .join("kaku.fish")
+            .join("sumi.fish")
     } else {
         home_dir()
             .join(".config")
-            .join("kaku")
+            .join("sumi")
             .join("zsh")
-            .join("kaku.zsh")
+            .join("sumi.zsh")
     }
 }
 
@@ -1415,21 +1422,21 @@ fn kaku_bin_candidates() -> Vec<PathBuf> {
         if exe
             .file_name()
             .and_then(|n| n.to_str())
-            .map(|n| n.eq_ignore_ascii_case("kaku"))
+            .map(|n| n.eq_ignore_ascii_case("sumi"))
             .unwrap_or(false)
         {
             candidates.push(exe);
         }
     }
 
-    candidates.push(PathBuf::from("/Applications/Kaku.app/Contents/MacOS/kaku"));
+    candidates.push(PathBuf::from("/Applications/Sumi.app/Contents/MacOS/sumi"));
     candidates.push(
         home_dir()
             .join("Applications")
-            .join("Kaku.app")
+            .join("Sumi.app")
             .join("Contents")
             .join("MacOS")
-            .join("kaku"),
+            .join("sumi"),
     );
 
     candidates
@@ -1466,7 +1473,7 @@ mod tests {
         let path = dir.path().join(".zshrc");
         fs::write(
             &path,
-            r#"export KAKU_ZSH_INIT="$HOME/.config/kaku/zsh/kaku.zsh""#,
+            r#"export KAKU_ZSH_INIT="$HOME/.config/sumi/zsh/sumi.zsh""#,
         )
         .expect("write zshrc");
 
@@ -1481,9 +1488,9 @@ mod tests {
         let path = dir.path().join(".zshrc");
         fs::write(
             &path,
-            r#"[[ "${TERM:-}" == "kaku" ]] && source "$HOME/.config/kaku/zsh/kaku.zsh"
-[[ -f "$HOME/.config/kaku/zsh/kaku.zsh" ]] && source "$HOME/.config/kaku/zsh/kaku.zsh"
-[[ -f "$HOME/.config/kaku/zsh/kaku.zsh" ]] && source "$HOME/.config/kaku/zsh/kaku.zsh"
+            r#"[[ "${TERM:-}" == "kaku" ]] && source "$HOME/.config/sumi/zsh/sumi.zsh"
+[[ -f "$HOME/.config/sumi/zsh/sumi.zsh" ]] && source "$HOME/.config/sumi/zsh/sumi.zsh"
+[[ -f "$HOME/.config/sumi/zsh/sumi.zsh" ]] && source "$HOME/.config/sumi/zsh/sumi.zsh"
 "#,
         )
         .expect("write zshrc");
@@ -1502,7 +1509,7 @@ mod tests {
         let path = dir.path().join(".zshrc");
         fs::write(
             &path,
-            r#"[[ "$TERM_PROGRAM" == "Kaku" ]] && [[ -f "$HOME/.config/kaku/zsh/kaku.zsh" ]] && source "$HOME/.config/kaku/zsh/kaku.zsh" # Kaku Shell Integration
+            r#"[[ "$TERM_PROGRAM" == "Sumi" ]] && [[ -f "$HOME/.config/sumi/zsh/sumi.zsh" ]] && source "$HOME/.config/sumi/zsh/sumi.zsh" # Sumi Shell Integration
 "#,
         )
         .expect("write zshrc");
@@ -1520,7 +1527,7 @@ mod tests {
         let path = dir.path().join(".zshrc");
         fs::write(
             &path,
-            r#"[[ -f "\/Users/lex/.config/kaku/zsh/kaku.zsh" ]] && source "\/Users/lex/.config/kaku/zsh/kaku.zsh""#,
+            r#"[[ -f "\/Users/lex/.config/sumi/zsh/sumi.zsh" ]] && source "\/Users/lex/.config/sumi/zsh/sumi.zsh""#,
         )
         .expect("write zshrc");
 
@@ -1543,15 +1550,15 @@ mod tests {
     fn explicit_shell_is_preserved_in_auto_fix_command() {
         assert_eq!(
             init_update_command(Some(ManagedShell::Fish)),
-            "kaku init --update-only --shell fish"
+            "sumi init --update-only --shell fish"
         );
-        assert_eq!(init_update_command(None), "kaku init --update-only");
+        assert_eq!(init_update_command(None), "sumi init --update-only");
     }
 
     #[test]
     fn fish_conf_d_missing_is_not_valid_source() {
         let dir = tempfile::tempdir().expect("create tempdir");
-        let path = dir.path().join("kaku.fish");
+        let path = dir.path().join("sumi.fish");
         let check = check_fish_conf_d_source_line(&path);
         assert!(check.missing_file);
         assert!(!check.has_valid_source);
@@ -1561,7 +1568,7 @@ mod tests {
     #[test]
     fn fish_conf_d_empty_file_is_not_valid_source() {
         let dir = tempfile::tempdir().expect("create tempdir");
-        let path = dir.path().join("kaku.fish");
+        let path = dir.path().join("sumi.fish");
         fs::write(&path, "").expect("write");
         let check = check_fish_conf_d_source_line(&path);
         assert!(!check.missing_file);
@@ -1571,7 +1578,7 @@ mod tests {
     #[test]
     fn fish_conf_d_without_kaku_source_is_not_valid() {
         let dir = tempfile::tempdir().expect("create tempdir");
-        let path = dir.path().join("kaku.fish");
+        let path = dir.path().join("sumi.fish");
         fs::write(&path, "set -x FISH_VAR value\n").expect("write");
         let check = check_fish_conf_d_source_line(&path);
         assert!(!check.has_valid_source);
@@ -1580,8 +1587,8 @@ mod tests {
     #[test]
     fn fish_conf_d_with_valid_source_is_detected() {
         let dir = tempfile::tempdir().expect("create tempdir");
-        let path = dir.path().join("kaku.fish");
-        fs::write(&path, "source ~/.config/kaku/fish/kaku.fish\n").expect("write");
+        let path = dir.path().join("sumi.fish");
+        fs::write(&path, "source ~/.config/sumi/fish/sumi.fish\n").expect("write");
         let check = check_fish_conf_d_source_line(&path);
         assert!(check.has_valid_source);
         assert!(!check.missing_file);
@@ -1591,8 +1598,8 @@ mod tests {
     #[test]
     fn fish_conf_d_commented_source_is_not_valid() {
         let dir = tempfile::tempdir().expect("create tempdir");
-        let path = dir.path().join("kaku.fish");
-        fs::write(&path, "# source ~/.config/kaku/fish/kaku.fish\n").expect("write");
+        let path = dir.path().join("sumi.fish");
+        fs::write(&path, "# source ~/.config/sumi/fish/sumi.fish\n").expect("write");
         let check = check_fish_conf_d_source_line(&path);
         assert!(!check.has_valid_source);
     }
@@ -1600,11 +1607,11 @@ mod tests {
     #[test]
     fn fish_conf_d_with_managed_variable_source_is_detected() {
         let dir = tempfile::tempdir().expect("create tempdir");
-        let path = dir.path().join("kaku.fish");
+        let path = dir.path().join("sumi.fish");
         fs::write(
             &path,
-            r#"# Kaku shell integration -- managed. Remove with: kaku reset
-set -l _kaku_fish_init "$HOME/.config/kaku/fish/kaku.fish"
+            r#"# Sumi shell integration -- managed. Remove with: sumi reset
+set -l _kaku_fish_init "$HOME/.config/sumi/fish/sumi.fish"
 if test -f $_kaku_fish_init
     source $_kaku_fish_init
 end

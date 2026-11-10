@@ -28,12 +28,12 @@ mod imp {
     use std::process::{Command, Stdio};
     use std::time::{SystemTime, UNIX_EPOCH};
 
-    const RELEASE_API_URL: &str = "https://api.github.com/repos/tw93/Kaku/releases/latest";
+    const RELEASE_API_URL: &str = "https://api.github.com/repos/chiww/Sumi/releases/latest";
     const LATEST_ZIP_URL: &str =
-        "https://github.com/tw93/Kaku/releases/latest/download/kaku_for_update.zip";
+        "https://github.com/chiww/Sumi/releases/latest/download/kaku_for_update.zip";
     const LATEST_SHA_URL: &str =
-        "https://github.com/tw93/Kaku/releases/latest/download/kaku_for_update.zip.sha256";
-    const RELEASE_LATEST_URL: &str = "https://github.com/tw93/Kaku/releases/latest";
+        "https://github.com/chiww/Sumi/releases/latest/download/kaku_for_update.zip.sha256";
+    const RELEASE_LATEST_URL: &str = "https://github.com/chiww/Sumi/releases/latest";
     const UPDATE_ZIP_NAME: &str = "kaku_for_update.zip";
     const UPDATE_SHA_NAME: &str = "kaku_for_update.zip.sha256";
     /// Official Homebrew/homebrew-cask token.
@@ -225,7 +225,7 @@ mod imp {
 
         let new_app_path = find_kaku_app(&extracted_dir).ok_or_else(|| {
             anyhow!(
-                "update package `{}` does not contain `Kaku.app`",
+                "update package `{}` does not contain `Sumi.app`",
                 UPDATE_ZIP_NAME
             )
         })?;
@@ -244,7 +244,7 @@ mod imp {
         verify_app_signature(&new_app_path)
             .context("downloaded update failed code-signature verification; refusing to install")?;
 
-        let target_app = resolve_target_app_path().context("resolve installed Kaku.app path")?;
+        let target_app = resolve_target_app_path().context("resolve installed Sumi.app path")?;
         ensure_can_write_target(&target_app)?;
 
         let helper_script = update_root.join(format!("apply-update-{}.sh", now));
@@ -267,7 +267,7 @@ mod imp {
             "Update to {} has started in background.",
             format_version_for_display(update_label)
         );
-        println!("Kaku will quit and relaunch automatically when replacement is complete.");
+        println!("Sumi will quit and relaunch automatically when replacement is complete.");
         Ok(())
     }
 
@@ -278,7 +278,7 @@ mod imp {
                 "brew" => {
                     let brew_info = resolve_brew_info()?.ok_or_else(|| {
                         anyhow!(
-                            "KAKU_UPDATE_PROVIDER=brew but brew-managed Kaku installation was not found"
+                            "KAKU_UPDATE_PROVIDER=brew but brew-managed Sumi installation was not found"
                         )
                     })?;
                     Ok(UpdateProvider::Brew(brew_info))
@@ -303,7 +303,7 @@ mod imp {
 
             if find_brew_binary().is_none() {
                 bail!(
-                    "Kaku appears to be Homebrew-managed but `brew` was not found in PATH or standard locations"
+                    "Sumi appears to be Homebrew-managed but `brew` was not found in PATH or standard locations"
                 );
             }
         }
@@ -402,7 +402,7 @@ mod imp {
         std::thread::sleep(std::time::Duration::from_secs(2));
         match Command::new("/usr/bin/open")
             .arg("-a")
-            .arg("Kaku")
+            .arg("Sumi")
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
@@ -446,9 +446,9 @@ mod imp {
             .status()
             .with_context(|| format!("failed to run brew upgrade for {}", info.cask_name))?;
         if primary.success() {
-            println!("Upgrade completed. Relaunching Kaku...");
+            println!("Upgrade completed. Relaunching Sumi...");
             if !relaunch_after_upgrade() {
-                println!("Upgrade completed. Please launch Kaku manually.");
+                println!("Upgrade completed. Please launch Sumi manually.");
             }
             return Ok(());
         }
@@ -464,9 +464,9 @@ mod imp {
                 format!("failed to run brew upgrade fallback for {}", fallback_name)
             })?;
         if fallback.success() {
-            println!("Upgrade completed. Relaunching Kaku...");
+            println!("Upgrade completed. Relaunching Sumi...");
             if !relaunch_after_upgrade() {
-                println!("Upgrade completed. Please launch Kaku manually.");
+                println!("Upgrade completed. Please launch Sumi manually.");
             }
             return Ok(());
         }
@@ -642,7 +642,7 @@ mod imp {
     }
 
     fn find_kaku_app(extracted_dir: &Path) -> Option<PathBuf> {
-        let direct = extracted_dir.join("Kaku.app");
+        let direct = extracted_dir.join("Sumi.app");
         if direct.exists() {
             return Some(direct);
         }
@@ -653,7 +653,7 @@ mod imp {
             if path
                 .file_name()
                 .and_then(|n| n.to_str())
-                .map(|n| n.eq_ignore_ascii_case("Kaku.app"))
+                .map(|n| n.eq_ignore_ascii_case("Sumi.app"))
                 .unwrap_or(false)
             {
                 return Some(path);
@@ -684,10 +684,10 @@ mod imp {
     fn resolve_target_app_path() -> anyhow::Result<PathBuf> {
         if let Some(path) = std::env::var_os("KAKU_UPDATE_TARGET_APP") {
             let app = PathBuf::from(path);
-            if app.ends_with("Kaku.app") {
+            if app.ends_with("Sumi.app") {
                 return Ok(app);
             }
-            bail!("KAKU_UPDATE_TARGET_APP must point to Kaku.app");
+            bail!("KAKU_UPDATE_TARGET_APP must point to Sumi.app");
         }
 
         let exe = std::env::current_exe().context("resolve current executable")?;
@@ -695,19 +695,19 @@ mod imp {
             if ancestor
                 .file_name()
                 .and_then(|n| n.to_str())
-                .map(|n| n.eq_ignore_ascii_case("Kaku.app"))
+                .map(|n| n.eq_ignore_ascii_case("Sumi.app"))
                 .unwrap_or(false)
             {
                 return Ok(ancestor.to_path_buf());
             }
         }
 
-        let default_app = PathBuf::from("/Applications/Kaku.app");
+        let default_app = PathBuf::from("/Applications/Sumi.app");
         if default_app.exists() {
             return Ok(default_app);
         }
 
-        bail!("cannot locate installed Kaku.app; run this from installed Kaku")
+        bail!("cannot locate installed Sumi.app; run this from installed Sumi")
     }
 
     fn ensure_can_write_target(target_app: &Path) -> anyhow::Result<()> {
@@ -740,15 +740,15 @@ mod imp {
         }
     }
 
-    /// Validates that the path points to a valid Kaku.app bundle.
+    /// Validates that the path points to a valid Sumi.app bundle.
     /// Uses Path component comparison (not string suffix) to handle
-    /// trailing separators correctly (e.g., /Applications/Kaku.app/).
+    /// trailing separators correctly (e.g., /Applications/Sumi.app/).
     fn validate_app_bundle_path(path: &Path) -> anyhow::Result<()> {
-        // Use ends_with("Kaku.app") which compares path components, not strings.
-        // This correctly handles paths like /Applications/Kaku.app/ (with trailing slash).
-        if !path.ends_with("Kaku.app") {
+        // Use ends_with("Sumi.app") which compares path components, not strings.
+        // This correctly handles paths like /Applications/Sumi.app/ (with trailing slash).
+        if !path.ends_with("Sumi.app") {
             bail!(
-                "invalid app bundle path: must end with Kaku.app: {}",
+                "invalid app bundle path: must end with Sumi.app: {}",
                 path.display()
             );
         }
@@ -812,7 +812,7 @@ mod imp {
             }
             bail!(
                 "Refusing to apply a binary-replacing update in a non-interactive session.\n\
-                 Re-run `kaku update --yes` (or set KAKU_UPDATE_AUTO_CONFIRM=1) to proceed."
+                 Re-run `sumi update --yes` (or set KAKU_UPDATE_AUTO_CONFIRM=1) to proceed."
             );
         }
 
@@ -821,7 +821,7 @@ mod imp {
             "Ready to apply update {}.",
             format_version_for_display(update_label)
         );
-        println!("Kaku will quit and relaunch; running tasks will stop.");
+        println!("Sumi will quit and relaunch; running tasks will stop.");
         print!("Press Enter to continue, any other key to cancel. ");
         io::stdout()
             .flush()
@@ -922,7 +922,7 @@ mod imp {
     /// Strip inline HTML tags so release notes print as plain text. The GitHub
     /// release body mirrors RELEASE_NOTES.md, whose header wraps the logo and
     /// title in <div>/<img>/<h1>/<p><em>; printed verbatim those tags leak into
-    /// `kaku update` output.
+    /// `sumi update` output.
     fn strip_html_tags(line: &str) -> String {
         let mut out = String::with_capacity(line.len());
         let mut in_tag = false;
@@ -989,7 +989,7 @@ mod imp {
                 "printf '%s %s\\n' \"$$\" \"$(ps -o pgid= -p $$ | tr -d ' ')\" > \"$3/pgid.tmp\"\nmv \"$3/pgid.tmp\" \"$3/pgid\"\n",
             )
             .unwrap();
-            let app = tmp.path().join("Kaku.app");
+            let app = tmp.path().join("Sumi.app");
             spawn_update_helper(&script, &app, &app, tmp.path()).expect("spawn helper");
 
             let deadline = Instant::now() + Duration::from_secs(5);
@@ -1016,7 +1016,7 @@ mod imp {
             assert_eq!(strip_html_tags("<div align=\"center\">"), "");
             assert_eq!(strip_html_tags("</div>"), "");
             // Tagged content keeps only the text.
-            assert_eq!(strip_html_tags("<h1>Kaku V0.12.3</h1>"), "Kaku V0.12.3");
+            assert_eq!(strip_html_tags("<h1>Sumi V0.12.3</h1>"), "Sumi V0.12.3");
             assert_eq!(
                 strip_html_tags("<p><em>A fast terminal.</em></p>"),
                 "A fast terminal."
@@ -1081,7 +1081,7 @@ mod imp {
             );
 
             assert!(
-                src.contains("Kaku will quit and relaunch; running tasks will stop."),
+                src.contains("Sumi will quit and relaunch; running tasks will stop."),
                 "CLI confirm copy must warn about quit and lost tasks"
             );
         }

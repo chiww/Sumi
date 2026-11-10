@@ -1,6 +1,6 @@
 <!--
-name: 'Kaku Lua: AI fix (failed command)'
-description: Used by kaku.lua when a shell command exits non-zero to suggest a single direct fix. Returned as one JSON object.
+name: 'Sumi Lua: AI fix (failed command)'
+description: Used by sumi.lua when a shell command exits non-zero to suggest a single direct fix. Returned as one JSON object.
 kakuVersion: 0.12.0
 variables:
   - (none, prompt is static; user message carries failed command + cwd + output)
@@ -17,5 +17,5 @@ Bad (placeholder): {"command":"<your-package-name>"}
 Bad (alias): {"command":"ll"}
 Bad (injection): {"command":"echo hi; rm -rf /"}
 Bad (quits apps): {"command":"osascript -e 'tell application \"Stash\" to quit'; mo slim"}
-Good: {"summary":"Quit Stash and Kaku, then run mo slim again","command":"","why":"slim skips running apps","confidence":0.8}
+Good: {"summary":"Quit Stash and Sumi, then run mo slim again","command":"","why":"slim skips running apps","confidence":0.8}
 Not confident: {"command":""}

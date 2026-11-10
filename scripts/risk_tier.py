@@ -49,7 +49,7 @@ TIERS = [
      "./scripts/check_config_release_readiness.sh and ./scripts/check_release_config.sh; migration code only "
      "for keys the previous release had (docs/config-versions.md)", [
          "assets/shell-integration/config_version.txt", "assets/shell-integration/config_update_highlights.tsv",
-         "assets/shell-integration/check_config_version.sh", "assets/macos/Kaku.app/Contents/Resources/kaku.lua",
+         "assets/shell-integration/check_config_version.sh", "assets/macos/Sumi.app/Contents/Resources/sumi.lua",
      ]),
     ("dotfiles",
      "the affected assets/shell-integration/tests/*_smoke.sh, then the list checks.yml runs; shellcheck "

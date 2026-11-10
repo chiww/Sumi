@@ -90,8 +90,8 @@ fn blocked_locations() -> Vec<PathBuf> {
             ".aws/credentials",
             ".gnupg",
             ".config/gh",
-            ".config/kaku/assistant.toml",
-            ".config/kaku/secrets",
+            ".config/sumi/assistant.toml",
+            ".config/sumi/secrets",
             ".docker/config.json",
             ".git-credentials",
             ".netrc",
@@ -502,7 +502,7 @@ mod tests {
     #[test]
     fn reject_if_sensitive_blocks_assistant_config() {
         let home = std::env::var("HOME").expect("HOME not set");
-        let assistant_config = PathBuf::from(&home).join(".config/kaku/assistant.toml");
+        let assistant_config = PathBuf::from(&home).join(".config/sumi/assistant.toml");
         let err = reject_if_sensitive(&assistant_config).expect_err("must reject assistant config");
         assert!(err.to_string().contains("protected secret location"));
     }

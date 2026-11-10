@@ -2,19 +2,19 @@
 
 ## Config File
 
-Kaku creates `~/.config/kaku/kaku.lua` with a commented template on first launch, and `kaku init` or `kaku config` recreate it if it is missing. Open it with `kaku config` or `Cmd + ,`.
+Sumi creates `~/.config/sumi/sumi.lua` with a commented template on first launch, and `sumi init` or `sumi config` recreate it if it is missing. Open it with `sumi config` or `Cmd + ,`.
 
-The file loads the bundled Kaku defaults first, then applies your overrides on top:
+The file loads the bundled Sumi defaults first, then applies your overrides on top:
 
 ```lua
 local wezterm = require 'wezterm'
 
 local function resolve_bundled_config()
   local resource_dir = wezterm.executable_dir:gsub('MacOS/?$', 'Resources')
-  local bundled = resource_dir .. '/kaku.lua'
+  local bundled = resource_dir .. '/sumi.lua'
   local f = io.open(bundled, 'r')
   if f then f:close(); return bundled end
-  return '/Applications/Kaku.app/Contents/Resources/kaku.lua'
+  return '/Applications/Sumi.app/Contents/Resources/sumi.lua'
 end
 
 local config = {}
@@ -41,18 +41,18 @@ Add only the settings you want to change:
 config.font_size = 16
 config.window_background_opacity = 0.95
 
--- New installs start with config.color_scheme = "Kaku Dark". Change it to:
--- config.color_scheme = "Kaku Light"
+-- New installs start with config.color_scheme = "Sumi Dark". Change it to:
+-- config.color_scheme = "Sumi Light"
 -- config.color_scheme = "Auto"  -- follow macOS appearance
 ```
 
-Keep terminal behavior, appearance, key bindings, launch behavior, and other WezTerm-compatible settings in `kaku.lua`.
+Keep terminal behavior, appearance, key bindings, launch behavior, and other WezTerm-compatible settings in `sumi.lua`.
 
-Manage Kaku Assistant settings with `kaku ai`. That command writes `~/.config/kaku/assistant.toml` for model, base URL, auth, API keys, and tool settings. The Lua/TOML split is intentional: `kaku.lua` stays compatible with WezTerm-style terminal configuration, while `assistant.toml` is managed by the AI setup flow.
+Manage Sumi Assistant settings with `sumi ai`. That command writes `~/.config/sumi/assistant.toml` for model, base URL, auth, API keys, and tool settings. The Lua/TOML split is intentional: `sumi.lua` stays compatible with WezTerm-style terminal configuration, while `assistant.toml` is managed by the AI setup flow.
 
 ## Language
 
-Kaku ships built-in English and Simplified Chinese (`zh-CN`) translations
+Sumi ships built-in English and Simplified Chinese (`zh-CN`) translations
 for its menus, command palette, AI overlay, and CLI TUIs. The selected
 language also asks the AI Assistant to reply in Simplified Chinese by
 default; in English the Assistant follows the language you write in.
@@ -71,16 +71,16 @@ Resolution order when `"auto"` is set:
 4. English (fallback)
 
 When the desktop app starts from the Dock or Finder, `$LANG` is usually
-unset; Kaku then derives it from the macOS **region** (System Settings >
+unset; Sumi then derives it from the macOS **region** (System Settings >
 General > Language & Region), not the preferred language. If the two
 differ, set `config.language` explicitly.
 
 Unsupported values fall back to English and emit a warning in the log.
 The macOS system menu bar (File / Edit / Window) is owned by the OS;
 it follows your system language and is **not** affected by
-`config.language`. Re-launch Kaku after changing the value.
+`config.language`. Re-launch Sumi after changing the value.
 
-> **Note:** `kaku.lua` is loaded by the desktop app and the `kaku` CLI.
+> **Note:** `sumi.lua` is loaded by the desktop app and the `sumi` CLI.
 > The standalone `k` chat CLI resolves its locale from the environment
 > only (`LC_ALL` / `LC_MESSAGES` / `LANG`); set those variables in your
 > shell rc to control `k`.
@@ -91,19 +91,19 @@ it follows your system language and is **not** affected by
 
 **Theme**
 
-New installs start in Kaku Dark, because the generated `kaku.lua` sets `config.color_scheme = "Kaku Dark"`. Installs whose config has no `color_scheme` line keep following macOS appearance, switching between Kaku Dark and Kaku Light automatically. To follow macOS appearance, choose **Auto** in `kaku config` or remove the `config.color_scheme` line. To force one theme:
+New installs start in Sumi Dark, because the generated `sumi.lua` sets `config.color_scheme = "Sumi Dark"`. Installs whose config has no `color_scheme` line keep following macOS appearance, switching between Sumi Dark and Sumi Light automatically. To follow macOS appearance, choose **Auto** in `sumi config` or remove the `config.color_scheme` line. To force one theme:
 
 ```lua
-config.color_scheme = "Kaku Dark"   -- always dark
-config.color_scheme = "Kaku Light"  -- always light
+config.color_scheme = "Sumi Dark"   -- always dark
+config.color_scheme = "Sumi Light"  -- always light
 ```
 
 **Custom themes**
 
-Kaku reads WezTerm-compatible color scheme files from the `colors` directory next to your config: `~/.config/kaku/colors/*.toml` by default, plus any directory listed in `config.color_scheme_dirs`. Everything `kaku config` needs to list a theme comes from those files, so no registration step is required.
+Sumi reads WezTerm-compatible color scheme files from the `colors` directory next to your config: `~/.config/sumi/colors/*.toml` by default, plus any directory listed in `config.color_scheme_dirs`. Everything `sumi config` needs to list a theme comes from those files, so no registration step is required.
 
 ```toml
-# ~/.config/kaku/colors/example-dark.toml
+# ~/.config/sumi/colors/example-dark.toml
 [colors]
 background = "#101014"
 foreground = "#e6e2d8"
@@ -118,9 +118,9 @@ brights = ["#6b6478", "#ea586c", "#45b787", "#eed045", "#8fb2c9", "#d1c2d3", "#9
 name = "Example Dark"
 ```
 
-The selected value is the scheme's `[metadata].name`, or the file name when that field is absent. Keep the file name equal to `name` so the scheme loads without scanning the whole directory. A scheme your `kaku.lua` defines directly (`config.color_schemes["Name"] = { ... }`) is listed too.
+The selected value is the scheme's `[metadata].name`, or the file name when that field is absent. Keep the file name equal to `name` so the scheme loads without scanning the whole directory. A scheme your `sumi.lua` defines directly (`config.color_schemes["Name"] = { ... }`) is listed too.
 
-After the file is in place, open `kaku config` and pick it from **Theme**; the command writes `config.color_scheme = "Example Dark"` for you. **Auto** still switches only between Kaku Dark and Kaku Light, so a custom theme is a manual choice. With a custom theme, the title bar, the Yazi theme and the Claude Code theme Kaku keeps in sync stay on Kaku Dark colors, even when the theme itself is light.
+After the file is in place, open `sumi config` and pick it from **Theme**; the command writes `config.color_scheme = "Example Dark"` for you. **Auto** still switches only between Sumi Dark and Sumi Light, so a custom theme is a manual choice. With a custom theme, the title bar, the Yazi theme and the Claude Code theme Sumi keeps in sync stay on Sumi Dark colors, even when the theme itself is light.
 
 **Color overrides**
 
@@ -138,13 +138,13 @@ config.foreground_color_overrides = {
 
 **Font**
 
-Kaku defaults to JetBrains Mono with PingFang SC as CJK fallback. Change font:
+Sumi defaults to JetBrains Mono with PingFang SC as CJK fallback. Change font:
 
 ```lua
 config.font = wezterm.font("Fira Code")
 ```
 
-Kaku disables ligatures by default. Re-enable:
+Sumi disables ligatures by default. Re-enable:
 
 ```lua
 config.harfbuzz_features = {}
@@ -152,7 +152,7 @@ config.harfbuzz_features = {}
 
 **Font size**
 
-Kaku auto-selects 15px (low-res) or 17px (high-res) based on your display. Override:
+Sumi auto-selects 15px (low-res) or 17px (high-res) based on your display. Override:
 
 ```lua
 config.font_size = 16
@@ -175,7 +175,7 @@ config.macos_window_background_blur = 20  -- optional blur (0–100)
 
 **Traffic lights (macOS)**
 
-By default, Kaku embeds the macOS traffic light buttons into the tab bar area using `INTEGRATED_BUTTONS|RESIZE`. To hide the traffic lights while keeping resize edges and tab-bar dragging:
+By default, Sumi embeds the macOS traffic light buttons into the tab bar area using `INTEGRATED_BUTTONS|RESIZE`. To hide the traffic lights while keeping resize edges and tab-bar dragging:
 
 ```lua
 config.window_decorations = "RESIZE"
@@ -185,7 +185,7 @@ config.window_decorations = "RESIZE"
 
 **Agent title**
 
-While Claude Code, Codex or Kimi runs in the active pane, its mark and current topic show at the top right of the window, and at the right end of the remote access page's tab bar. When the agent already shows the same topic on its input box border, only the mark stays. To turn it off, choose Off for Agent Title in `kaku config`, or:
+While Claude Code, Codex or Kimi runs in the active pane, its mark and current topic show at the top right of the window, and at the right end of the remote access page's tab bar. When the agent already shows the same topic on its input box border, only the mark stays. To turn it off, choose Off for Agent Title in `sumi config`, or:
 
 ```lua
 config.show_agent_title = false
@@ -217,14 +217,14 @@ config.scrollback_lines = 10000  -- default
 
 **File link editor**
 
-Set an editor command for local file links printed in the terminal. Kaku appends the resolved `path`, or `path:line:column` when the link includes a location. Shell-style quoting is supported for command arguments:
+Set an editor command for local file links printed in the terminal. Sumi appends the resolved `path`, or `path:line:column` when the link includes a location. Shell-style quoting is supported for command arguments:
 
 ```lua
 config.file_link_editor = "zed"
 -- config.file_link_editor = "cursor --goto"
 ```
 
-This setting takes priority over Kaku's automatic VS Code detection. When it is unset, Kaku keeps the existing VS Code and `$VISUAL` / `$EDITOR` fallback behavior. Directory links always open in Finder, whether or not this setting is set.
+This setting takes priority over Sumi's automatic VS Code detection. When it is unset, Sumi keeps the existing VS Code and `$VISUAL` / `$EDITOR` fallback behavior. Directory links always open in Finder, whether or not this setting is set.
 
 **Copy on select**
 
@@ -296,13 +296,13 @@ config.bell_tab_indicator = false
 
 **Scrollbar**
 
-Disabled by default. Enable via `kaku config` (toggle the scrollbar style option) or in Lua:
+Disabled by default. Enable via `sumi config` (toggle the scrollbar style option) or in Lua:
 
 ```lua
 config.enable_scroll_bar = true
 ```
 
-If you want the mouse wheel to scroll inside alternate-screen apps such as nano and vim, instead of peeking into Kaku's primary scrollback, enable:
+If you want the mouse wheel to scroll inside alternate-screen apps such as nano and vim, instead of peeking into Sumi's primary scrollback, enable:
 
 ```lua
 config.alternate_screen_wheel_scrolls_terminal = true
@@ -337,7 +337,7 @@ config.send_composed_key_when_right_alt_is_pressed = true  -- default: right = C
 
 ## Updates
 
-Kaku checks GitHub for new releases in the background (enabled by default) and quietly downloads a newer version when it finds one. It never installs on its own: it shows a notification, and clicking it asks you to confirm first, since applying an update closes every window and stops running tasks.
+Sumi checks GitHub for new releases in the background (enabled by default) and quietly downloads a newer version when it finds one. It never installs on its own: it shows a notification, and clicking it asks you to confirm first, since applying an update closes every window and stops running tasks.
 
 Turn off background checks entirely:
 
@@ -351,11 +351,11 @@ Change how often it checks (default `10800`, i.e. every 3 hours):
 config.check_for_updates_interval_seconds = 86400  -- once a day
 ```
 
-You can always update manually with `kaku update` or from the app menu, regardless of these settings.
+You can always update manually with `sumi update` or from the app menu, regardless of these settings.
 
 ## Custom Keybindings
 
-Always **insert** into `config.keys`, never replace it. Replacing erases all Kaku defaults.
+Always **insert** into `config.keys`, never replace it. Replacing erases all Sumi defaults.
 
 ```lua
 -- Navigate pane right
@@ -379,10 +379,10 @@ Full list of available actions: [WezTerm KeyAssignment reference](https://wezfur
 
 **Enterprise proxy headers**
 
-Add custom HTTP headers to Kaku Assistant API requests (for corporate proxies or API gateways):
+Add custom HTTP headers to Sumi Assistant API requests (for corporate proxies or API gateways):
 
 ```toml
-# ~/.config/kaku/assistant.toml
+# ~/.config/sumi/assistant.toml
 custom_headers = ["X-Customer-ID: your-id", "X-Org: your-org"]
 ```
 
@@ -390,7 +390,7 @@ Note: `Authorization` and `Content-Type` are reserved and cannot be overridden.
 
 **Extend Command Palette**
 
-Add a custom command to Command Palette (`Cmd + Shift + P`) via `kaku.lua`:
+Add a custom command to Command Palette (`Cmd + Shift + P`) via `sumi.lua`:
 
 ```lua
 wezterm.on('augment-command-palette', function(window, pane)
@@ -423,7 +423,7 @@ end)
 
 **Full WezTerm Lua API**
 
-Kaku uses WezTerm's configuration system. Any WezTerm config option works in `kaku.lua`. For the complete reference, see:
+Sumi uses WezTerm's configuration system. Any WezTerm config option works in `sumi.lua`. For the complete reference, see:
 
 - [WezTerm config options](https://wezfurlong.org/wezterm/config/)
 - [WezTerm Lua API](https://wezfurlong.org/wezterm/config/lua/)

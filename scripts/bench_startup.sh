@@ -15,7 +15,7 @@ fi
 
 # Format: DisplayName:AppNameForOpen:ProcessNameForPgrep
 declare -a TERMINALS=(
-	"Kaku:Kaku:kaku-gui"
+	"Sumi:Sumi:kaku-gui"
 	"Ghostty:Ghostty:ghostty"
 	"Alacritty:Alacritty:alacritty"
 )

@@ -642,10 +642,10 @@ mod markdown_tests {
             // `cd` is a harmless no-op in a one-shot shell_exec, but the common
             // `cd dir && <read-only cmd>` pattern must pass without prompting.
             "cd /tmp",
-            "cd ~/www/Kaku",
-            "cd ~/www/Kaku && grep -irA 5 -B 5 correction kaku-gui/src",
+            "cd ~/www/Sumi",
+            "cd ~/www/Sumi && grep -irA 5 -B 5 correction kaku-gui/src",
             "cd /tmp && ls -la",
-            "cd ~/www/Kaku && pwd && ls",
+            "cd ~/www/Sumi && pwd && ls",
             // `&&`, `||`, `;` chaining of read-only segments is safe
             "pwd && ls",
             "ls || echo nope",

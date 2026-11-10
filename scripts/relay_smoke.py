@@ -10,7 +10,7 @@ health, status, the page redirect, a browser joining, data both ways with its
 round trip, the close codes the page relies on (4403, 4409, 4429) passing
 through, and a foreign Origin refused. When the relay asks for an access code
 it uses KAKU_RELAY_ACCESS, else this Mac's saved code
-(~/.local/share/kaku/remote-access); the code is never printed.
+(~/.local/share/sumi/remote-access); the code is never printed.
 
 Run it after every `fly deploy`. Exit status is the number of failed checks.
 Standard library only.
@@ -30,7 +30,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-ACCESS_FILE = os.path.expanduser("~/.local/share/kaku/remote-access")
+ACCESS_FILE = os.path.expanduser("~/.local/share/sumi/remote-access")
 KIND_DATA = 0
 
 

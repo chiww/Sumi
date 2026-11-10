@@ -3,7 +3,7 @@
 //! Manages both the active (in-progress) conversation and the archive.
 //!
 //! Storage layout:
-//!   ~/.config/kaku/ai_conversations/
+//!   ~/.config/sumi/ai_conversations/
 //!     index.json        -- active_id pointer + metadata for all conversations
 //!     <id>.json         -- messages for each conversation (active or archived)
 //!

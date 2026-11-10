@@ -1,0 +1,78 @@
+{
+  "brand": {
+    "name": "Sumi",
+    "chineseName": "墨",
+    "tagline": "落笔，即入心流。",
+    "version": "1.0",
+    "date": "2026-11-10"
+  },
+  "palette": {
+    "ink": "#181B1E",
+    "paper": "#F6F1E7",
+    "vermilion": "#B8402E",
+    "muted": "#676D67",
+    "line": "#DED7CC"
+  },
+  "themes": {
+    "dark": {
+      "background": "#181B1E",
+      "surface": "#23282C",
+      "foreground": "#F6F1E7",
+      "muted": "#A9ADA6",
+      "accent": "#EF806D",
+      "selection": "#394249",
+      "cursor": "#F6F1E7",
+      "success": "#A9BD91",
+      "warning": "#E6C179",
+      "link": "#9DBBD5"
+    },
+    "light": {
+      "background": "#F6F1E7",
+      "surface": "#FFFCF6",
+      "foreground": "#181B1E",
+      "muted": "#676D67",
+      "accent": "#B8402E",
+      "selection": "#DADFD5",
+      "cursor": "#181B1E",
+      "success": "#496142",
+      "warning": "#805C16",
+      "link": "#345F80"
+    }
+  },
+  "typography": {
+    "interface": "-apple-system, BlinkMacSystemFont, \"SF Pro Text\", \"PingFang SC\", sans-serif",
+    "code": "\"JetBrains Mono\", \"SFMono-Regular\", Menlo, monospace"
+  },
+  "radii": {
+    "control": 6,
+    "panel": 12
+  },
+  "spacing": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "contrastOnBackground": {
+    "light": {
+      "foreground": 15.36,
+      "muted": 4.71,
+      "accent": 4.9,
+      "success": 6.07,
+      "warning": 5.39,
+      "link": 6.03
+    },
+    "dark": {
+      "foreground": 15.36,
+      "muted": 7.59,
+      "accent": 6.57,
+      "success": 8.54,
+      "warning": 10.1,
+      "link": 8.65
+    }
+  }
+}

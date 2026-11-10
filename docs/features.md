@@ -1,32 +1,32 @@
 # Features
 
-## Kaku Assistant
+## Sumi Assistant
 
-Kaku Assistant has two modes: automatic error recovery and on-demand command generation from natural language.
+Sumi Assistant has two modes: automatic error recovery and on-demand command generation from natural language.
 
 ### Setup
 
-Run `kaku ai` to open the AI settings panel. Enable Kaku Assistant and edit the model, auth, base URL, and API key fields directly.
+Run `sumi ai` to open the AI settings panel. Enable Sumi Assistant and edit the model, auth, base URL, and API key fields directly.
 
 | Field | Description |
 | :--- | :--- |
-| Auth Type | `api_key` (configure Kaku directly) or `codex` (follow your Codex connection) |
+| Auth Type | `api_key` (configure Sumi directly) or `codex` (follow your Codex connection) |
 | Simple Model | Used for `#` command generation, command fixes, and lightweight chat |
 | Deep Model | Used for primary `Cmd + L` / `k` chat and tool use |
 | Base URL | OpenAI-compatible API root, such as `https://api.openai.com/v1` |
 | API Key | Provider API key when Auth Type is `api_key` |
 
-For custom providers configured directly in Kaku, keep Auth Type set to `api_key`, enter the provider's OpenAI-compatible Base URL, and set the model names manually. With Auth Type set to `codex`, Kaku follows the user-level Codex connection under `CODEX_HOME` (falling back to `~/.codex`), including API-key or ChatGPT login, the selected model provider, Base URL, query parameters, and provider headers. Project configs, named profiles, and CLI overrides are intentionally excluded. Unsupported authentication modes fail before Kaku sends a request.
+For custom providers configured directly in Sumi, keep Auth Type set to `api_key`, enter the provider's OpenAI-compatible Base URL, and set the model names manually. With Auth Type set to `codex`, Sumi follows the user-level Codex connection under `CODEX_HOME` (falling back to `~/.codex`), including API-key or ChatGPT login, the selected model provider, Base URL, query parameters, and provider headers. Project configs, named profiles, and CLI overrides are intentionally excluded. Unsupported authentication modes fail before Sumi sends a request.
 
 ### Error recovery
 
-When a command exits with a non-zero status, Kaku Assistant automatically sends the failed command, exit code, working directory, and git branch to the LLM and displays a suggested fix inline. Press `Cmd + Shift + E` to paste the suggestion into the terminal. Dangerous commands (e.g. `rm -rf`, `git reset --hard`, or anything that quits or kills apps) are pasted but never auto-executed.
+When a command exits with a non-zero status, Sumi Assistant automatically sends the failed command, exit code, working directory, and git branch to the LLM and displays a suggested fix inline. Press `Cmd + Shift + E` to paste the suggestion into the terminal. Dangerous commands (e.g. `rm -rf`, `git reset --hard`, or anything that quits or kills apps) are pasted but never auto-executed.
 
 The assistant does not trigger on: `Ctrl+C` exits, help flags, bare package manager calls, git pull conflicts, or non-shell foreground processes.
 
 ### Natural language to command
 
-Type `# <description>` at the prompt and press Enter to generate a shell command from plain English. Kaku intercepts the line before the shell sees it, sends your query along with the current directory and git branch to the LLM, and injects the resulting command back into the prompt ready to review and run.
+Type `# <description>` at the prompt and press Enter to generate a shell command from plain English. Sumi intercepts the line before the shell sees it, sends your query along with the current directory and git branch to the LLM, and injects the resulting command back into the prompt ready to review and run.
 
 ```
 # list all files modified in the last 7 days
@@ -38,7 +38,7 @@ The `#` prefix works in both zsh and fish. The original query stays visible whil
 
 ### assistant.toml fields
 
-The config lives at `~/.config/kaku/assistant.toml`:
+The config lives at `~/.config/sumi/assistant.toml`:
 
 | Field | Description |
 | :--- | :--- |
@@ -59,9 +59,9 @@ The config lives at `~/.config/kaku/assistant.toml`:
 | `auth_type` | Advanced auth mode, e.g. `api_key` or `codex` |
 | `memory_curator_model` | Optional cheaper model for background memory curation |
 
-Older configs may still contain `fast_model`; Kaku treats it as the Simple Model and folds it back into `model` the next time the assistant settings are saved.
+Older configs may still contain `fast_model`; Sumi treats it as the Simple Model and folds it back into `model` the next time the assistant settings are saved.
 
-For a Responses-compatible endpoint, select `responses` under **API Mode** in `kaku ai`, or configure it directly:
+For a Responses-compatible endpoint, select `responses` under **API Mode** in `sumi ai`, or configure it directly:
 
 ```toml
 base_url = "https://api.openai.com/v1"
@@ -69,9 +69,9 @@ api_mode = "responses"
 native_web_search = true
 ```
 
-Kaku sends these requests to `{base_url}/responses`. Native web search runs at the model provider, so `web_search_provider` and `web_search_api_key` are not needed. Keep `chat_completions` for providers that only implement `/chat/completions`.
+Sumi sends these requests to `{base_url}/responses`. Native web search runs at the model provider, so `web_search_provider` and `web_search_api_key` are not needed. Keep `chat_completions` for providers that only implement `/chat/completions`.
 
-When `auth_type = "codex"`, `base_url`, `api_key`, and `api_mode` do not define the connection. Kaku reads Codex's user configuration instead. New Codex-mode setups default both model fields to `Follow Codex`; either field can still be set to an explicit model as a Kaku-only override. The chat model switcher discovers available models from `{Codex provider base_url}/models` with that provider's resolved authentication, headers, and query parameters. Explicit Kaku model overrides are preserved when changing authentication modes. If the Codex config has no `model`, Kaku uses the first model returned by that endpoint.
+When `auth_type = "codex"`, `base_url`, `api_key`, and `api_mode` do not define the connection. Sumi reads Codex's user configuration instead. New Codex-mode setups default both model fields to `Follow Codex`; either field can still be set to an explicit model as a Sumi-only override. The chat model switcher discovers available models from `{Codex provider base_url}/models` with that provider's resolved authentication, headers, and query parameters. Explicit Sumi model overrides are preserved when changing authentication modes. If the Codex config has no `model`, Sumi uses the first model returned by that endpoint.
 
 ## AI Chat Panel
 
@@ -81,11 +81,11 @@ Use History, Context, and Model above the input to browse saved conversations, a
 
 Code blocks offer Copy without adding visual line wraps. Completed, single-line shell blocks also offer Insert, which pastes into the original shell without executing it. Tool permission requests open a scrollable review of the complete target and parameters. Enter allows, Esc denies, and the wheel or Page Up/Page Down scrolls the details.
 
-From a shell, use `k` or `kaku chat` for the same conversation store:
+From a shell, use `k` or `sumi chat` for the same conversation store:
 
 ```bash
 k "summarize the current project"
-kaku chat
+sumi chat
 ```
 
 The standalone CLI is intentionally simpler than the overlay: it streams plain terminal text and supports `/new`, `/resume`, `/clear`, `/status`, `/memory`, and `/exit`.
@@ -98,54 +98,54 @@ Option+Click moves the shell cursor within the current input line, including acr
 
 ## Window Snapshots
 
-Kaku saves multi-tab and multi-pane window layouts automatically when you close or hide a window. Use **Shell > Restore Previous Window** or `Cmd + Option + Shift + T` to reopen the last saved layout. Kaku tolerates missing or corrupted snapshot files and simply reports that no snapshot is available.
+Sumi saves multi-tab and multi-pane window layouts automatically when you close or hide a window. Use **Shell > Restore Previous Window** or `Cmd + Option + Shift + T` to reopen the last saved layout. Sumi tolerates missing or corrupted snapshot files and simply reports that no snapshot is available.
 
 ## AppleScript
 
-Kaku ships a minimal AppleScript dictionary so it shows up in Script Editor and other automation tools. The exposed surface is intentionally small and read-only apart from `quit`.
+Sumi ships a minimal AppleScript dictionary so it shows up in Script Editor and other automation tools. The exposed surface is intentionally small and read-only apart from `quit`.
 
 ```applescript
-tell application "Kaku"
-  get name        -- "Kaku"
+tell application "Sumi"
+  get name        -- "Sumi"
   get version     -- e.g. "0.10.0"
   get frontmost   -- true / false
   quit            -- optional `saving ask|yes|no`
 end tell
 ```
 
-To browse the full dictionary, choose File > Open Dictionary in Script Editor and pick `/Applications/Kaku.app`. There is no `do script` verb, so AppleScript cannot run shell commands through Kaku.
+To browse the full dictionary, choose File > Open Dictionary in Script Editor and pick `/Applications/Sumi.app`. There is no `do script` verb, so AppleScript cannot run shell commands through Sumi.
 
 ## Lazygit Integration
 
-Press `Cmd + Shift + G` to launch lazygit in the current pane. Kaku auto-detects the lazygit binary from PATH or common Homebrew locations. When another program such as Codex or vim is running in the pane, lazygit opens in a new tab in the pane's directory instead of typing into that program.
+Press `Cmd + Shift + G` to launch lazygit in the current pane. Sumi auto-detects the lazygit binary from PATH or common Homebrew locations. When another program such as Codex or vim is running in the pane, lazygit opens in a new tab in the pane's directory instead of typing into that program.
 
-When a git repo has uncommitted changes and lazygit has not been used in that directory yet, Kaku shows a one-time hint to remind you it is available.
+When a git repo has uncommitted changes and lazygit has not been used in that directory yet, Sumi shows a one-time hint to remind you it is available.
 
-Install lazygit with `brew install lazygit` or via `kaku init`.
+Install lazygit with `brew install lazygit` or via `sumi init`.
 
 ## Yazi File Manager
 
 Press `Cmd + Shift + Y` to launch yazi in the current pane. The shell wrapper `y` also launches yazi and syncs the shell working directory on exit. When another program such as Codex or vim is running in the pane, yazi opens in a new tab in the pane's directory instead of typing into that program, and closing that tab returns to the tab you came from.
 
-**Theme sync**: Kaku automatically updates `~/.config/yazi/theme.toml` to match the active color scheme (Kaku Dark or Kaku Light). No manual yazi theme setup needed.
+**Theme sync**: Sumi automatically updates `~/.config/yazi/theme.toml` to match the active color scheme (Sumi Dark or Sumi Light). No manual yazi theme setup needed.
 
-Install yazi with `brew install yazi` or via `kaku init`.
+Install yazi with `brew install yazi` or via `sumi init`.
 
 ## Remote Files
 
 Press `Cmd + Shift + R` to mount the current SSH session's remote filesystem locally via `sshfs` and open it in yazi.
 
-Kaku auto-detects the SSH target from the active pane. The mount lives at `~/Library/Caches/dev.kaku/sshfs/<host>`.
+Sumi auto-detects the SSH target from the active pane. The mount lives at `~/Library/Caches/dev.kaku/sshfs/<host>`.
 
 Requirements: `sshfs` installed (`brew install --cask sshfs-mac`) and passwordless SSH auth (key-based) for the remote host.
 
 ## Remote Access
 
-Run `kaku remote` to use this Mac's terminals from a desktop browser on another computer. It asks before turning remote access on, then prints a link that pairs one browser; bookmark the page after pairing to come back. The page has your tabs and splits, copy and paste, dropping files to upload them to the Mac, and Cmd+Click on a path to download it, and what you type and see is encrypted between the browser and Kaku. Remote access is off by default, and free: the relay is a server I pay for myself ([FAQ](faq.md#is-remote-access-free)). Commands are in the [CLI reference](cli.md#kaku-remote).
+Run `sumi remote` to use this Mac's terminals from a desktop browser on another computer. It asks before turning remote access on, then prints a link that pairs one browser; bookmark the page after pairing to come back. The page has your tabs and splits, copy and paste, dropping files to upload them to the Mac, and Cmd+Click on a path to download it, and what you type and see is encrypted between the browser and Sumi. Remote access is off by default, and free: the relay is a server I pay for myself ([FAQ](faq.md#is-remote-access-free)). Commands are in the [CLI reference](cli.md#kaku-remote).
 
 ## Shell Suite
 
-Kaku ships a curated set of shell plugins that load automatically inside Kaku sessions.
+Sumi ships a curated set of shell plugins that load automatically inside Sumi sessions.
 
 **Zsh plugins (built-in)**
 
@@ -156,9 +156,9 @@ Kaku ships a curated set of shell plugins that load automatically inside Kaku se
 
 **Fish support**
 
-Run `kaku init` to provision `~/.config/kaku/fish/kaku.fish` for fish users. `kaku doctor` verifies both zsh and fish integration paths.
+Run `sumi init` to provision `~/.config/sumi/fish/sumi.fish` for fish users. `sumi doctor` verifies both zsh and fish integration paths.
 
-**Optional tools (installed via `kaku init`)**
+**Optional tools (installed via `sumi init`)**
 
 - **Starship**: Fast, customizable prompt with git and environment info.
 - **Delta**: Syntax-highlighting pager for git diff and grep.
@@ -167,7 +167,7 @@ Run `kaku init` to provision `~/.config/kaku/fish/kaku.fish` for fish users. `ka
 
 **Smart Tab**
 
-Kaku's Smart Tab overrides the Tab key in zsh to provide smarter completion behavior. It supports three modes:
+Sumi's Smart Tab overrides the Tab key in zsh to provide smarter completion behavior. It supports three modes:
 
 | Mode | Behavior | Environment Variable |
 | :--- | :--- | :--- |
@@ -175,7 +175,7 @@ Kaku's Smart Tab overrides the Tab key in zsh to provide smarter completion beha
 | Suggestion First (default) | Tab accepts autosuggestions when available, falls back to completion | `KAKU_TAB_ACCEPT_SUGGEST_FIRST=1` |
 | Off | Disables Smart Tab entirely, restoring native zsh Tab behavior | `KAKU_SMART_TAB_DISABLE=1` |
 
-You can also set the mode via `kaku config` (the **Smart Tab** option under Behavior) or in `kaku.lua`:
+You can also set the mode via `sumi config` (the **Smart Tab** option under Behavior) or in `sumi.lua`:
 
 ```lua
 config.smart_tab_mode = "suggestion_first"   -- default; Tab accepts autosuggestions first
@@ -183,7 +183,7 @@ config.smart_tab_mode = "completion_first"   -- Tab shows the completion list in
 config.smart_tab_mode = "off"                -- disable Smart Tab
 ```
 
-If you prefer environment variables (for example, because you share your zshrc across terminals), add one of these before sourcing the Kaku shell integration:
+If you prefer environment variables (for example, because you share your zshrc across terminals), add one of these before sourcing the Sumi shell integration:
 
 ```zsh
 export KAKU_TAB_ACCEPT_SUGGEST_FIRST=0  # completion-first (suggestion-first is the default)
@@ -191,4 +191,4 @@ export KAKU_TAB_ACCEPT_SUGGEST_FIRST=0  # completion-first (suggestion-first is 
 export KAKU_SMART_TAB_DISABLE=1         # disable Smart Tab
 ```
 
-Environment variables set in your shell rc take precedence over `kaku.lua` settings. Smart Tab is zsh only and runs inside Kaku sessions (`TERM_PROGRAM=Kaku`, or tmux started from a Kaku shell).
+Environment variables set in your shell rc take precedence over `sumi.lua` settings. Smart Tab is zsh only and runs inside Sumi sessions (`TERM_PROGRAM=Sumi`, or tmux started from a Sumi shell).

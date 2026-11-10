@@ -1,5 +1,5 @@
 <!--
-name: 'Kaku Chat: tool discipline and strategy'
+name: 'Sumi Chat: tool discipline and strategy'
 description: When to call tools, which tool for which job, and how to combine them. Lists the registered tool surface.
 kakuVersion: 0.12.0
 -->

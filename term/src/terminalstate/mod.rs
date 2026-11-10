@@ -632,7 +632,7 @@ impl TerminalState {
             newline_mode: false,
             current_mouse_buttons: vec![],
             tabs: TabStop::new(size.cols, 8),
-            title: "kaku".to_string(),
+            title: "sumi".to_string(),
             icon_title: None,
             palette: None,
             color_scheme_reported_palette: None,

@@ -259,8 +259,8 @@ impl CommandDef {
             ToggleTouchMode,
             // Help menu
             ShowDebugOverlay,
-            OpenUri("https://github.com/tw93/Kaku".to_string()),
-            OpenUri("https://github.com/tw93/Kaku/issues/".to_string()),
+            OpenUri("https://github.com/chiww/Sumi".to_string()),
+            OpenUri("https://github.com/chiww/Sumi/issues/".to_string()),
         ];
 
         let mut result = vec![];
@@ -711,7 +711,7 @@ impl CommandDef {
         commands.retain(|cmd| !cmd.menubar.is_empty());
 
         // Prefer to put the menus in this order
-        let mut order: Vec<&'static str> = vec!["Kaku", "Shell", "Edit", "View", "Window", "Help"];
+        let mut order: Vec<&'static str> = vec!["Sumi", "Shell", "Edit", "View", "Window", "Help"];
         // Add any other menus on the end
         for cmd in &commands {
             if !order.contains(&cmd.menubar[0]) {
@@ -721,7 +721,7 @@ impl CommandDef {
 
         fn command_rank_for_menu(title: &str, action: &KeyAssignment) -> usize {
             match title {
-                "Kaku" => match action {
+                "Sumi" => match action {
                     HideApplication => 80,
                     QuitApplication => 90,
                     _ => 500,
@@ -790,9 +790,9 @@ impl CommandDef {
                     _ => 500,
                 },
                 "Help" => match action {
-                    OpenUri(uri) if uri == "https://github.com/tw93/Kaku" => 10,
-                    OpenUri(uri) if uri == "https://github.com/tw93/Kaku/discussions/" => 20,
-                    OpenUri(uri) if uri == "https://github.com/tw93/Kaku/issues/" => 30,
+                    OpenUri(uri) if uri == "https://github.com/chiww/Sumi" => 10,
+                    OpenUri(uri) if uri == "https://github.com/chiww/Sumi/discussions/" => 20,
+                    OpenUri(uri) if uri == "https://github.com/chiww/Sumi/issues/" => 30,
                     ShowDebugOverlay => 90,
                     _ => 500,
                 },
@@ -866,7 +866,7 @@ impl CommandDef {
                     // routing. Kaku owns its own tab/window switcher and
                     // has no help book, so the AppKit-managed children
                     // have no value here.
-                    if cmd.menubar[0] == "Kaku" {
+                    if cmd.menubar[0] == "Sumi" {
                         menu.assign_as_app_menu();
                     }
                 });
@@ -875,9 +875,9 @@ impl CommandDef {
                 // including a rebuild that reuses the existing menu.
                 if next_index == 0 {
                     let menu = &submenu;
-                    if cmd.menubar[0] == "Kaku" {
+                    if cmd.menubar[0] == "Sumi" {
                         let about_item = MenuItem::new_with(
-                            &format!("Kaku V{}", config::wezterm_version()),
+                            &format!("Sumi V{}", config::wezterm_version()),
                             Some(kaku_perform_key_assignment_sel),
                             "",
                         );
@@ -1347,11 +1347,11 @@ pub fn derive_command_from_key_assignment(action: &KeyAssignment) -> Option<Comm
             icon: None,
         },
         HideApplication => CommandDef {
-            brief: "Hide Kaku".into(),
-            doc: "Hide all Kaku windows".into(),
+            brief: "Hide Sumi".into(),
+            doc: "Hide all Sumi windows".into(),
             keys: vec![(Modifiers::SUPER, "h".into())],
             args: &[],
-            menubar: &["Kaku"],
+            menubar: &["Sumi"],
             icon: None,
         },
         SpawnWindow => CommandDef {
@@ -1395,8 +1395,8 @@ pub fn derive_command_from_key_assignment(action: &KeyAssignment) -> Option<Comm
             icon: None,
         },
         ShowDebugOverlay => CommandDef {
-            brief: "Kaku Doctor".into(),
-            doc: "Run kaku doctor in the current pane".into(),
+            brief: "Sumi Doctor".into(),
+            doc: "Run sumi doctor in the current pane".into(),
             keys: vec![(Modifiers::CTRL.union(Modifiers::SHIFT), "l".into())],
             args: &[ArgType::ActiveWindow],
             menubar: &["Shell"],
@@ -1681,7 +1681,7 @@ pub fn derive_command_from_key_assignment(action: &KeyAssignment) -> Option<Comm
             } else if name == "kaku-ai-apply-last-fix" {
                 CommandDef {
                     brief: "Apply Last AI Fix".into(),
-                    doc: "Apply the latest Kaku Assistant suggestion for the active pane".into(),
+                    doc: "Apply the latest Sumi Assistant suggestion for the active pane".into(),
                     keys: vec![(Modifiers::SUPER.union(Modifiers::SHIFT), "e".into())],
                     args: &[ArgType::ActiveWindow],
                     menubar: &["Shell"],
@@ -1939,11 +1939,11 @@ pub fn derive_command_from_key_assignment(action: &KeyAssignment) -> Option<Comm
             icon: None,
         },
         QuitApplication => CommandDef {
-            brief: "Quit Kaku".into(),
-            doc: "Quits Kaku".into(),
+            brief: "Quit Sumi".into(),
+            doc: "Quits Sumi".into(),
             keys: vec![(Modifiers::SUPER, "q".into())],
             args: &[],
-            menubar: &["Kaku"],
+            menubar: &["Sumi"],
             icon: None,
         },
         MoveTabToNewWindow => CommandDef {
@@ -2337,23 +2337,23 @@ pub fn derive_command_from_key_assignment(action: &KeyAssignment) -> Option<Comm
             icon: None,
         },
         OpenUri(uri) => match uri.as_ref() {
-            "https://github.com/tw93/Kaku" => CommandDef {
+            "https://github.com/chiww/Sumi" => CommandDef {
                 brief: "Star on GitHub".into(),
-                doc: "Star Kaku on GitHub".into(),
+                doc: "Star Sumi on GitHub".into(),
                 keys: vec![],
                 args: &[],
                 menubar: &["Help"],
                 icon: None,
             },
-            "https://github.com/tw93/Kaku/discussions/" => CommandDef {
+            "https://github.com/chiww/Sumi/discussions/" => CommandDef {
                 brief: "Discuss on GitHub".into(),
-                doc: "Visit Kaku's GitHub discussion".into(),
+                doc: "Visit Sumi's GitHub discussion".into(),
                 keys: vec![],
                 args: &[],
                 menubar: &[],
                 icon: None,
             },
-            "https://github.com/tw93/Kaku/issues/" => CommandDef {
+            "https://github.com/chiww/Sumi/issues/" => CommandDef {
                 brief: "Report Issue".into(),
                 doc: "Submit bug report or feature request".into(),
                 keys: vec![],
@@ -2810,8 +2810,8 @@ fn compute_default_actions() -> Vec<KeyAssignment> {
         ShowTabNavigator,
         RenameCurrentTab,
         // ----------------- Help
-        OpenUri("https://github.com/tw93/Kaku".to_string()),
-        OpenUri("https://github.com/tw93/Kaku/issues/".to_string()),
+        OpenUri("https://github.com/chiww/Sumi".to_string()),
+        OpenUri("https://github.com/chiww/Sumi/issues/".to_string()),
         ShowDebugOverlay,
         // ----------------- Misc
         OpenLinkAtMouseCursor,
@@ -2841,7 +2841,7 @@ mod tests {
             ("commands.menu.services", "Services"),
             (
                 "overlay.confirm_close.quit",
-                "Quit Kaku?\nAll open tabs and panes will be closed.",
+                "Quit Sumi?\nAll open tabs and panes will be closed.",
             ),
             ("tab.empty_pane", "no pane"),
         ];

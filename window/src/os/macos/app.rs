@@ -597,7 +597,7 @@ fn reap_kaku_autofill_helpers() {
 for pid in $(pgrep -f 'SafariPlatformSupport.Helper|CredentialProviderExtensionHelper' 2>/dev/null); do
   name=$(lsappinfo info -only name -pid "$pid" 2>/dev/null | sed -n 's/.*"LSDisplayName"="\([^"]*\)".*/\1/p')
   case "$name" in
-    *"(Kaku)"*) kill "$pid" 2>/dev/null || true ;;
+    *"(Sumi)"*) kill "$pid" 2>/dev/null || true ;;
   esac
 done
 "#;
@@ -677,8 +677,8 @@ extern "C" fn application_should_terminate(
             WindowCloseConfirmation::AlwaysPrompt => {
                 let alert: id = msg_send![class!(NSAlert), alloc];
                 let alert: id = msg_send![alert, init];
-                let message_text = nsstring("Terminate Kaku?");
-                let info_text = nsstring("Detach and close all panes and terminate Kaku?");
+                let message_text = nsstring("Terminate Sumi?");
+                let info_text = nsstring("Detach and close all panes and terminate Sumi?");
                 let cancel = nsstring("Cancel");
                 let ok = nsstring("Ok");
 
@@ -1244,7 +1244,7 @@ mod tests {
 
     #[test]
     fn parse_url_action_supports_open_tab_by_tty() {
-        let url = Url::parse("kaku://open-tab?tty=/dev/ttys012").expect("valid url");
+        let url = Url::parse("sumi://open-tab?tty=/dev/ttys012").expect("valid url");
         assert_eq!(
             parse_url_action(&url),
             Some(UrlAction::OpenTabByTty("/dev/ttys012".to_string()))
@@ -1253,7 +1253,7 @@ mod tests {
 
     #[test]
     fn parse_url_action_supports_activate_pane_path_form() {
-        let url = Url::parse("kaku://activate-pane/42").expect("valid url");
+        let url = Url::parse("sumi://activate-pane/42").expect("valid url");
         assert_eq!(
             parse_url_action(&url),
             Some(UrlAction::ActivatePaneById(42))
@@ -1262,14 +1262,14 @@ mod tests {
 
     #[test]
     fn parse_url_action_supports_activate_tab_query_form() {
-        let url = Url::parse("kaku://activate-tab?tab_id=7").expect("valid url");
+        let url = Url::parse("sumi://activate-tab?tab_id=7").expect("valid url");
         assert_eq!(parse_url_action(&url), Some(UrlAction::ActivateTabById(7)));
     }
 
     #[test]
     fn parse_url_action_rejects_missing_or_invalid_ids() {
-        let missing = Url::parse("kaku://activate-pane").expect("valid url");
-        let invalid = Url::parse("kaku://activate-tab/not-a-number").expect("valid url");
+        let missing = Url::parse("sumi://activate-pane").expect("valid url");
+        let invalid = Url::parse("sumi://activate-tab/not-a-number").expect("valid url");
         assert_eq!(parse_url_action(&missing), None);
         assert_eq!(parse_url_action(&invalid), None);
     }
@@ -1623,7 +1623,7 @@ fn parse_id_from_url(url: &Url, path_segment: Option<&str>, query_key: &str) -> 
 }
 
 fn parse_url_action(url: &Url) -> Option<UrlAction> {
-    if url.scheme() != "kaku" {
+    if url.scheme() != "sumi" {
         return None;
     }
 

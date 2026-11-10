@@ -258,7 +258,7 @@ lazy_static::lazy_static! {
                 .color_level(Some(ColorLevel::TrueColor))
                 .colorterm(None)
                 .colorterm_bce(None)
-                .term_program(Some("Kaku".into()))
+                .term_program(Some("Sumi".into()))
                 .term_program_version(Some(config::wezterm_version().into())),
         )
         .expect("cannot fail to make internal Capabilities")

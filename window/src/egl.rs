@@ -403,7 +403,7 @@ impl GlState {
             // Dev/debug layout: next to the executable.
             paths.push(exe_parent.join("libEGL.dylib"));
 
-            // App bundle layout: Kaku.app/Contents/Frameworks/libEGL.dylib.
+            // App bundle layout: Sumi.app/Contents/Frameworks/libEGL.dylib.
             if let Some(contents_dir) = exe_parent.parent() {
                 paths.push(contents_dir.join("Frameworks").join("libEGL.dylib"));
             }

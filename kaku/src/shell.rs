@@ -116,7 +116,7 @@ fn managed_shell_state_path() -> PathBuf {
     config::user_config_path()
         .parent()
         .map(Path::to_path_buf)
-        .unwrap_or_else(|| config::HOME_DIR.join(".config").join("kaku"))
+        .unwrap_or_else(|| config::HOME_DIR.join(".config").join("sumi"))
         .join("state.json")
 }
 
@@ -125,7 +125,7 @@ fn managed_shell_state_path() -> PathBuf {
 fn default_managed_shell_state_path() -> Option<PathBuf> {
     let default = config::HOME_DIR
         .join(".config")
-        .join("kaku")
+        .join("sumi")
         .join("state.json");
     (default != managed_shell_state_path()).then_some(default)
 }
@@ -163,7 +163,7 @@ fn update_shell_state_to_path(
     };
     let object = state
         .as_object_mut()
-        .context("Kaku state must be a JSON object")?;
+        .context("Sumi state must be a JSON object")?;
     object.insert(
         "managed_shell".to_string(),
         serde_json::Value::String(shell.name().to_string()),
@@ -174,7 +174,7 @@ fn update_shell_state_to_path(
             serde_json::Value::Number(config_version.into()),
         );
     }
-    let bytes = serde_json::to_vec_pretty(&state).context("serialize Kaku state")?;
+    let bytes = serde_json::to_vec_pretty(&state).context("serialize Sumi state")?;
     crate::utils::write_atomic(path, &bytes)
         .with_context(|| format!("write managed shell to {}", path.display()))
 }

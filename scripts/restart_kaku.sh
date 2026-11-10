@@ -5,7 +5,7 @@
 # runs. A normal quit is not used because it stops at the quit confirmation
 # whenever a program such as Claude Code is running.
 #
-# It restarts into `/Applications/Kaku.app` the way an in-app update does
+# It restarts into `/Applications/Sumi.app` the way an in-app update does
 # (TERM, then reopen; tabs return from the periodic session snapshot) and
 # detaches first. It stops every running Kaku GUI, a copy opened from `dist/`
 # included, but sends TERM only to the one that owns `last_session.json` (its
@@ -25,8 +25,8 @@
 # closing, including when that terminal is Kaku itself, and it waits a few
 # seconds so whoever asked from inside Kaku can finish their reply.
 #
-# Usage: scripts/restart_kaku.sh [/path/to/Kaku.app]
-#   default app            /Applications/Kaku.app
+# Usage: scripts/restart_kaku.sh [/path/to/Sumi.app]
+#   default app            /Applications/Sumi.app
 #   KAKU_RESTART_DELAY     seconds before quitting (default 5)
 
 set -euo pipefail
@@ -43,14 +43,14 @@ if [[ "${1:-}" == --detached ]]; then
 	shift
 fi
 
-app="${1:-/Applications/Kaku.app}"
+app="${1:-/Applications/Sumi.app}"
 app="${app%/}"
 gui="$app/Contents/MacOS/kaku-gui"
 log="$HOME/Library/Logs/kaku-restart.log"
 delay="${KAKU_RESTART_DELAY:-5}"
 
 [[ -x "$gui" ]] || {
-	echo "No Kaku app at $app" >&2
+	echo "No Sumi app at $app" >&2
 	exit 1
 }
 
@@ -95,7 +95,7 @@ note "restart into $app; running: ${before:-none}"
 # only the one that owns the snapshot (its pid names the snapshot's content
 # directory) gets TERM and saves; the others are killed after it, unsaved,
 # so a stray copy cannot replace the tabs. Without an owner, all get TERM.
-session="${XDG_CONFIG_HOME:-$HOME/.config}/kaku/last_session.json"
+session="${XDG_CONFIG_HOME:-$HOME/.config}/sumi/last_session.json"
 owner="$(sed -n 's/.*"content_dir"[[:space:]]*:[[:space:]]*"session-\([0-9][0-9]*\)-.*/\1/p' "$session" 2>/dev/null | head -1 || true)"
 running="$(gui_pids)"
 # Not `gui_pids | grep -q`: grep stops at the first match, gui_pids then dies
@@ -129,5 +129,5 @@ for _ in $(seq 1 30); do
 	fi
 	sleep 0.5
 done
-note "Kaku did not come back after open; open $app by hand"
+note "Sumi did not come back after open; open $app by hand"
 exit 1

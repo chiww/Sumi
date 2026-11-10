@@ -144,12 +144,12 @@ fn resolve_bundled_kaku_bin() -> anyhow::Result<PathBuf> {
 
     let current_exe = std::env::current_exe().context("resolve executable path")?;
     if let Some(parent) = current_exe.parent() {
-        add_candidate(&mut candidates, parent.join("kaku"));
+        add_candidate(&mut candidates, parent.join("sumi"));
     }
 
     if let Ok(resolved_exe) = std::fs::canonicalize(&current_exe) {
         if let Some(parent) = resolved_exe.parent() {
-            add_candidate(&mut candidates, parent.join("kaku"));
+            add_candidate(&mut candidates, parent.join("sumi"));
         }
     }
 
@@ -157,26 +157,26 @@ fn resolve_bundled_kaku_bin() -> anyhow::Result<PathBuf> {
         &mut candidates,
         config::HOME_DIR
             .join(".config")
-            .join("kaku")
+            .join("sumi")
             .join("zsh")
             .join("bin")
-            .join("kaku"),
+            .join("sumi"),
     );
 
     #[cfg(target_os = "macos")]
     {
         add_candidate(
             &mut candidates,
-            PathBuf::from("/Applications/Kaku.app/Contents/MacOS/kaku"),
+            PathBuf::from("/Applications/Sumi.app/Contents/MacOS/sumi"),
         );
         add_candidate(
             &mut candidates,
             config::HOME_DIR
                 .join("Applications")
-                .join("Kaku.app")
+                .join("Sumi.app")
                 .join("Contents")
                 .join("MacOS")
-                .join("kaku"),
+                .join("sumi"),
         );
     }
 
@@ -200,8 +200,8 @@ pub(crate) fn kaku_cli_program_for_spawn() -> String {
         Err(err) => {
             // Finder-launched apps can have a minimal PATH; fall back only when
             // we cannot resolve the bundled companion binary.
-            log::warn!("Falling back to PATH lookup for `kaku`: {err:#}");
-            "kaku".to_string()
+            log::warn!("Falling back to PATH lookup for `sumi`: {err:#}");
+            "sumi".to_string()
         }
     }
 }
@@ -331,7 +331,7 @@ pub fn open_kaku_config() {
 
 /// Menu "Check for Updates...". When a staged package is already ready, ask
 /// before restarting (same overlay as toast). Otherwise open a tab that runs
-/// `kaku update` interactively so the CLI can prompt before install.
+/// `sumi update` interactively so the CLI can prompt before install.
 pub fn check_for_updates_from_menu() {
     if crate::update::staged_update_available().is_some() {
         confirm_and_apply_update();
@@ -345,7 +345,7 @@ pub fn check_for_updates_from_menu() {
     }
 }
 
-/// Open a terminal tab running `kaku update` without pre-confirming install.
+/// Open a terminal tab running `sumi update` without pre-confirming install.
 /// Used by the menu check path and by staged-update failure fallbacks.
 pub fn run_kaku_update_from_menu() {
     run_kaku_update_in_tab(/* auto_confirm */ false);
@@ -411,7 +411,7 @@ pub fn restart_to_update() {
 
     // Toast click can fire twice (rapid double-click, or two GUI processes
     // both registering the click callback). Without this guard, two helper
-    // scripts race to ditto into the same Kaku.app.
+    // scripts race to ditto into the same Sumi.app.
     static UPDATE_RUNNING: AtomicBool = AtomicBool::new(false);
     if UPDATE_RUNNING
         .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
@@ -501,7 +501,7 @@ pub fn restart_to_update() {
     std::thread::spawn(|| {
         std::thread::sleep(UPDATE_HELPER_GRACE);
         log::warn!(
-            "restart_to_update: Kaku still running after the helper started; allowing a retry"
+            "restart_to_update: Sumi still running after the helper started; allowing a retry"
         );
         UPDATE_RUNNING.store(false, Ordering::SeqCst);
     });
@@ -638,13 +638,13 @@ pub fn set_default_terminal_with_feedback() {
     match Connection::get() {
         Some(conn) => match conn.set_default_terminal() {
             Ok(()) => {
-                let message = "Kaku is now the default terminal";
+                let message = "Sumi is now the default terminal";
                 if !show_window_toast(message) {
                     conn.alert("Default Terminal", message);
                 }
             }
             Err(err) => {
-                let message = format!("Failed to set Kaku as default terminal: {err:#}");
+                let message = format!("Failed to set Sumi as default terminal: {err:#}");
                 log::error!("{message}");
                 if !show_window_toast("Failed to set default terminal") {
                     conn.alert("Default Terminal", &message);
@@ -1369,7 +1369,7 @@ impl GuiFrontEnd {
                     log::error!("Failed to create window: {:#}", err);
                     if err_text.contains("failed to create NSOpenGLPixelFormat") {
                         log::error!(
-                            "OpenGL initialization failed. This often means no compatible GPU renderer is available (for example in some VMs). Try setting `front_end = 'WebGpu'` in kaku.lua or enabling VM GPU acceleration."
+                            "OpenGL initialization failed. This often means no compatible GPU renderer is available (for example in some VMs). Try setting `front_end = 'WebGpu'` in sumi.lua or enabling VM GPU acceleration."
                         );
                     }
                     let mux = Mux::get();
@@ -2128,7 +2128,7 @@ mod tests {
             rebuild.contains(
                 "if item.get_tag() == KAKU_MENU_ITEM_TAG {\n                                menu.remove_item(&item);\n"
             ),
-            "a rebuild must remove only the menu items Kaku added"
+            "a rebuild must remove only the menu items Sumi added"
         );
         assert!(
             !rebuild.contains(".remove_all_items();"),
@@ -2138,7 +2138,7 @@ mod tests {
             rebuild.contains(
                 "\n                if next_index == 0 {\n                    let menu = &submenu;\n"
             ) && rebuild.contains("insert_owned(menu, &about_item, &mut next_index);"),
-            "the fixed Kaku menu items must be re-added on every build, not only when the menu is new"
+            "the fixed Sumi menu items must be re-added on every build, not only when the menu is new"
         );
         assert!(
             rebuild.contains("insert_owned(&submenu, &item, &mut next_index);"),
@@ -2173,7 +2173,7 @@ mod tests {
 
     #[test]
     fn shell_program_with_spaces_round_trips_as_one_token() {
-        let program = "/Applications/Kaku Nightly.app/Contents/MacOS/kaku";
+        let program = "/Applications/Sumi Nightly.app/Contents/MacOS/sumi";
         let quoted = shell_quote_program(program);
         assert_eq!(shlex::split(&quoted), Some(vec![program.to_string()]));
     }

@@ -5,7 +5,7 @@ set -euo pipefail
 RUNS="${RUNS:-5}"
 WARMUP="${WARMUP:-2}"
 WAIT_TIMEOUT_SEC="${WAIT_TIMEOUT_SEC:-15}"
-APP_PATH="${APP_PATH:-dist/Kaku.app}"
+APP_PATH="${APP_PATH:-dist/Sumi.app}"
 for command in hyperfine jq; do
   command -v "$command" >/dev/null || { echo "Missing $command" >&2; exit 1; }
 done
@@ -34,8 +34,8 @@ cat > "$BENCH_DIR/zsh/.zshrc" <<'ZSH'
 PROMPT='benchmark> '
 precmd() { printf 'ready\n' > "$KAKU_BENCH_PROMPT"; }
 ZSH
-cat > "$BENCH_DIR/kaku.lua" <<'LUA'
-local config = dofile(os.getenv('KAKU_BENCH_RESOURCES') .. '/kaku.lua')
+cat > "$BENCH_DIR/sumi.lua" <<'LUA'
+local config = dofile(os.getenv('KAKU_BENCH_RESOURCES') .. '/sumi.lua')
 config.restore_previous_session = false
 config.check_for_updates = false
 config.quit_when_all_windows_are_closed = true
@@ -60,7 +60,7 @@ launch_and_wait() {
     XDG_CACHE_HOME="$BENCH_DIR/cache" KAKU_STARTUP_TRACE=1 \
     KAKU_BENCH_RESOURCES="$APP_PATH/Contents/Resources" \
     KAKU_BENCH_ZDOTDIR="$BENCH_DIR/zsh" KAKU_BENCH_PROMPT="$BENCH_DIR/prompt" \
-    "$GUI" --config-file "$BENCH_DIR/kaku.lua" start --always-new-process \
+    "$GUI" --config-file "$BENCH_DIR/sumi.lua" start --always-new-process \
     -- /bin/zsh -d -i > "$BENCH_DIR/trace" 2>&1 &
   local pid=$!
   printf '%s\n' "$pid" > "$BENCH_DIR/pid"

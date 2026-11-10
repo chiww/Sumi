@@ -1,4 +1,4 @@
-//! Records GUI thread stalls so `kaku doctor` can bundle the evidence.
+//! Records GUI thread stalls so `sumi doctor` can bundle the evidence.
 //!
 //! A background thread posts a no-op onto the GUI thread every tick. When it
 //! stays unanswered past `STALL_THRESHOLD` the GUI thread is blocked, so the

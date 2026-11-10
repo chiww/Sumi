@@ -147,7 +147,7 @@ read_managed_shell() {
 mirror_completed_state_to_default() {
 	local target_version="$1"
 	local managed_shell="${2:-}"
-	local default_config_dir="${HOME:-}/.config/kaku"
+	local default_config_dir="${HOME:-}/.config/sumi"
 	local default_state_file="$default_config_dir/state.json"
 
 	if [[ -z "${HOME:-}" || "$CONFIG_DIR" == "$default_config_dir" ]]; then
@@ -190,7 +190,7 @@ record_config_version_success() {
 	local target_version="$1"
 	printf '%s\n' "$target_version" >"$LEGACY_VERSION_FILE"
 	if ! mirror_completed_state_to_default "$target_version" "$(read_managed_shell || true)"; then
-		printf 'warning: could not mirror completed Kaku state to the default config path\n' >&2
+		printf 'warning: could not mirror completed Sumi state to the default config path\n' >&2
 	fi
 	return 0
 }
@@ -264,7 +264,7 @@ persist_config_version() {
 
 	printf "{\n  \"config_version\": %s%s%s\n}\n" "$target_version" "$managed_shell_json" "$geometry_json" >"$STATE_FILE"
 
-	# Keep a legacy version marker for users still loading older bundled kaku.lua.
+	# Keep a legacy version marker for users still loading older bundled sumi.lua.
 	# This avoids repeated first-run onboarding after upgrades.
 	record_config_version_success "$target_version"
 	rm -f "$LEGACY_GEOMETRY_FILE"

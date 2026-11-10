@@ -52,7 +52,7 @@ if [[ "$setup_status" -ne 0 ]]; then
   fail "setup_zsh.sh failed with exit $setup_status"
 fi
 
-kaku_zsh="$HOME/.config/kaku/zsh/kaku.zsh"
+kaku_zsh="$HOME/.config/sumi/zsh/sumi.zsh"
 [[ -f "$kaku_zsh" ]] || fail "managed init file not created at $kaku_zsh"
 
 grep -Fq 'typeset -g _kaku_autosuggest_cli_provider="kiro-cli"' "$kaku_zsh" \
@@ -72,13 +72,13 @@ if ! runtime_out="$(
   HOME="$HOME" \
   ZDOTDIR="$ZDOTDIR" \
   zsh -f -c '
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 print -r -- "__KAKU_AUTOSUGGEST_PROVIDER__:${_kaku_autosuggest_cli_provider:-}"
 print -r -- "__KAKU_EXTERNAL_AUTOSUGGEST__:${_kaku_external_autosuggest_provider:-0}"
 ' 2>&1
 )"; then
   echo "$runtime_out" >&2
-  fail "sourcing generated kaku.zsh failed"
+  fail "sourcing generated sumi.zsh failed"
 fi
 
 case "$runtime_out" in

@@ -455,7 +455,7 @@ mod tests {
         assert_eq!(agent_topic("claude", "✳"), "Claude Code");
         assert_eq!(agent_topic("claude", "✳ Claude Code"), "Claude Code");
         assert_eq!(agent_topic("codex", "⠋ codex"), "Codex");
-        assert_eq!(agent_topic("kimi", "kaku"), "Kimi");
+        assert_eq!(agent_topic("kimi", "sumi"), "Kimi");
         assert_eq!(agent_topic("kimi", ""), "Kimi");
     }
 

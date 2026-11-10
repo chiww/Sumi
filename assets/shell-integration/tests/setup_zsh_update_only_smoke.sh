@@ -7,7 +7,7 @@ SHELL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$SHELL_DIR/../.." && pwd)"
 
 # A shell inside Kaku exports KAKU_CONFIG_FILE, which would point the theme
-# lookup at the real config instead of the scratch HOME's kaku.lua.
+# lookup at the real config instead of the scratch HOME's sumi.lua.
 unset KAKU_CONFIG_FILE XDG_CONFIG_HOME
 
 fail() {
@@ -53,12 +53,12 @@ if grep -Fq "local: can only be used in a function" "$output_log" "$error_log"; 
 fi
 
 # Bash expands backticks and $(...) in an unquoted heredoc while generating
-# kaku.zsh, so an unescaped one runs as a command and leaves its error here
+# sumi.zsh, so an unescaped one runs as a command and leaves its error here
 # (#450: `[comment]` in a comment). zsh -n below cannot see it, since the
 # substitution only empties part of a comment.
 if grep -Fq ": command not found" "$error_log"; then
   cat "$error_log" >&2
-  fail "setup_zsh.sh ran a command while generating kaku.zsh"
+  fail "setup_zsh.sh ran a command while generating sumi.zsh"
 fi
 
 [[ -f "$tmp_home/.config/starship.toml" ]] || fail "starship.toml was not initialized"
@@ -81,37 +81,37 @@ for field in ("success_symbol", "error_symbol"):
     if config.get("character", {}).get(field) != " ":
         sys.exit(f"FAIL: starship.toml changed character.{field}")
 PY
-[[ -f "$tmp_home/.config/kaku/zsh/kaku.zsh" ]] || fail "kaku.zsh was not generated"
+[[ -f "$tmp_home/.config/sumi/zsh/sumi.zsh" ]] || fail "sumi.zsh was not generated"
 [[ -f "$tmp_home/.zshrc" ]] || fail ".zshrc was not patched"
 
-if ! grep -Fq "fg=249" "$tmp_home/.config/kaku/zsh/kaku.zsh"; then
-  fail "generated kaku.zsh did not set readable comment color fg=249"
+if ! grep -Fq "fg=249" "$tmp_home/.config/sumi/zsh/sumi.zsh"; then
+  fail "generated sumi.zsh did not set readable comment color fg=249"
 fi
-if grep -Fq "fg=244" "$tmp_home/.config/kaku/zsh/kaku.zsh"; then
-  fail "generated kaku.zsh still contains old comment color fg=244"
+if grep -Fq "fg=244" "$tmp_home/.config/sumi/zsh/sumi.zsh"; then
+  fail "generated sumi.zsh still contains old comment color fg=244"
 fi
 grep -Fq 'if { (( _kaku_in_kaku )) || [[ -n "${KAKU_PROMPT_EVERYWHERE:-}" ]]; } && command -v starship' \
-  "$tmp_home/.config/kaku/zsh/kaku.zsh" \
-  || fail "generated kaku.zsh did not preserve the runtime Kaku session guard"
-grep -Fq 'local capability_file="$HOME/.config/kaku/ai_inline_capability"' \
-  "$tmp_home/.config/kaku/zsh/kaku.zsh" \
-  || fail "generated kaku.zsh did not read the inline AI capability"
+  "$tmp_home/.config/sumi/zsh/sumi.zsh" \
+  || fail "generated sumi.zsh did not preserve the runtime Sumi session guard"
+grep -Fq 'local capability_file="$HOME/.config/sumi/ai_inline_capability"' \
+  "$tmp_home/.config/sumi/zsh/sumi.zsh" \
+  || fail "generated sumi.zsh did not read the inline AI capability"
 grep -Fq '_kaku_set_ai_user_var "kaku_ai_query" "[mode:${mode}] ${body}"' \
-  "$tmp_home/.config/kaku/zsh/kaku.zsh" \
-  || fail "generated kaku.zsh did not authenticate inline AI queries"
+  "$tmp_home/.config/sumi/zsh/sumi.zsh" \
+  || fail "generated sumi.zsh did not authenticate inline AI queries"
 
 # The generated file is sourced by the user's real zsh, so it must parse under
 # zsh. A corrupted heredoc or a stray top-level construct surfaces here even
 # when setup_zsh.sh itself exited 0.
 if command -v zsh >/dev/null 2>&1; then
-  if ! zsh -n "$tmp_home/.config/kaku/zsh/kaku.zsh" 2>"$tmp_dir/zsh_parse.log"; then
+  if ! zsh -n "$tmp_home/.config/sumi/zsh/sumi.zsh" 2>"$tmp_dir/zsh_parse.log"; then
     cat "$tmp_dir/zsh_parse.log" >&2
-    fail "generated kaku.zsh failed 'zsh -n' parse check"
+    fail "generated sumi.zsh failed 'zsh -n' parse check"
   fi
 
-  repeated_queries="$(HOME="$tmp_home" TERM=xterm-256color TERM_PROGRAM=Kaku zsh -dfc '
+  repeated_queries="$(HOME="$tmp_home" TERM=xterm-256color TERM_PROGRAM=Sumi zsh -dfc '
     add-zsh-hook() { :; }
-    source "$HOME/.config/kaku/zsh/kaku.zsh" >/dev/null
+    source "$HOME/.config/sumi/zsh/sumi.zsh" >/dev/null
     typeset -g query_seen="" query_deliveries=0
     _kaku_set_ai_user_var() {
       [[ "$1" == "kaku_ai_query" ]] || return 1
@@ -132,9 +132,9 @@ if command -v zsh >/dev/null 2>&1; then
   [[ "$repeated_queries" == "2" ]] || fail "identical AI queries did not emit two changes"
 
   # Execute the generated prompt hook, not a source-text match (#551).
-  mouse_reset="$(HOME="$tmp_home" TERM=xterm-256color TERM_PROGRAM=Kaku zsh -dfc '
+  mouse_reset="$(HOME="$tmp_home" TERM=xterm-256color TERM_PROGRAM=Sumi zsh -dfc '
     add-zsh-hook() { :; }
-    source "$HOME/.config/kaku/zsh/kaku.zsh" >/dev/null
+    source "$HOME/.config/sumi/zsh/sumi.zsh" >/dev/null
     (( ${precmd_functions[(Ie)_kaku_reset_mouse_tracking]} )) || exit 1
     (( ${preexec_functions[(Ie)_kaku_mouse_tracking_preexec]} )) || exit 1
     # Initial and empty prompts must not write during instant-prompt capture.
@@ -149,12 +149,12 @@ if command -v zsh >/dev/null 2>&1; then
 
   outside_reset="$(HOME="$tmp_home" TERM_PROGRAM=Apple_Terminal zsh -dfc '
     add-zsh-hook() { :; }
-    source "$HOME/.config/kaku/zsh/kaku.zsh" >/dev/null
+    source "$HOME/.config/sumi/zsh/sumi.zsh" >/dev/null
     unset TMUX
     export KAKU_SESSION=1
     _kaku_mouse_tracking_preexec
     _kaku_reset_mouse_tracking || exit 1
-  ')" || fail "mouse hook must not stop later prompt hooks outside Kaku"
+  ')" || fail "mouse hook must not stop later prompt hooks outside Sumi"
   [[ -z "$outside_reset" ]] || fail "mouse hook changed a different terminal"
 
   starship_stub_dir="$tmp_dir/starship-bin"
@@ -173,19 +173,19 @@ EOF
     TERM_PROGRAM="Apple_Terminal" \
     KAKU_STARSHIP_TEST_MARKER="$starship_marker" \
     PATH="$starship_stub_dir:$PATH" \
-    zsh -dfc 'add-zsh-hook() { :; }; source "$HOME/.config/kaku/zsh/kaku.zsh"'
+    zsh -dfc 'add-zsh-hook() { :; }; source "$HOME/.config/sumi/zsh/sumi.zsh"'
   [[ ! -s "$starship_marker" ]] \
-    || fail "generated kaku.zsh initialized Starship outside Kaku"
+    || fail "generated sumi.zsh initialized Starship outside Sumi"
 
   HOME="$tmp_home" \
-    TERM_PROGRAM="Kaku" \
+    TERM_PROGRAM="Sumi" \
     KAKU_STARSHIP_TEST_MARKER="$starship_marker" \
     PATH="$starship_stub_dir:$PATH" \
-    zsh -dfc 'add-zsh-hook() { :; }; source "$HOME/.config/kaku/zsh/kaku.zsh"'
+    zsh -dfc 'add-zsh-hook() { :; }; source "$HOME/.config/sumi/zsh/sumi.zsh"'
   [[ "$(cat "$starship_marker")" == "initialized" ]] \
-    || fail "generated kaku.zsh did not initialize Starship inside Kaku"
+    || fail "generated sumi.zsh did not initialize Starship inside Sumi"
 else
-  echo "warning: zsh not found; skipping kaku.zsh parse check" >&2
+  echo "warning: zsh not found; skipping sumi.zsh parse check" >&2
 fi
 
 # #573: an untouched V0.22.0 starship.toml (icons stripped) is Kaku's own
@@ -245,19 +245,19 @@ run_linked_update_only() {
     bash "$SHELL_DIR/setup_zsh.sh" --update-only </dev/null >"$output_log" 2>"$error_log"
 }
 
-kaku_source_line='[[ -f "$HOME/.config/kaku/zsh/kaku.zsh" ]] && source "$HOME/.config/kaku/zsh/kaku.zsh" # Kaku Shell Integration'
-kaku_tmux_line='source-file "$HOME/.config/kaku/tmux/kaku.tmux.conf" # Kaku tmux Integration'
+kaku_source_line='[[ -f "$HOME/.config/sumi/zsh/sumi.zsh" ]] && source "$HOME/.config/sumi/zsh/sumi.zsh" # Sumi Shell Integration'
+kaku_tmux_line='source-file "$HOME/.config/sumi/tmux/sumi.tmux.conf" # Sumi tmux Integration'
 stale_zshrc='export FOO=1
-[[ ":$PATH:" != *":$HOME/.config/kaku/zsh/bin:"* ]] && export PATH="$HOME/.config/kaku/zsh/bin:$PATH"
-[[ -f "$HOME/.config/kaku/zsh/kaku.zsh" ]] && source "$HOME/.config/kaku/zsh/kaku.zsh"
+[[ ":$PATH:" != *":$HOME/.config/sumi/zsh/bin:"* ]] && export PATH="$HOME/.config/sumi/zsh/bin:$PATH"
+[[ -f "$HOME/.config/sumi/zsh/sumi.zsh" ]] && source "$HOME/.config/sumi/zsh/sumi.zsh"
 '
 
 linked_home="$tmp_dir/linked-home"
 dotfiles="$tmp_dir/dotfiles"
-mkdir -p "$linked_home/.config/yazi" "$linked_home/.config/kaku" "$dotfiles"
-printf "config.color_scheme = 'Kaku Light'\n" >"$linked_home/.config/kaku/kaku.lua"
+mkdir -p "$linked_home/.config/yazi" "$linked_home/.config/sumi" "$dotfiles"
+printf "config.color_scheme = 'Sumi Light'\n" >"$linked_home/.config/sumi/sumi.lua"
 printf '%s' "$stale_zshrc" >"$dotfiles/zshrc"
-printf 'set -g mouse on\nsource-file ~/.config/kaku/tmux/kaku.tmux.conf\n' >"$dotfiles/tmux.conf"
+printf 'set -g mouse on\nsource-file ~/.config/sumi/tmux/sumi.tmux.conf\n' >"$dotfiles/tmux.conf"
 cat >"$dotfiles/theme.toml" <<'EOF'
 [mgr]
 border_symbol = "x"

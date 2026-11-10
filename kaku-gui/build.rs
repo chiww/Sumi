@@ -15,7 +15,7 @@ fn main() {
         let src_plist = repo_dir
             .join("assets")
             .join("macos")
-            .join("Kaku.app")
+            .join("Sumi.app")
             .join("Contents")
             .join("Info.plist");
 

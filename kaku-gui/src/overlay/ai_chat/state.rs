@@ -901,7 +901,7 @@ impl App {
         crate::soul::migrate_if_needed();
 
         // Onboarding: fire when neither the memory file nor the flag file exist.
-        // Both files live under ~/.config/kaku/; presence of either means the user
+        // Both files live under ~/.config/sumi/; presence of either means the user
         // has been through setup before (memory exists) or has already seen the
         // greeting (flag exists), so we skip.
         let onboarding_pending = !crate::ai_tools::memory_file_path().exists()
@@ -910,7 +910,7 @@ impl App {
         if onboarding_pending {
             messages.push(Message::text(
                 Role::Assistant,
-                "Hi! I'm Kaku AI. If you'd like me to tailor replies, tell me three things:\n\n\
+                "Hi! I'm Sumi AI. If you'd like me to tailor replies, tell me three things:\n\n\
                  1. What should I call you?\n\
                  2. What reply style do you prefer? (e.g. concise, technical)\n\
                  3. What do you typically work on? (languages, tools, projects)\n\n\

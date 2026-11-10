@@ -2,7 +2,7 @@
 -- The Rust test `bundled_tool_launchers_type_only_into_shells` runs it in CI.
 -- Execute the actual launchers with fake panes/windows; never type into a real
 -- terminal or run the theme wrapper against the user's configuration.
-local path = arg and arg[1] or 'assets/macos/Kaku.app/Contents/Resources/kaku.lua'
+local path = arg and arg[1] or 'assets/macos/Sumi.app/Contents/Resources/sumi.lua'
 assert(loadfile(path)) -- Also guard the bundled chunk's local-variable limit.
 local file = assert(io.open(path))
 local source = file:read('*a')
@@ -34,7 +34,7 @@ local function fixture()
   env.wezterm = { action = {
     SendString = function(text) return { send = text } end,
   } }
-  state.yazi = '/local/home/.config/kaku/zsh/bin/yazi'
+  state.yazi = '/local/home/.config/sumi/zsh/bin/yazi'
   state.lazygit = '/opt/homebrew/bin/lazygit'
   local loaded = assert(load(chunk .. '\nreturn launch_yazi, launch_lazygit, tool_launcher',
     'tool launchers', 't', env))

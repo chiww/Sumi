@@ -208,11 +208,11 @@ fn exe_and_args_for_pid_sysctl(pid: libc::pid_t) -> Option<(PathBuf, Vec<String>
     parse_exe_and_argv_sysctl(buf)
 }
 
-/// Kaku's bundle ships one binary: `Contents/MacOS/kaku` and
+/// Kaku's bundle ships one binary: `Contents/MacOS/sumi` and
 /// `Contents/MacOS/k` are symlinks to `kaku-gui`, which runs the CLI or the
 /// chat CLI by the name it was started under (`multicall_entry` in
 /// `kaku-gui/src/main.rs`, whose rule this mirrors). proc_pidpath reports the
-/// resolved file, so without this a running `kaku config` would show up as
+/// resolved file, so without this a running `sumi config` would show up as
 /// `kaku-gui` to every foreground-process consumer (#583's opaque TUI
 /// background, title fallbacks, Lua). Only that one binary is mapped; other
 /// programs keep their resolved paths.
@@ -243,7 +243,7 @@ fn multicall_name(argv0: &str) -> Option<&'static str> {
     } else if name.eq_ignore_ascii_case("k") {
         Some("k")
     } else {
-        Some("kaku")
+        Some("sumi")
     }
 }
 
@@ -301,17 +301,17 @@ mod tests {
     #[test]
     fn multicall_name_matches_the_bundle_dispatch() {
         assert_eq!(
-            multicall_name("/Applications/Kaku.app/Contents/MacOS/kaku-gui"),
+            multicall_name("/Applications/Sumi.app/Contents/MacOS/kaku-gui"),
             None
         );
-        assert_eq!(multicall_name("/opt/homebrew/bin/kaku"), Some("kaku"));
-        assert_eq!(multicall_name("Kaku"), Some("kaku"));
+        assert_eq!(multicall_name("/opt/homebrew/bin/sumi"), Some("sumi"));
+        assert_eq!(multicall_name("Sumi"), Some("sumi"));
         assert_eq!(
-            multicall_name("/Applications/Kaku.app/Contents/MacOS/k"),
+            multicall_name("/Applications/Sumi.app/Contents/MacOS/k"),
             Some("k")
         );
-        assert_eq!(multicall_name("/usr/local/bin/wezterm"), Some("kaku"));
-        assert_eq!(multicall_name(""), Some("kaku"));
+        assert_eq!(multicall_name("/usr/local/bin/wezterm"), Some("sumi"));
+        assert_eq!(multicall_name(""), Some("sumi"));
     }
 
     #[test]
@@ -321,11 +321,11 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let gui = dir.path().join("kaku-gui");
         std::fs::copy("/bin/sleep", &gui).unwrap();
-        for name in ["kaku", "k"] {
+        for name in ["sumi", "k"] {
             std::os::unix::fs::symlink("kaku-gui", dir.path().join(name)).unwrap();
         }
         let resolved = std::fs::canonicalize(&gui).unwrap();
-        for (started_as, expected) in [("kaku", "kaku"), ("k", "k"), ("kaku-gui", "kaku-gui")] {
+        for (started_as, expected) in [("sumi", "sumi"), ("k", "k"), ("kaku-gui", "kaku-gui")] {
             let mut child = std::process::Command::new(dir.path().join(started_as))
                 .arg("5")
                 .spawn()

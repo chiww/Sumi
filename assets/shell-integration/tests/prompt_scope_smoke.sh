@@ -40,7 +40,7 @@ PATH="$tmp_dir/bin:$PATH" HOME="$HOME" ZDOTDIR="$ZDOTDIR" \
   KAKU_VENDOR_DIR="$vendor_dir" \
   bash "$REPO_ROOT/assets/shell-integration/setup_zsh.sh" --update-only >/dev/null 2>&1 \
   || fail "setup_zsh.sh --update-only failed"
-[[ -f "$HOME/.config/kaku/zsh/kaku.zsh" ]] || fail "kaku.zsh was not generated"
+[[ -f "$HOME/.config/sumi/zsh/sumi.zsh" ]] || fail "sumi.zsh was not generated"
 
 # probe <label> <expected "ran tab marker"> [ENV=VAL ...]
 probe() {
@@ -48,14 +48,14 @@ probe() {
   local out
   out="$(env -i PATH="$tmp_dir/bin:/usr/bin:/bin" HOME="$HOME" ZDOTDIR="$ZDOTDIR" TERM=xterm-256color "$@" \
     zsh -f -c '
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 print -r -- "${__KAKU_STARSHIP_RAN:-0} ${+functions[_kaku_tab_widget]} ${KAKU_SESSION:-_}"
 ' 2>&1 | tail -n 1)" || fail "$label: zsh exited non-zero: $out"
   [[ "$out" == "$expected" ]] || fail "$label: expected [$expected] got [$out]"
   echo "prompt_scope: $label ok ($out)" >&2
 }
 
-probe "inside Kaku"                 "1 1 1" TERM_PROGRAM=Kaku
+probe "inside Sumi"                 "1 1 1" TERM_PROGRAM=Sumi
 probe "tmux started from Kaku"      "1 1 1" TERM_PROGRAM=tmux TMUX=/tmp/tmux-0/default,1,0 KAKU_SESSION=1
 probe "tmux started elsewhere"      "0 0 _" TERM_PROGRAM=tmux TMUX=/tmp/tmux-0/default,1,0
 probe "other terminal"              "0 0 _" TERM_PROGRAM=vscode

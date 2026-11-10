@@ -1,7 +1,7 @@
 //! Which browsers may open this Mac's terminals through the relay, and how a
 //! new one joins.
 //!
-//! A browser joins by opening a pairing link that `kaku remote` prints: it
+//! A browser joins by opening a pairing link that `sumi remote` prints: it
 //! carries this Mac's public signing key and a one-time secret that expires
 //! after `OFFER_LIFETIME`. The browser keeps its own signing key, which it
 //! cannot export, and Kaku lists its public half as a paired device. Each
@@ -11,7 +11,7 @@
 //! list ends its sessions within seconds.
 //!
 //! A new browser joins only once someone at the Mac confirms it: the page
-//! and `kaku remote` show the same six-digit code, derived from the link's
+//! and `sumi remote` show the same six-digit code, derived from the link's
 //! secret and the browser's key, and Enter in that terminal lets it in. A
 //! link that leaked, screenshots and saved scrollback included, is useless
 //! without that keypress, and one link holds one pending browser at a time.
@@ -233,7 +233,7 @@ pub(crate) const DECLINED: u16 = 4409;
 pub(crate) enum Admission {
     /// A paired device signing in.
     Known(Device),
-    /// A new browser with a valid link, waiting for Enter in `kaku remote`.
+    /// A new browser with a valid link, waiting for Enter in `sumi remote`.
     Pending(Device),
 }
 
@@ -286,7 +286,7 @@ pub(crate) fn admit(
 
 const CODE_LABEL: &[u8] = b"kaku-remote pairing code";
 
-/// The six digits the page and `kaku remote` both show for a browser
+/// The six digits the page and `sumi remote` both show for a browser
 /// pairing with a link: an HMAC under the link's secret of the browser's
 /// key, so it stays the same across that browser's reconnects and differs
 /// for any other browser. The page computes it the same way.
@@ -351,12 +351,12 @@ struct Offer {
     expires_at: u64,
 }
 
-/// The browser waiting for Enter in `kaku remote`, and the answer.
+/// The browser waiting for Enter in `sumi remote`, and the answer.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct PairRequest {
     pub device: Device,
     pub code: String,
-    /// None until `kaku remote` answers.
+    /// None until `sumi remote` answers.
     #[serde(default)]
     pub allowed: Option<bool>,
 }
@@ -406,7 +406,7 @@ pub fn pending_request() -> Option<PairRequest> {
     read_request().filter(|r| r.allowed.is_none())
 }
 
-/// Answer the browser waiting with `code`, from `kaku remote`. Returns
+/// Answer the browser waiting with `code`, from `sumi remote`. Returns
 /// false when it is no longer the one waiting.
 pub fn answer_request(code: &str, allowed: bool) -> anyhow::Result<bool> {
     let Some(mut request) = pending_request().filter(|r| r.code == code) else {
@@ -418,7 +418,7 @@ pub fn answer_request(code: &str, allowed: bool) -> anyhow::Result<bool> {
     Ok(true)
 }
 
-/// Whether `device` ended up paired, for `kaku remote` after Enter.
+/// Whether `device` ended up paired, for `sumi remote` after Enter.
 pub fn is_paired(public_key: &str) -> bool {
     list_devices().iter().any(|d| d.public_key == public_key)
 }
@@ -432,7 +432,7 @@ pub fn list_devices() -> Vec<Device> {
 }
 
 /// Read, change and write the devices file at `path` under an exclusive
-/// lock. The GUI updates it on every sign-in while `kaku remote revoke` edits
+/// lock. The GUI updates it on every sign-in while `sumi remote revoke` edits
 /// it from another process; without the lock the GUI could write back a list
 /// read before the revoke and bring the device back. `change` returns whether
 /// to save.
@@ -587,7 +587,7 @@ impl DeviceStore for DiskStore {
     }
 
     fn settle(&mut self, device: &Device, allowed: bool) {
-        // A newer `kaku remote` replaced the link and its wait: leave those.
+        // A newer `sumi remote` replaced the link and its wait: leave those.
         let ours = read_request().is_some_and(|r| r.device.public_key == device.public_key);
         if !ours {
             return;
@@ -634,7 +634,7 @@ pub(crate) fn announce_return(device: &Device) {
     }
     let title = format!("{} is using this Mac's terminals", device.name);
     let message = format!(
-        "Connected through Kaku remote. To unpair it, run: kaku remote revoke {}",
+        "Connected through Kaku remote. To unpair it, run: sumi remote revoke {}",
         device.id
     );
     promise::spawn::spawn_into_main_thread(async move {
@@ -870,7 +870,7 @@ pub(crate) mod tests {
         }
     }
 
-    /// The short id is shown in notifications and `kaku remote devices`, and
+    /// The short id is shown in notifications and `sumi remote devices`, and
     /// a key whose SHA-256 starts with the same 32 bits can be ground
     /// offline. Signing in must take the paired key itself.
     #[test]

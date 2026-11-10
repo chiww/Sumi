@@ -258,7 +258,7 @@ impl FontLocator for NopSystemSource {
 mod test {
     use super::*;
 
-    /// A kaku.lua shared with a Linux WezTerm setup may still pick fontconfig,
+    /// A sumi.lua shared with a Linux WezTerm setup may still pick fontconfig,
     /// which used to panic on macOS.
     #[test]
     fn fontconfig_selection_falls_back_to_core_text() {

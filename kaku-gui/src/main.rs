@@ -141,9 +141,12 @@ pub use selection::SelectionMode;
 pub use termwindow::{set_window_class, set_window_position, TermWindow, ICON_DATA};
 
 #[derive(Debug, Parser)]
-#[command(about = "Kaku Terminal Emulator\nhttp://github.com/tw93/Kaku", version)]
+#[command(
+    about = "Sumi Terminal Emulator\nhttps://github.com/chiww/Sumi",
+    version
+)]
 struct Opt {
-    /// Skip loading kaku.lua
+    /// Skip loading sumi.lua
     #[arg(long, short = 'n')]
     skip_config: bool,
 
@@ -670,7 +673,7 @@ impl Publish {
                         Ok(res) => {
                             log::debug!(
                                 "Spawned your command via the existing GUI instance. \
-                             Use kaku start --always-new-process if you do not want this behavior. \
+                             Use sumi start --always-new-process if you do not want this behavior. \
                              Result={:?}",
                                 res
                             );
@@ -918,9 +921,9 @@ fn notify_on_panic() {
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         if let Some(s) = info.payload().downcast_ref::<&str>() {
-            fatal_toast_notification("Kaku panic", s);
+            fatal_toast_notification("Sumi panic", s);
         } else if let Some(s) = info.payload().downcast_ref::<String>() {
-            fatal_toast_notification("Kaku panic", s);
+            fatal_toast_notification("Sumi panic", s);
         }
         default_hook(info);
     }));
@@ -928,7 +931,7 @@ fn notify_on_panic() {
 
 fn terminate_with_error_message(err: &str) -> ! {
     log::error!("{}; terminating", err);
-    fatal_toast_notification("Kaku Error", &err);
+    fatal_toast_notification("Sumi Error", &err);
     std::process::exit(1);
 }
 
@@ -959,10 +962,10 @@ fn start_termination_listener(on_terminate: impl FnOnce() + Send + 'static) -> a
     Ok(())
 }
 
-/// The release bundle ships one binary: `Contents/MacOS/kaku` and
+/// The release bundle ships one binary: `Contents/MacOS/sumi` and
 /// `Contents/MacOS/k` are symlinks to `kaku-gui`, told apart by the name they
 /// were started under. Only `kaku-gui` starts the GUI, the name every GUI
-/// launch uses (LaunchServices, `kaku start`, restart_kaku.sh); every other
+/// launch uses (LaunchServices, `sumi start`, restart_kaku.sh); every other
 /// name runs the CLI, as the standalone CLI binary did under any name a user
 /// linked or copied it to. `crates/procinfo/src/macos.rs` mirrors this rule.
 #[derive(Debug, PartialEq)]
@@ -973,7 +976,7 @@ enum MulticallEntry {
 
 fn multicall_entry(argv0: &std::ffi::OsStr) -> Option<MulticallEntry> {
     // APFS is case-insensitive by default, so a typed `Kaku` reaches the
-    // `kaku` symlink under that spelling.
+    // `sumi` symlink under that spelling.
     let name = std::path::Path::new(argv0)
         .file_name()
         .and_then(|name| name.to_str())
@@ -1120,19 +1123,19 @@ mod tests {
     #[test]
     fn multicall_entry_follows_the_invoked_name() {
         let entry = |argv0: &str| multicall_entry(std::ffi::OsStr::new(argv0));
-        assert_eq!(entry("kaku"), Some(MulticallEntry::Cli));
+        assert_eq!(entry("sumi"), Some(MulticallEntry::Cli));
         assert_eq!(
-            entry("/Applications/Kaku.app/Contents/MacOS/kaku"),
+            entry("/Applications/Sumi.app/Contents/MacOS/sumi"),
             Some(MulticallEntry::Cli)
         );
-        assert_eq!(entry("/opt/homebrew/bin/Kaku"), Some(MulticallEntry::Cli));
+        assert_eq!(entry("/opt/homebrew/bin/Sumi"), Some(MulticallEntry::Cli));
         assert_eq!(entry("k"), Some(MulticallEntry::Chat));
         assert_eq!(
-            entry("/Applications/Kaku.app/Contents/MacOS/k"),
+            entry("/Applications/Sumi.app/Contents/MacOS/k"),
             Some(MulticallEntry::Chat)
         );
         assert_eq!(
-            entry("/Applications/Kaku.app/Contents/MacOS/kaku-gui"),
+            entry("/Applications/Sumi.app/Contents/MacOS/kaku-gui"),
             None
         );
         assert_eq!(entry("kaku-gui"), None);

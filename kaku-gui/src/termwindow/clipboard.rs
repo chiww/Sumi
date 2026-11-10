@@ -42,7 +42,7 @@ fn should_emit_ai_notice(kind: &str, message: &str) -> bool {
 fn is_ai_progress_toast(message: &str) -> bool {
     matches!(
         message,
-        "Kaku Assistant analyzing command" | "Kaku generating command"
+        "Sumi Assistant analyzing command" | "Sumi generating command"
     )
 }
 
@@ -321,9 +321,9 @@ mod tests {
 
     #[test]
     fn only_ai_progress_toasts_are_clearable() {
-        assert!(is_ai_progress_toast("Kaku Assistant analyzing command"));
-        assert!(is_ai_progress_toast("Kaku generating command"));
-        assert!(!is_ai_progress_toast("Kaku Assistant is not configured"));
+        assert!(is_ai_progress_toast("Sumi Assistant analyzing command"));
+        assert!(is_ai_progress_toast("Sumi generating command"));
+        assert!(!is_ai_progress_toast("Sumi Assistant is not configured"));
         assert!(!is_ai_progress_toast("Copied"));
     }
 }

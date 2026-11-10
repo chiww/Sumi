@@ -17,8 +17,8 @@ class RetryTests(unittest.TestCase):
             scripts.mkdir()
             bin_dir = root / "bin"
             bin_dir.mkdir()
-            (root / "dist/Kaku.app").mkdir(parents=True)
-            (root / "dist/Kaku.dmg").touch()
+            (root / "dist/Sumi.app").mkdir(parents=True)
+            (root / "dist/Sumi.dmg").touch()
             (root / "api.json").write_text("{}")
             for name, source in {
                 "security": "exit 99",
@@ -122,7 +122,7 @@ class TapRetryTests(unittest.TestCase):
     def run_fixture(self, mode):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "Kaku.dmg").touch()
+            (root / "Sumi.dmg").touch()
             gh = root / "gh"
             gh.write_text("""#!/bin/bash
 if [[ "$*" != *contents/Casks* ]]; then exit 0; fi

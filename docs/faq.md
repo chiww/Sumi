@@ -2,15 +2,15 @@
 
 ## Is there a Windows or Linux version?
 
-Not currently, Kaku is macOS-only.
+Not currently, Sumi is macOS-only.
 
-## How is Kaku different from iTerm2, Warp, Ghostty, or WezTerm?
+## How is Sumi different from iTerm2, Warp, Ghostty, or WezTerm?
 
-Kaku is a WezTerm-based Mac terminal with fonts, themes, tabs, panes, and shell tools already set, plus an optional assistant that uses the AI service you configure. See the comparison on the website: https://kaku.fun/compare
+Sumi is a WezTerm-based Mac terminal with fonts, themes, tabs, panes, and shell tools already set, plus an optional assistant that uses the AI service you configure. See the comparison on the website: https://kaku.fun/compare
 
 ## Can I use a transparent window?
 
-Yes. Add these lines below `-- User overrides:` in `~/.config/kaku/kaku.lua`, which already loads the bundled defaults into `config` and returns it:
+Yes. Add these lines below `-- User overrides:` in `~/.config/sumi/sumi.lua`, which already loads the bundled defaults into `config` and returns it:
 
 ```lua
 config.window_background_opacity = 0.92
@@ -52,9 +52,9 @@ config.split_pane_inherit_working_directory = true
 
 All are enabled by default.
 
-## How do I disable Kaku Assistant?
+## How do I disable Sumi Assistant?
 
-Run `kaku ai`, open Kaku Assistant settings, and set Enabled to Off. Or edit `~/.config/kaku/assistant.toml` directly:
+Run `sumi ai`, open Sumi Assistant settings, and set Enabled to Off. Or edit `~/.config/sumi/assistant.toml` directly:
 
 ```toml
 enabled = false
@@ -62,34 +62,34 @@ enabled = false
 
 ## How do I use a custom LLM provider?
 
-Run `kaku ai`, keep Auth Type set to `api_key`, and enter your Base URL, API Key, Simple Model, and Deep Model manually. Choose **API Mode** `chat_completions` for `/v1/chat/completions`, or `responses` for `/v1/responses`. If the Responses provider supports hosted search, set **Native Web Search** to On; no separate search provider or search API key is required.
+Run `sumi ai`, keep Auth Type set to `api_key`, and enter your Base URL, API Key, Simple Model, and Deep Model manually. Choose **API Mode** `chat_completions` for `/v1/chat/completions`, or `responses` for `/v1/responses`. If the Responses provider supports hosted search, set **Native Web Search** to On; no separate search provider or search API key is required.
 
 ## How do I restore default config?
 
-Run `kaku reset`. It removes Kaku-managed integration and state, including Kaku AI memory and the `backups/` folder, while user-authored Lua outside managed blocks is preserved; see [cli.md](cli.md#kaku-reset) for the full list. Run `kaku init` again if you want shell integration back.
+Run `sumi reset`. It removes Sumi-managed integration and state, including Sumi AI memory and the `backups/` folder, while user-authored Lua outside managed blocks is preserved; see [cli.md](cli.md#kaku-reset) for the full list. Run `sumi init` again if you want shell integration back.
 
-## The `kaku` command is missing. How do I recover it?
+## The `sumi` command is missing. How do I recover it?
 
 ```bash
-/Applications/Kaku.app/Contents/MacOS/kaku init --update-only
+/Applications/Sumi.app/Contents/MacOS/sumi init --update-only
 exec zsh -l
 ```
 
-Then run `kaku doctor` to verify everything is healthy.
+Then run `sumi doctor` to verify everything is healthy.
 
-## How do I use Kaku's CLI from scripts?
+## How do I use Sumi's CLI from scripts?
 
 ```bash
-kaku cli split-pane
-kaku cli split-pane -- bash -c "echo hello"
-kaku cli --help
+sumi cli split-pane
+sumi cli split-pane -- bash -c "echo hello"
+sumi cli --help
 ```
 
 See [cli.md](cli.md) for full reference.
 
 ## How do I enable the scrollbar?
 
-Open `kaku config` and toggle the scrollbar option, or add to `~/.config/kaku/kaku.lua`:
+Open `sumi config` and toggle the scrollbar option, or add to `~/.config/sumi/sumi.lua`:
 
 ```lua
 config.enable_scroll_bar = true
@@ -111,7 +111,7 @@ Font changes require explicitly setting `config.font` in your config:
 config.font = wezterm.font('Your Font Name')
 ```
 
-Note: Kaku's theme-aware font weight system only applies to the default JetBrains Mono stack. Once you set a custom font, Kaku will no longer override its weight automatically.
+Note: Sumi's theme-aware font weight system only applies to the default JetBrains Mono stack. Once you set a custom font, Sumi will no longer override its weight automatically.
 
 ## My `window_padding` change isn't working.
 
@@ -129,23 +129,23 @@ Since V0.12.1 the viewport no longer jumps to the top during streaming output. I
 
 The yazi remote-files feature (`Cmd+Shift+R`) is designed for SSH sessions and mounts the remote filesystem via sshfs. `Cmd+Shift+Y` is for local yazi. Use `Cmd+Shift+R` when you are inside an SSH pane.
 
-## Kaku's prompt shows up in other terminals, or is missing from them.
+## Sumi's prompt shows up in other terminals, or is missing from them.
 
-Kaku's shell integration is loaded by every zsh and fish, but the Starship prompt and Smart Tab only start inside Kaku, including tmux sessions started from Kaku. Other terminals keep whatever prompt you already had.
+Sumi's shell integration is loaded by every zsh and fish, but the Starship prompt and Smart Tab only start inside Sumi, including tmux sessions started from Sumi. Other terminals keep whatever prompt you already had.
 
-If you use Kaku's Starship as your one prompt everywhere, add this before the Kaku line in your `.zshrc` (`set -gx KAKU_PROMPT_EVERYWHERE 1` in `config.fish`):
+If you use Sumi's Starship as your one prompt everywhere, add this before the Sumi line in your `.zshrc` (`set -gx KAKU_PROMPT_EVERYWHERE 1` in `config.fish`):
 
 ```sh
 export KAKU_PROMPT_EVERYWHERE=1
 ```
 
-Smart Tab stays Kaku-only; `KAKU_SMART_TAB_DISABLE=1` turns it off.
+Smart Tab stays Sumi-only; `KAKU_SMART_TAB_DISABLE=1` turns it off.
 
 ## The `y` shell wrapper doesn't sync my directory on exit.
 
-Make sure the Kaku fish/zsh shell integration is sourced. Check with `kaku doctor`. The `y` wrapper requires the shell init to be loaded. A bare `yazi` call will not sync the directory.
+Make sure the Sumi fish/zsh shell integration is sourced. Check with `sumi doctor`. The `y` wrapper requires the shell init to be loaded. A bare `yazi` call will not sync the directory.
 
-## How do I install or update Kaku with Homebrew?
+## How do I install or update Sumi with Homebrew?
 
 Install the official cask:
 
@@ -153,7 +153,7 @@ Install the official cask:
 brew install --cask kaku
 ```
 
-Homebrew-managed installs update with `brew upgrade --cask kaku`, or with `kaku update` (it detects the cask).
+Homebrew-managed installs update with `brew upgrade --cask kaku`, or with `sumi update` (it detects the cask).
 
 If you still have the older tap `tw93/tap/kakuku`, keep upgrading that tap, or move to the official cask:
 
@@ -164,32 +164,32 @@ brew install --cask kaku
 
 ## Claude Code or Codex notifications don't appear.
 
-First check that macOS allows them: choose Kaku > Notification Settings... and turn on Allow Notifications. macOS never asks again after a denial, so when a notification gets dropped for this reason Kaku tells you the next time you switch back to it.
+First check that macOS allows them: choose Sumi > Notification Settings... and turn on Allow Notifications. macOS never asks again after a denial, so when a notification gets dropped for this reason Sumi tells you the next time you switch back to it.
 
-Claude Code 2.1.295 and later tell Kaku whether they are working, waiting on you or done through the program status protocol (OSC 7501), and Kaku turns waiting, done and errors into a notification and the tab's attention dot with no setting needed. Check with `claude --version`, and leave `preferredNotifChannel` at its default `auto`, since `ghostty` there makes Claude Code post a second notification of its own. Older versions only notify terminals they recognize and send nothing to Kaku, so on those set this in `~/.claude/settings.json`:
+Claude Code 2.1.295 and later tell Sumi whether they are working, waiting on you or done through the program status protocol (OSC 7501), and Sumi turns waiting, done and errors into a notification and the tab's attention dot with no setting needed. Check with `claude --version`, and leave `preferredNotifChannel` at its default `auto`, since `ghostty` there makes Claude Code post a second notification of its own. Older versions only notify terminals they recognize and send nothing to Sumi, so on those set this in `~/.claude/settings.json`:
 
 ```json
 { "preferredNotifChannel": "ghostty" }
 ```
 
-Codex works without changes. Codex 0.163 and later report their state over OSC 7501 as Claude Code does; older versions ring the terminal bell, which Kaku also turns into a notification. To see Codex's own message instead of a generic one, add this to `~/.codex/config.toml`:
+Codex works without changes. Codex 0.163 and later report their state over OSC 7501 as Claude Code does; older versions ring the terminal bell, which Sumi also turns into a notification. To see Codex's own message instead of a generic one, add this to `~/.codex/config.toml`:
 
 ```toml
 [tui]
 notification_method = "osc9"
 ```
 
-Notifications appear while Kaku is in the background, not for the pane you are looking at.
+Notifications appear while Sumi is in the background, not for the pane you are looking at.
 
 ## How do I change the global hotkey?
 
-`Cmd + Opt + Ctrl + K` shows or hides Kaku from any app. It follows your current keyboard layout, so on Colemak or Dvorak it is whichever key types K. To pick another combination, change Global Hotkey in `kaku config`, or set it in Lua:
+`Cmd + Opt + Ctrl + K` shows or hides Sumi from any app. It follows your current keyboard layout, so on Colemak or Dvorak it is whichever key types K. To pick another combination, change Global Hotkey in `sumi config`, or set it in Lua:
 
 ```lua
 config.macos_global_hotkey = { key = 'j', mods = 'CMD|OPT|CTRL' }
 ```
 
-By default (`macos_global_hotkey_mode = 'Drawer'`), the hotkey creates a dedicated terminal session on first use, then shows or hides that same session. Ordinary windows and their running tasks are not moved or hidden. The top-down drawer starts at the screen's top edge, covers the menu bar, and spans the display width and one third of its height. It has no native title bar, traffic-light buttons, or window-rounded corners. Opening Kaku from the Dock opens ordinary windows, not the drawer. The drawer is not restored as an ordinary window after restarting Kaku, and its geometry does not overwrite ordinary window geometry. Use `macos_global_hotkey_mode = 'Ordinary'` to toggle the selected ordinary window instead of invoking the dedicated drawer: Kaku selects the key ordinary window, then the main ordinary window, then the first available ordinary window, or creates one if none exists. This mode does not hide the entire application or toggle every window.
+By default (`macos_global_hotkey_mode = 'Drawer'`), the hotkey creates a dedicated terminal session on first use, then shows or hides that same session. Ordinary windows and their running tasks are not moved or hidden. The top-down drawer starts at the screen's top edge, covers the menu bar, and spans the display width and one third of its height. It has no native title bar, traffic-light buttons, or window-rounded corners. Opening Sumi from the Dock opens ordinary windows, not the drawer. The drawer is not restored as an ordinary window after restarting Sumi, and its geometry does not overwrite ordinary window geometry. Use `macos_global_hotkey_mode = 'Ordinary'` to toggle the selected ordinary window instead of invoking the dedicated drawer: Sumi selects the key ordinary window, then the main ordinary window, then the first available ordinary window, or creates one if none exists. This mode does not hide the entire application or toggle every window.
 
 To reveal the hotkey window on the display containing the mouse pointer:
 
@@ -197,7 +197,7 @@ To reveal the hotkey window on the display containing the mouse pointer:
 config.macos_global_hotkey_follow_mouse = true
 ```
 
-This defaults to `false`, preserving AppKit's main-display behavior. The display is chosen each time the hotkey reveals the window; moving the pointer does not move a visible window, and hiding it does not move it to another display. If no display contains the pointer, Kaku falls back to the main display.
+This defaults to `false`, preserving AppKit's main-display behavior. The display is chosen each time the hotkey reveals the window; moving the pointer does not move a visible window, and hiding it does not move it to another display. If no display contains the pointer, Sumi falls back to the main display.
 
 ### Inherited appearance and drawer overrides
 
@@ -242,13 +242,13 @@ config.macos_global_hotkey_hide_on_focus_loss = true
 
 Height is a percentage of the physical display frame in the range `(0, 100]`. The drawer remains full-width and top-aligned. Animation duration is in milliseconds, from 0 (no animation) to 10000; the macOS Reduce Motion setting always disables animation. Turning off focus-loss hiding pins the drawer until you hide it with the hotkey.
 
-On a notched display, Kaku adds the current display's safe-area height above the content; external displays without a notch get no extra menu-bar clearance. This safe area is separate from configured top padding, including when top is zero. `macos_global_hotkey_extend_behind_notch = false` enables notch clearance independently of ordinary fullscreen windows; `true` disables it. When omitted, it inherits `macos_fullscreen_extend_behind_notch`. Moving the drawer to another display or unplugging it recalculates the safe area. None of these settings changes the system menu bar or display configuration.
+On a notched display, Sumi adds the current display's safe-area height above the content; external displays without a notch get no extra menu-bar clearance. This safe area is separate from configured top padding, including when top is zero. `macos_global_hotkey_extend_behind_notch = false` enables notch clearance independently of ordinary fullscreen windows; `true` disables it. When omitted, it inherits `macos_fullscreen_extend_behind_notch`. Moving the drawer to another display or unplugging it recalculates the safe area. None of these settings changes the system menu bar or display configuration.
 
 ## QR codes and terminal graphics look vertically stretched.
 
-Kaku's default `line_height = 1.28` favors comfortable text spacing. Terminal graphics built from characters, such as QR codes, `neofetch` logos, and TUI bar charts, scale with the row height, so they render about 28% taller than in terminals with no extra line spacing. This is a typography trade-off, not a rendering bug: block characters must fill the whole cell so TUI borders and progress bars stay seamless.
+Sumi's default `line_height = 1.28` favors comfortable text spacing. Terminal graphics built from characters, such as QR codes, `neofetch` logos, and TUI bar charts, scale with the row height, so they render about 28% taller than in terminals with no extra line spacing. This is a typography trade-off, not a rendering bug: block characters must fill the whole cell so TUI borders and progress bars stay seamless.
 
-If you want near-square graphics, lower the line height in `~/.config/kaku/kaku.lua`:
+If you want near-square graphics, lower the line height in `~/.config/sumi/sumi.lua`:
 
 ```lua
 config.line_height = 1.1  -- or 1.0 to match terminals without extra spacing
@@ -256,11 +256,11 @@ config.line_height = 1.1  -- or 1.0 to match terminals without extra spacing
 
 Note that no terminal renders half-block QR codes perfectly square: with common monospace fonts the cell is naturally a bit taller than 2:1 even at `line_height = 1.0`.
 
-## Can I use Kaku with tiling window managers (yabai, AeroSpace)?
+## Can I use Sumi with tiling window managers (yabai, AeroSpace)?
 
-Kaku is compatible with yabai and AeroSpace. If you see continuous flickering, it is usually caused by the tiling WM fighting with Kaku's fullscreen/resize logic. Disabling Kaku's native fullscreen (`config.native_macos_fullscreen_mode = false`) or excluding Kaku from the tiling WM's managed window list typically resolves it.
+Sumi is compatible with yabai and AeroSpace. If you see continuous flickering, it is usually caused by the tiling WM fighting with Sumi's fullscreen/resize logic. Disabling Sumi's native fullscreen (`config.native_macos_fullscreen_mode = false`) or excluding Sumi from the tiling WM's managed window list typically resolves it.
 
-## How do I use Kaku through a phone or tablet remote desktop?
+## How do I use Sumi through a phone or tablet remote desktop?
 
 Hold anywhere for about half a second, then lift, to open the menu a right click would: on a tab you get New Tab, Tab Navigator and Close Tab, and on the terminal you get Copy, Paste, Split and the rest. This works in every window, as long as the remote client forwards a held press as a held left button, which UU does. In panes where a program such as vim or tmux takes mouse input, the hold stays with that program.
 
@@ -268,8 +268,8 @@ Hold anywhere for about half a second, then lift, to open the menu a right click
 
 ## Is remote access free?
 
-Yes. I pay for the relay server myself, as a thank-you to everyone who has been building Kaku in the open with me. Your privacy does not rest on trusting that server: what you type and see is encrypted between the browser and Kaku, so the relay only forwards data it cannot read. It is a server that does this one job, so the connection stays quick.
+Yes. I pay for the relay server myself, as a thank-you to everyone who has been building Sumi in the open with me. Your privacy does not rest on trusting that server: what you type and see is encrypted between the browser and Sumi, so the relay only forwards data it cannot read. It is a server that does this one job, so the connection stays quick.
 
 ## The remote web page says the Mac is offline, or asks me to pair again.
 
-The page reaches your Mac through Kaku, so the Mac has to be awake with Kaku running and remote access on. On a laptop, keep it plugged in and turn on Prevent automatic sleeping on power adapter when the display is off in System Settings > Battery > Options; on a desktop Mac it is Prevent automatic sleeping when the display is off in System Settings > Energy. Pairing lives in the browser: another browser, a private window or cleared site data needs a new link, which only `kaku remote` on the Mac can make, so pair each device you plan to use before you leave.
+The page reaches your Mac through Sumi, so the Mac has to be awake with Sumi running and remote access on. On a laptop, keep it plugged in and turn on Prevent automatic sleeping on power adapter when the display is off in System Settings > Battery > Options; on a desktop Mac it is Prevent automatic sleeping when the display is off in System Settings > Energy. Pairing lives in the browser: another browser, a private window or cleared site data needs a new link, which only `sumi remote` on the Mac can make, so pair each device you plan to use before you leave.

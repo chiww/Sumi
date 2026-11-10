@@ -25,7 +25,7 @@ use std::path::PathBuf;
 use umask::UmaskSaver;
 use wezterm_gui_subcommands::*;
 
-// Register the i18n bundle for the `kaku` CLI. `t!()` invocations inside
+// Register the i18n bundle for the `sumi` CLI. `t!()` invocations inside
 // this crate look up keys against `locales/{en,zh-CN}.yml` at the
 // workspace root.
 rust_i18n::i18n!("../locales", fallback = "en");
@@ -49,11 +49,12 @@ mod utils;
 
 #[derive(Debug, Parser)]
 #[command(
-    about = "Kaku Terminal Emulator\nhttp://github.com/tw93/Kaku",
+    name = "sumi",
+    about = "Sumi Terminal Emulator\nhttps://github.com/chiww/Sumi",
     version = wezterm_version()
 )]
 pub struct Opt {
-    /// Skip loading kaku.lua
+    /// Skip loading sumi.lua
     #[arg(long, short = 'n')]
     skip_config: bool,
 
@@ -120,7 +121,7 @@ enum RemoteAction {
     Devices,
     /// Unpair a browser; its open sessions end within seconds
     Revoke {
-        /// The id `kaku remote devices` shows
+        /// The id `sumi remote devices` shows
         id: String,
     },
     /// Turn remote access off; open web sessions end within seconds
@@ -180,7 +181,7 @@ enum SubCommand {
 
     #[command(
         name = "reset",
-        about = "Remove Kaku shell and tmux integration, reset managed defaults, delete AI memory"
+        about = "Remove Sumi shell and tmux integration, reset managed defaults, delete AI memory"
     )]
     Reset(reset::ResetCommand),
 
@@ -202,7 +203,7 @@ enum SubCommand {
     #[cfg(feature = "remote")]
     #[command(
         name = "remote",
-        about = "Pair a browser with this Kaku, to open its terminals from another device"
+        about = "Pair a browser with this Sumi, to open its terminals from another device"
     )]
     Remote {
         /// Start over: a new identity, and every paired browser removed
@@ -311,7 +312,7 @@ impl TmuxPassthru {
 
 fn terminate_with_error_message(err: &str) -> ! {
     // Only `start` and `cli` set up a logger. Without one log::error! goes
-    // nowhere and a failing `kaku remote` or `kaku doctor` exits silently.
+    // nowhere and a failing `sumi remote` or `sumi doctor` exits silently.
     if log::max_level() == log::LevelFilter::Off {
         eprintln!("kaku: {err}");
     } else {
@@ -330,7 +331,7 @@ fn run_remote(reset: bool, action: Option<RemoteAction>) -> anyhow::Result<()> {
         Some(RemoteAction::Devices) => {
             let devices = kaku_remote::list_devices();
             if devices.is_empty() {
-                println!("No paired browsers. Run `kaku remote` to pair one.");
+                println!("No paired browsers. Run `sumi remote` to pair one.");
             }
             for device in devices {
                 println!("{}  {}", device.id, device.name);
@@ -339,21 +340,21 @@ fn run_remote(reset: bool, action: Option<RemoteAction>) -> anyhow::Result<()> {
         }
         Some(RemoteAction::Revoke { id }) => {
             if !kaku_remote::revoke_device(&id)? {
-                anyhow::bail!("no paired browser {id}; see `kaku remote devices`");
+                anyhow::bail!("no paired browser {id}; see `sumi remote devices`");
             }
             println!("Unpaired {id}. Its open sessions end within a few seconds.");
             return Ok(());
         }
         Some(RemoteAction::Off) => {
             if !config_tui::set_remote_enabled(false)? {
-                anyhow::bail!("Your kaku.lua sets other remote options; set `enabled = false` in its `config.remote` yourself.");
+                anyhow::bail!("Your sumi.lua sets other remote options; set `enabled = false` in its `config.remote` yourself.");
             }
             // The bridge stops only once Kaku reloads the config; do not say
             // sessions end unless it did.
             let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
             while kaku_remote::read_state().is_ok() {
                 if std::time::Instant::now() > deadline {
-                    anyhow::bail!("Saved, but Kaku has not applied it, so web sessions are still open. Choose Reload Configuration in Kaku or quit it.");
+                    anyhow::bail!("Saved, but Sumi has not applied it, so web sessions are still open. Choose Reload Configuration in Sumi or quit it.");
                 }
                 std::thread::sleep(std::time::Duration::from_millis(200));
             }
@@ -372,7 +373,7 @@ fn run_remote(reset: bool, action: Option<RemoteAction>) -> anyhow::Result<()> {
     };
     let state = kaku_remote::read_state().map_err(|_| {
         anyhow::anyhow!(
-            "Remote access is on, but Kaku is not serving it right now. Open Kaku, or quit and reopen it, then run `kaku remote` again."
+            "Remote access is on, but Sumi is not serving it right now. Open Sumi, or quit and reopen it, then run `sumi remote` again."
         )
     })?;
     if state.tunnel_relay.is_some() {
@@ -382,7 +383,7 @@ fn run_remote(reset: bool, action: Option<RemoteAction>) -> anyhow::Result<()> {
         // Without the relay the page is only reachable on this Mac, and its
         // token changes with every Kaku launch.
         if state.port == 0 {
-            anyhow::bail!("Another app holds Kaku's local page port, so Kaku is not serving the page. Set `config.remote.port` to a free port, or quit that app.");
+            anyhow::bail!("Another app holds Sumi's local page port, so Sumi is not serving the page. Set `config.remote.port` to a free port, or quit that app.");
         }
         let url = format!("http://127.0.0.1:{}/#t={}", state.port, state.token);
         println!("{url}");
@@ -408,7 +409,7 @@ fn run_remote(reset: bool, action: Option<RemoteAction>) -> anyhow::Result<()> {
     }
     print_pairing(&identity.pairing_link(relay)?, down.as_deref());
     if !(std::io::stdin().is_terminal() && std::io::stdout().is_terminal()) {
-        println!("Run `kaku remote` in a terminal to confirm the browser once it opens the link.");
+        println!("Run `sumi remote` in a terminal to confirm the browser once it opens the link.");
         return Ok(());
     }
     println!();
@@ -419,7 +420,7 @@ fn run_remote(reset: bool, action: Option<RemoteAction>) -> anyhow::Result<()> {
             return confirm_pairing(&request);
         }
         if std::time::Instant::now() > link_lasts {
-            anyhow::bail!("The link expired. Run `kaku remote` for a new one.");
+            anyhow::bail!("The link expired. Run `sumi remote` for a new one.");
         }
         std::thread::sleep(std::time::Duration::from_millis(300));
     }
@@ -479,21 +480,21 @@ fn confirm_pairing(request: &kaku_remote::PairRequest) -> anyhow::Result<()> {
         )
     );
     if !std::io::stdin().is_terminal() {
-        anyhow::bail!("Run `kaku remote` in a terminal to answer it.");
+        anyhow::bail!("Run `sumi remote` in a terminal to answer it.");
     }
     if !enter_pressed() {
         println!();
         kaku_remote::answer_request(&request.code, false)?;
-        println!("Refused. Run `kaku remote` for a new link.");
+        println!("Refused. Run `sumi remote` for a new link.");
         return Ok(());
     }
     if !kaku_remote::answer_request(&request.code, true)? {
-        anyhow::bail!("That browser is no longer waiting. Run `kaku remote` for a new link.");
+        anyhow::bail!("That browser is no longer waiting. Run `sumi remote` for a new link.");
     }
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
     while !kaku_remote::is_paired(&request.device.public_key) {
         if std::time::Instant::now() > deadline {
-            anyhow::bail!("Allowed, but Kaku has not let the browser in. Check that Kaku is open, then run `kaku remote` again.");
+            anyhow::bail!("Allowed, but Sumi has not let the browser in. Check that Sumi is open, then run `sumi remote` again.");
         }
         std::thread::sleep(std::time::Duration::from_millis(200));
     }
@@ -518,7 +519,7 @@ fn relay_down_note(status: Option<&kaku_remote::RelayStatus>, relay: &str) -> Op
         format!(" ({})", status.last_error)
     };
     Some(format!(
-        "This Mac is not connected to the relay right now{reason}, so the link shows offline until it is. Check this network, proxy or VPN; `kaku doctor` shows more."
+        "This Mac is not connected to the relay right now{reason}, so the link shows offline until it is. Check this network, proxy or VPN; `sumi doctor` shows more."
     ))
 }
 
@@ -552,7 +553,7 @@ fn print_pairing(url: &str, relay_down: Option<&str>) {
     for (step, note) in [
         format!("It works once, within {minutes} minutes, and only after you press Enter here for the code the browser shows."),
         "Bookmark the page it opens. That browser stays paired, so next time open the bookmark, no new link needed.".to_string(),
-        "Keep Kaku open on this Mac; the page shows offline while it is closed or cannot reach the relay.".to_string(),
+        "Keep Sumi open on this Mac; the page shows offline while it is closed or cannot reach the relay.".to_string(),
     ]
     .iter()
     .enumerate()
@@ -563,15 +564,15 @@ fn print_pairing(url: &str, relay_down: Option<&str>) {
     println!("{}", paint(GRAY, "Later, to manage access:"));
     for (command, what) in [
         (
-            "kaku remote devices",
+            "sumi remote devices",
             "See which browsers can open your terminals",
         ),
         (
-            "kaku remote revoke <id>",
+            "sumi remote revoke <id>",
             "Unpair one, using an id from devices",
         ),
         (
-            "kaku remote off",
+            "sumi remote off",
             "Turn remote access off for every browser",
         ),
     ] {
@@ -583,14 +584,14 @@ fn print_pairing(url: &str, relay_down: Option<&str>) {
     }
 }
 
-/// Ask before turning remote access on, write it to kaku.lua, and wait for
+/// Ask before turning remote access on, write it to sumi.lua, and wait for
 /// the running Kaku to pick it up from its config reload.
 #[cfg(feature = "remote")]
 fn turn_remote_on() -> anyhow::Result<()> {
     if !std::io::stdin().is_terminal() {
-        anyhow::bail!("Remote access is off. Run `kaku remote` in a terminal to turn it on.");
+        anyhow::bail!("Remote access is off. Run `sumi remote` in a terminal to turn it on.");
     }
-    println!("Remote access lets a browser on another device use this Mac's terminals, through Kaku's relay.");
+    println!("Remote access lets a browser on another device use this Mac's terminals, through Sumi's relay.");
     print!("Turn it on? [y/N] ");
     std::io::stdout().flush()?;
     let mut answer = String::new();
@@ -599,12 +600,12 @@ fn turn_remote_on() -> anyhow::Result<()> {
         anyhow::bail!("Remote access stays off.");
     }
     if !config_tui::set_remote_enabled(true)? {
-        anyhow::bail!("Your kaku.lua sets other remote options; set `enabled = true` in its `config.remote` yourself.");
+        anyhow::bail!("Your sumi.lua sets other remote options; set `enabled = true` in its `config.remote` yourself.");
     }
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
     while kaku_remote::read_state().is_err() {
         if std::time::Instant::now() > deadline {
-            anyhow::bail!("Remote access is on. Open Kaku, then run `kaku remote` again.");
+            anyhow::bail!("Remote access is on. Open Sumi, then run `sumi remote` again.");
         }
         std::thread::sleep(std::time::Duration::from_millis(200));
     }
@@ -636,7 +637,7 @@ fn ensure_relay_access() -> anyhow::Result<()> {
         }
         if !std::io::stdin().is_terminal() {
             anyhow::bail!(
-                "The relay asks for an access code. Run `kaku remote` in a terminal to enter it."
+                "The relay asks for an access code. Run `sumi remote` in a terminal to enter it."
             );
         }
         if asked {
@@ -656,7 +657,7 @@ fn ensure_relay_access() -> anyhow::Result<()> {
             match current() {
                 Some(s) if s.access == tried => break,
                 Some(_) if std::time::Instant::now() < deadline => continue,
-                _ => anyhow::bail!("Kaku did not reach the relay in time; see `kaku doctor`."),
+                _ => anyhow::bail!("Sumi did not reach the relay in time; see `sumi doctor`."),
             }
         }
     }
@@ -682,8 +683,8 @@ fn read_hidden_line(prompt: &str) -> anyhow::Result<String> {
     Ok(line.trim_end_matches(['\r', '\n']).to_string())
 }
 
-/// Entry point of the `kaku` CLI. The release bundle has no separate CLI
-/// binary: `Contents/MacOS/kaku` is a symlink to `kaku-gui`, which calls this
+/// Entry point of the `sumi` CLI. The release bundle has no separate CLI
+/// binary: `Contents/MacOS/sumi` is a symlink to `kaku-gui`, which calls this
 /// when it is started under that name.
 pub fn cli_main() {
     config::designate_this_as_the_main_thread();
@@ -715,7 +716,7 @@ fn apply_locale_from_config(config: &ConfigHandle) {
     log::trace!("i18n: active locale = {locale}");
 }
 
-/// Honor `config.language` from kaku.lua for the interactive subcommands.
+/// Honor `config.language` from sumi.lua for the interactive subcommands.
 /// A config that fails to load keeps the environment locale; the command
 /// itself reports the config error.
 fn refine_locale_from_lua_config(opts: &Opt) {
@@ -743,7 +744,7 @@ fn run() -> anyhow::Result<()> {
     let opts = Opt::parse();
 
     // Pick a locale from the environment first so the main menu and early
-    // errors are localized; commands that read kaku.lua refine it below.
+    // errors are localized; commands that read sumi.lua refine it below.
     rust_i18n::set_locale(&config::i18n::resolve_locale(config::i18n::LANGUAGE_AUTO));
 
     let cmd = if let Some(cmd) = opts.cmd.as_ref().cloned() {
@@ -899,15 +900,14 @@ fn select_main_menu_command() -> anyhow::Result<Option<SubCommand>> {
 
         let mut out = String::new();
         out.push_str("\r\n");
-        out.push_str(&format!("{green}  _  __      _          {reset}\r\n"));
-        out.push_str(&format!("{green} | |/ /     | |         {reset}\r\n"));
-        out.push_str(&format!("{green} | ' / __ _ | | __ _   _ {reset}\r\n"));
-        out.push_str(&format!("{green} |  < / _` || |/ /| | | |{reset}\r\n"));
+        out.push_str(&format!("{green}  ____                  _ {reset}\r\n"));
+        out.push_str(&format!("{green} / ___| _   _ _ __ ___ (_){reset}\r\n"));
+        out.push_str(&format!("{green} \\___ \\| | | | '_ ` _ \\| |{reset}\r\n"));
         out.push_str(&format!(
-            "{green} | . \\ (_| ||   < | |_| |{reset}  {purple_bold}https://github.com/tw93/Kaku{reset}\r\n"
+            "{green}  ___) | |_| | | | | | | |{reset}  {purple_bold}https://github.com/chiww/Sumi{reset}\r\n"
         ));
         out.push_str(&format!(
-            "{green} |_|\\_\\__,_||_|\\_\\ \\__,_|{reset}  {green}An AI-friendly Mac terminal, ready out of the box.{reset}\r\n"
+            "{green} |____/ \\__,_|_| |_| |_|_|{reset}  {green}A terminal of your own.{reset}\r\n"
         ));
         out.push_str("\r\n");
         for (idx, (name, desc, _)) in MENU_ITEMS.iter().enumerate() {
@@ -1061,11 +1061,11 @@ fn resolve_gui_executable(exe_name: &str) -> anyhow::Result<PathBuf> {
 
     #[cfg(target_os = "macos")]
     {
-        candidates.push(PathBuf::from("/Applications/Kaku.app/Contents/MacOS").join(exe_name));
+        candidates.push(PathBuf::from("/Applications/Sumi.app/Contents/MacOS").join(exe_name));
         candidates.push(
             config::HOME_DIR
                 .join("Applications")
-                .join("Kaku.app")
+                .join("Sumi.app")
                 .join("Contents")
                 .join("MacOS")
                 .join(exe_name),

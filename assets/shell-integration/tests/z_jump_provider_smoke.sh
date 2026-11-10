@@ -52,9 +52,9 @@ if [[ "$setup_status" -ne 0 ]]; then
   exit 1
 fi
 
-kaku_zsh="$HOME/.config/kaku/zsh/kaku.zsh"
+kaku_zsh="$HOME/.config/sumi/zsh/sumi.zsh"
 if [[ ! -f "$kaku_zsh" ]]; then
-  echo "zshz_jump_provider: kaku.zsh not created at $kaku_zsh" >&2
+  echo "zshz_jump_provider: sumi.zsh not created at $kaku_zsh" >&2
   exit 1
 fi
 
@@ -65,7 +65,7 @@ if ! with_zshz="$(
   HOME="$HOME" \
   ZDOTDIR="$ZDOTDIR" \
   zsh -f -c '
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 if (( ${+functions[zshz]} )); then
   print -r -- "__KAKU_ZSHZ_LOADED__:1"
 else
@@ -81,13 +81,13 @@ fi
 case "$with_zshz" in
   *__KAKU_ZSHZ_LOADED__:1* ) ;;
   * )
-    echo "zshz_jump_provider: zshz function not defined after sourcing kaku.zsh:" >&2
+    echo "zshz_jump_provider: zshz function not defined after sourcing sumi.zsh:" >&2
     echo "$with_zshz" >&2
     exit 1
     ;;
 esac
 
-# Test 2: when zshz is already defined, kaku.zsh must not source zsh-z again
+# Test 2: when zshz is already defined, sumi.zsh must not source zsh-z again
 with_existing_provider=""
 if ! with_existing_provider="$(
   TERM=xterm-256color \
@@ -97,7 +97,7 @@ if ! with_existing_provider="$(
 # Simulate user having already loaded zsh-z themselves
 typeset -g KAKU_TEST_ZSHZ_SOURCE_COUNT=0
 zshz() { :; }
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 print -r -- "__KAKU_NO_DOUBLE_SOURCE__:${KAKU_TEST_ZSHZ_SOURCE_COUNT}"
 ' 2>&1
 )"; then
@@ -115,7 +115,7 @@ case "$with_existing_provider" in
     ;;
 esac
 
-# Test 3: when zoxide already owns z, kaku.zsh must not source zsh-z or override z.
+# Test 3: when zoxide already owns z, sumi.zsh must not source zsh-z or override z.
 with_zoxide_provider=""
 if ! with_zoxide_provider="$(
   TERM=xterm-256color \
@@ -127,7 +127,7 @@ typeset -g KAKU_TEST_ZSHZ_SOURCE_COUNT=0
 __zoxide_z() { :; }
 _zoxide_z() { :; }
 z() { __zoxide_z "$@"; }
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 print -r -- "__KAKU_NO_ZSHZ_SOURCE_FOR_ZOXIDE__:${KAKU_TEST_ZSHZ_SOURCE_COUNT}"
 if (( ${+functions[zshz]} )); then
   print -r -- "__KAKU_ZSHZ_DEFINED_WITH_ZOXIDE__:1"
@@ -158,8 +158,8 @@ if ! without_zshz="$(
   ZDOTDIR="$ZDOTDIR" \
   zsh -f -c '
 # Remove plugin file to simulate missing install
-rm -f "$HOME/.config/kaku/zsh/plugins/zsh-z/zsh-z.plugin.zsh" 2>/dev/null || true
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+rm -f "$HOME/.config/sumi/zsh/plugins/zsh-z/zsh-z.plugin.zsh" 2>/dev/null || true
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 print -r -- "__KAKU_NO_ZSHZ_OK__:0"
 ' 2>&1
 )"; then
@@ -171,7 +171,7 @@ fi
 case "$without_zshz" in
   *__KAKU_NO_ZSHZ_OK__:0* ) ;;
   * )
-    echo "zshz_jump_provider: kaku.zsh errored when zsh-z plugin is absent:" >&2
+    echo "zshz_jump_provider: sumi.zsh errored when zsh-z plugin is absent:" >&2
     echo "$without_zshz" >&2
     exit 1
     ;;

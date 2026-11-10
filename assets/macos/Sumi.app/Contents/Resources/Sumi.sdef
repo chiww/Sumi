@@ -2,11 +2,11 @@
 <!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTD/scriptDefinition.dtd">
 <dictionary xmlns="http://apple.com/DTD/scriptDefinitions.dtd">
 	<!--
-	  Minimal Standard Suite so Script Editor can open Kaku's dictionary and
+	  Minimal Standard Suite so Script Editor can open Sumi's dictionary and
 	  basic verbs like quit / name / version resolve. Extend later if needed.
 	-->
 	<suite name="Standard Suite" code="????"
-		description="Minimal standard commands for Kaku.">
+		description="Minimal standard commands for Sumi.">
 		<access-group identifier="*"/>
 		<command name="quit" code="aevtquit" description="Quit the application.">
 			<parameter name="saving" code="savo" type="savo" optional="yes"
@@ -24,7 +24,7 @@
 				description="All of the object's properties."/>
 		</class>
 		<class name="application" code="capp"
-			description="The Kaku application."
+			description="The Sumi application."
 			inherits="item" plural="applications">
 			<cocoa class="NSApplication"/>
 			<property name="frontmost" code="pisf" type="boolean" access="r"

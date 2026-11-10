@@ -2,8 +2,8 @@ use std::path::PathBuf;
 
 // ─── Paths ────────────────────────────────────────────────────────────────────
 
-/// Root of the soul directory: `$XDG_CONFIG_HOME/kaku/soul/` (or
-/// `~/.config/kaku/soul/` when XDG is not set).
+/// Root of the soul directory: `$XDG_CONFIG_HOME/sumi/soul/` (or
+/// `~/.config/sumi/soul/` when XDG is not set).
 pub(crate) fn soul_dir() -> PathBuf {
     kaku_config_dir().join("soul")
 }
@@ -37,10 +37,10 @@ pub(crate) fn bootstrapped_path() -> PathBuf {
 /// XDG-aware config root, matching `config::user_config_path()` parent.
 fn kaku_config_dir() -> PathBuf {
     if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
-        PathBuf::from(xdg).join("kaku")
+        PathBuf::from(xdg).join("sumi")
     } else {
         let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
-        PathBuf::from(home).join(".config").join("kaku")
+        PathBuf::from(home).join(".config").join("sumi")
     }
 }
 
@@ -102,7 +102,7 @@ fn migrate_v0_to_v1() {
     write_stub_if_absent(
         &soul_path(),
         "# About Me\n\n\
-         <!-- Tell Kaku who you are. This file ships into every system prompt.\n\
+         <!-- Tell Sumi who you are. This file ships into every system prompt.\n\
               The curator will never overwrite it. Edit freely. -->\n",
     );
     write_stub_if_absent(
@@ -113,7 +113,7 @@ fn migrate_v0_to_v1() {
     write_stub_if_absent(
         &skill_path(),
         "# Operating Modes\n\n\
-         <!-- What you typically work on and how Kaku should help. -->\n",
+         <!-- What you typically work on and how Sumi should help. -->\n",
     );
 }
 

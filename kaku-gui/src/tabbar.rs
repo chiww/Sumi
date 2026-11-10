@@ -107,7 +107,7 @@ fn has_format_tab_title_callback(lua: &mlua::Lua) -> mlua::Result<bool> {
 /// The title a fresh terminal reports before any program sets one through
 /// OSC 0/2 (`term/src/terminalstate/mod.rs`). It is a placeholder, not a title
 /// an application chose, so `tab_title_use_pane_title` must fall through it.
-pub(crate) const DEFAULT_PANE_TITLE: &str = "kaku";
+pub(crate) const DEFAULT_PANE_TITLE: &str = "sumi";
 
 /// The pane title an application set through OSC 0/2, when the user opted into
 /// showing it with `tab_title_use_pane_title`.

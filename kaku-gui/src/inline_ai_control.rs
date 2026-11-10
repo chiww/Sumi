@@ -26,7 +26,7 @@ static ACTIVE_CAPABILITY: OnceLock<String> = OnceLock::new();
 fn capability_file_path() -> PathBuf {
     config::HOME_DIR
         .join(".config")
-        .join("kaku")
+        .join("sumi")
         .join(CAPABILITY_FILE_NAME)
 }
 

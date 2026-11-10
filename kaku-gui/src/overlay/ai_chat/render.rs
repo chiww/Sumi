@@ -492,7 +492,7 @@ fn render_chat(term: &mut TermWizTerminal, app: &App) -> termwiz::Result<()> {
         };
         format!("{}{}", app.current_model(), suffix)
     };
-    let title = format!(" Kaku AI · {} ", model_display);
+    let title = format!(" Sumi AI · {} ", model_display);
     let title_width = unicode_column_width(&title, None);
     let border_fill = inner_w.saturating_sub(title_width);
     changes.push(Change::CursorPosition {
@@ -1006,7 +1006,7 @@ mod tests {
     fn labelled_edge_draws_rules_quieter_than_the_label() {
         let pal = kaku_dark();
         let mut changes = Vec::new();
-        push_labelled_edge(&mut changes, &pal, "╭─", " Kaku AI ", "────╮", 12);
+        push_labelled_edge(&mut changes, &pal, "╭─", " Sumi AI ", "────╮", 12);
 
         let runs: Vec<(CellAttributes, String)> = changes
             .chunks(2)
@@ -1016,7 +1016,7 @@ mod tests {
             })
             .collect();
         assert_eq!(runs[0], (pal.rule_cell(), "╭─".to_string()));
-        assert_eq!(runs[1], (pal.border_dim_cell(), " Kaku AI ".to_string()));
+        assert_eq!(runs[1], (pal.border_dim_cell(), " Sumi AI ".to_string()));
         // Clipped to the 12 columns left after the label.
         assert_eq!(runs[2], (pal.rule_cell(), "─".to_string()));
         assert_ne!(pal.rule_cell(), pal.border_dim_cell());

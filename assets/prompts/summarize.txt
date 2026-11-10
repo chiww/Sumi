@@ -1,11 +1,11 @@
 <!--
-name: 'Kaku Rust: Conversation summarization'
+name: 'Sumi Rust: Conversation summarization'
 description: Folds older agent-loop turns into a single summary block when the chat history exceeds the byte threshold.
 kakuVersion: 0.12.0
 variables:
   - TRANSCRIPT (serialized older messages, role-prefixed)
 -->
-Your task is to summarize the older portion of a Kaku terminal chat so the model can keep working without losing context. The recent messages are kept verbatim; you only summarize what comes before them.
+Your task is to summarize the older portion of a Sumi terminal chat so the model can keep working without losing context. The recent messages are kept verbatim; you only summarize what comes before them.
 
 Output a single plain-text block, no markdown headings, no code fences, no preface. Use these sections in order:
 

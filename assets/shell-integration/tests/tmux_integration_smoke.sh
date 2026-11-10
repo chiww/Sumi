@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-TMUX_SOURCE_LINE='source-file "$HOME/.config/kaku/tmux/kaku.tmux.conf" # Kaku tmux Integration'
+TMUX_SOURCE_LINE='source-file "$HOME/.config/sumi/tmux/sumi.tmux.conf" # Sumi tmux Integration'
 
 normalize_kaku_tmux_source_line_file() {
   local input_file="$1"
@@ -17,7 +17,7 @@ BEGIN { replaced = 0; extra = 0 }
   }
 
   if ($0 ~ /^[[:space:]]*source-file[[:space:]]+/ &&
-      $0 ~ /kaku\/tmux\/kaku\.tmux\.conf/) {
+      $0 ~ /sumi\/tmux\/sumi\.tmux\.conf/) {
     if (!replaced) {
       print source_line
       replaced = 1
@@ -83,15 +83,15 @@ run_normalize() {
 }
 
 run_normalize \
-  $'set -g default-terminal "screen-256color"\nsource-file ~/.config/kaku/tmux/kaku.tmux.conf\n' \
+  $'set -g default-terminal "screen-256color"\nsource-file ~/.config/sumi/tmux/sumi.tmux.conf\n' \
   0 \
   $'set -g default-terminal "screen-256color"\n'"$TMUX_SOURCE_LINE"$'\n' \
   "legacy tmux source line is normalized"
 
 run_normalize \
-  $'# source-file "$HOME/.config/kaku/tmux/kaku.tmux.conf"\n'"$TMUX_SOURCE_LINE"$'\n'"$TMUX_SOURCE_LINE"$'\n' \
+  $'# source-file "$HOME/.config/sumi/tmux/sumi.tmux.conf"\n'"$TMUX_SOURCE_LINE"$'\n'"$TMUX_SOURCE_LINE"$'\n' \
   2 \
-  $'# source-file "$HOME/.config/kaku/tmux/kaku.tmux.conf"\n'"$TMUX_SOURCE_LINE"$'\n' \
+  $'# source-file "$HOME/.config/sumi/tmux/sumi.tmux.conf"\n'"$TMUX_SOURCE_LINE"$'\n' \
   "duplicate tmux source lines collapse while comments are preserved"
 
 run_normalize \

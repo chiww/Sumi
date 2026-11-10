@@ -17,8 +17,8 @@ _kaku() {
     _arguments "${_arguments_options[@]}" \
 '(-n --skip-config)--config-file=[Specify the configuration file to use, overrides the normal configuration file resolution]:CONFIG_FILE:_files' \
 '*--config=[Override specific configuration values]:name=value: ' \
-'-n[Skip loading kaku.lua]' \
-'--skip-config[Skip loading kaku.lua]' \
+'-n[Skip loading sumi.lua]' \
+'--skip-config[Skip loading sumi.lua]' \
 '-h[Print help]' \
 '--help[Print help]' \
 '-V[Print version]' \
@@ -35,36 +35,36 @@ _kaku() {
             (start)
 _arguments "${_arguments_options[@]}" \
 '--cwd=[Specify the current working directory for the initially spawned program]:CWD:_files -/' \
-'--class=[Override the default windowing system class. The default is "fun.tw93.kaku". Under X11 and Windows this changes the window class. Under Wayland this changes the app_id. This changes the class for all windows spawned by this instance of kaku, including error, update and ssh authentication dialogs]:CLASS: ' \
+'--class=[Override the default windowing system class. The default is "com.github.chiww.sumi". Under X11 and Windows this changes the window class. Under Wayland this changes the app_id. This changes the class for all windows spawned by this instance of kaku, including error, update and ssh authentication dialogs]:CLASS: ' \
 '--workspace=[Override the default workspace with the provided name. The default is "default"]:WORKSPACE: ' \
 '--position=[Override the position for the initial window launched by this process.]:POSITION: ' \
 '--domain=[Name of the multiplexer domain section from the configuration to which you'\''d like to connect. If omitted, the default domain will be used]:DOMAIN: ' \
-'--no-auto-connect[If true, do not connect to domains marked as connect_automatically in your kaku configuration file]' \
+'--no-auto-connect[If true, do not connect to domains marked as connect_automatically in your sumi configuration file]' \
 '--always-new-process[If enabled, don'\''t try to ask an existing kaku GUI instance to start the command.  Instead, always start the GUI in this invocation of kaku so that you can wait for the command to complete by waiting for this kaku process to finish]' \
 '(--always-new-process)--new-tab[When spawning into an existing GUI instance, spawn a new tab into the active window rather than spawn a new window]' \
 '-e[Dummy argument that consumes "-e" and does nothing. This is meant as a compatibility layer for supporting the widely adopted standard of passing the command to execute to the terminal via a "-e" option. This works because we then treat the remaining cmdline as trailing options, that will automatically be parsed via the existing "prog" option. This option exists only as a fallback. It is recommended to pass the command as a normal trailing command instead if possible]' \
 '--attach[When used with --domain, if the domain already has running panes, kaku will simply attach and will NOT spawn the specified PROG. If you omit --attach when using --domain, kaku will attach AND then spawn PROG]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
-'*::prog -- Instead of executing your shell, run PROG. For example\: `kaku start -- bash -l` will spawn bash as if it were a login shell. \[aliases\: -e\]:_cmdambivalent' \
+'*::prog -- Instead of executing your shell, run PROG. For example\: `sumi start -- bash -l` will spawn bash as if it were a login shell. \[aliases\: -e\]:_cmdambivalent' \
 && ret=0
 
 ;;
 (blocking-start)
 _arguments "${_arguments_options[@]}" \
 '--cwd=[Specify the current working directory for the initially spawned program]:CWD:_files -/' \
-'--class=[Override the default windowing system class. The default is "fun.tw93.kaku". Under X11 and Windows this changes the window class. Under Wayland this changes the app_id. This changes the class for all windows spawned by this instance of kaku, including error, update and ssh authentication dialogs]:CLASS: ' \
+'--class=[Override the default windowing system class. The default is "com.github.chiww.sumi". Under X11 and Windows this changes the window class. Under Wayland this changes the app_id. This changes the class for all windows spawned by this instance of kaku, including error, update and ssh authentication dialogs]:CLASS: ' \
 '--workspace=[Override the default workspace with the provided name. The default is "default"]:WORKSPACE: ' \
 '--position=[Override the position for the initial window launched by this process.]:POSITION: ' \
 '--domain=[Name of the multiplexer domain section from the configuration to which you'\''d like to connect. If omitted, the default domain will be used]:DOMAIN: ' \
-'--no-auto-connect[If true, do not connect to domains marked as connect_automatically in your kaku configuration file]' \
+'--no-auto-connect[If true, do not connect to domains marked as connect_automatically in your sumi configuration file]' \
 '--always-new-process[If enabled, don'\''t try to ask an existing kaku GUI instance to start the command.  Instead, always start the GUI in this invocation of kaku so that you can wait for the command to complete by waiting for this kaku process to finish]' \
 '(--always-new-process)--new-tab[When spawning into an existing GUI instance, spawn a new tab into the active window rather than spawn a new window]' \
 '-e[Dummy argument that consumes "-e" and does nothing. This is meant as a compatibility layer for supporting the widely adopted standard of passing the command to execute to the terminal via a "-e" option. This works because we then treat the remaining cmdline as trailing options, that will automatically be parsed via the existing "prog" option. This option exists only as a fallback. It is recommended to pass the command as a normal trailing command instead if possible]' \
 '--attach[When used with --domain, if the domain already has running panes, kaku will simply attach and will NOT spawn the specified PROG. If you omit --attach when using --domain, kaku will attach AND then spawn PROG]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
-'*::prog -- Instead of executing your shell, run PROG. For example\: `kaku start -- bash -l` will spawn bash as if it were a login shell. \[aliases\: -e\]:_cmdambivalent' \
+'*::prog -- Instead of executing your shell, run PROG. For example\: `sumi start -- bash -l` will spawn bash as if it were a login shell. \[aliases\: -e\]:_cmdambivalent' \
 && ret=0
 
 ;;
@@ -142,7 +142,7 @@ _arguments "${_arguments_options[@]}" \
 '--top-level[Rather than splitting the active pane, split the entire window]' \
 '-h[Print help]' \
 '--help[Print help]' \
-'*::prog -- Instead of executing your shell, run PROG. For example\: `kaku cli split-pane -- bash -l` will spawn bash as if it were a login shell:_cmdambivalent' \
+'*::prog -- Instead of executing your shell, run PROG. For example\: `sumi cli split-pane -- bash -l` will spawn bash as if it were a login shell:_cmdambivalent' \
 && ret=0
 ;;
 (spawn)
@@ -155,7 +155,7 @@ _arguments "${_arguments_options[@]}" \
 '--new-window[Spawn into a new window, rather than a new tab]' \
 '-h[Print help]' \
 '--help[Print help]' \
-'*::prog -- Instead of executing your shell, run PROG. For example\: `kaku cli spawn -- bash -l` will spawn bash as if it were a login shell:_cmdambivalent' \
+'*::prog -- Instead of executing your shell, run PROG. For example\: `sumi cli spawn -- bash -l` will spawn bash as if it were a login shell:_cmdambivalent' \
 && ret=0
 ;;
 (send-text)
@@ -395,10 +395,10 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (record)
 _arguments "${_arguments_options[@]}" \
-'--cwd=[Start in the specified directory, instead of the default_cwd defined by your kaku configuration]:CWD:_files' \
+'--cwd=[Start in the specified directory, instead of the default_cwd defined by your sumi configuration]:CWD:_files' \
 '-h[Print help]' \
 '--help[Print help]' \
-'*::prog -- Start prog instead of the default_prog defined by your kaku configuration:' \
+'*::prog -- Start prog instead of the default_prog defined by your sumi configuration:' \
 && ret=0
 ;;
 (replay)
@@ -586,12 +586,12 @@ _kaku_commands() {
 (( $+functions[_kaku__cli__activate-pane_commands] )) ||
 _kaku__cli__activate-pane_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli activate-pane commands' commands "$@"
+    _describe -t commands 'sumi cli activate-pane commands' commands "$@"
 }
 (( $+functions[_kaku__cli__help__activate-pane_commands] )) ||
 _kaku__cli__help__activate-pane_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help activate-pane commands' commands "$@"
+    _describe -t commands 'sumi cli help activate-pane commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__activate-pane_commands] )) ||
 _kaku__help__cli__activate-pane_commands() {
@@ -601,12 +601,12 @@ _kaku__help__cli__activate-pane_commands() {
 (( $+functions[_kaku__cli__activate-pane-direction_commands] )) ||
 _kaku__cli__activate-pane-direction_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli activate-pane-direction commands' commands "$@"
+    _describe -t commands 'sumi cli activate-pane-direction commands' commands "$@"
 }
 (( $+functions[_kaku__cli__help__activate-pane-direction_commands] )) ||
 _kaku__cli__help__activate-pane-direction_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help activate-pane-direction commands' commands "$@"
+    _describe -t commands 'sumi cli help activate-pane-direction commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__activate-pane-direction_commands] )) ||
 _kaku__help__cli__activate-pane-direction_commands() {
@@ -616,12 +616,12 @@ _kaku__help__cli__activate-pane-direction_commands() {
 (( $+functions[_kaku__cli__activate-tab_commands] )) ||
 _kaku__cli__activate-tab_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli activate-tab commands' commands "$@"
+    _describe -t commands 'sumi cli activate-tab commands' commands "$@"
 }
 (( $+functions[_kaku__cli__help__activate-tab_commands] )) ||
 _kaku__cli__help__activate-tab_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help activate-tab commands' commands "$@"
+    _describe -t commands 'sumi cli help activate-tab commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__activate-tab_commands] )) ||
 _kaku__help__cli__activate-tab_commands() {
@@ -631,12 +631,12 @@ _kaku__help__cli__activate-tab_commands() {
 (( $+functions[_kaku__cli__adjust-pane-size_commands] )) ||
 _kaku__cli__adjust-pane-size_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli adjust-pane-size commands' commands "$@"
+    _describe -t commands 'sumi cli adjust-pane-size commands' commands "$@"
 }
 (( $+functions[_kaku__cli__help__adjust-pane-size_commands] )) ||
 _kaku__cli__help__adjust-pane-size_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help adjust-pane-size commands' commands "$@"
+    _describe -t commands 'sumi cli help adjust-pane-size commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__adjust-pane-size_commands] )) ||
 _kaku__help__cli__adjust-pane-size_commands() {
@@ -679,7 +679,7 @@ Outputs the pane-id for the newly created pane on success' \
 'zoom-pane:Zoom, unzoom, or toggle zoom state' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
-    _describe -t commands 'kaku cli commands' commands "$@"
+    _describe -t commands 'sumi cli commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli_commands] )) ||
 _kaku__help__cli_commands() {
@@ -713,12 +713,12 @@ Outputs the pane-id for the newly created pane on success' \
 (( $+functions[_kaku__cli__get-pane-direction_commands] )) ||
 _kaku__cli__get-pane-direction_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli get-pane-direction commands' commands "$@"
+    _describe -t commands 'sumi cli get-pane-direction commands' commands "$@"
 }
 (( $+functions[_kaku__cli__help__get-pane-direction_commands] )) ||
 _kaku__cli__help__get-pane-direction_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help get-pane-direction commands' commands "$@"
+    _describe -t commands 'sumi cli help get-pane-direction commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__get-pane-direction_commands] )) ||
 _kaku__help__cli__get-pane-direction_commands() {
@@ -728,12 +728,12 @@ _kaku__help__cli__get-pane-direction_commands() {
 (( $+functions[_kaku__cli__get-text_commands] )) ||
 _kaku__cli__get-text_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli get-text commands' commands "$@"
+    _describe -t commands 'sumi cli get-text commands' commands "$@"
 }
 (( $+functions[_kaku__cli__help__get-text_commands] )) ||
 _kaku__cli__help__get-text_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help get-text commands' commands "$@"
+    _describe -t commands 'sumi cli help get-text commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__get-text_commands] )) ||
 _kaku__help__cli__get-text_commands() {
@@ -766,12 +766,12 @@ Outputs the pane-id for the newly created pane on success' \
 'zoom-pane:Zoom, unzoom, or toggle zoom state' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
-    _describe -t commands 'kaku cli help commands' commands "$@"
+    _describe -t commands 'sumi cli help commands' commands "$@"
 }
 (( $+functions[_kaku__cli__help__help_commands] )) ||
 _kaku__cli__help__help_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help help commands' commands "$@"
+    _describe -t commands 'sumi cli help help commands' commands "$@"
 }
 (( $+functions[_kaku__help_commands] )) ||
 _kaku__help_commands() {
@@ -806,12 +806,12 @@ _kaku__imgcat_commands() {
 (( $+functions[_kaku__cli__help__kill-pane_commands] )) ||
 _kaku__cli__help__kill-pane_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help kill-pane commands' commands "$@"
+    _describe -t commands 'sumi cli help kill-pane commands' commands "$@"
 }
 (( $+functions[_kaku__cli__kill-pane_commands] )) ||
 _kaku__cli__kill-pane_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli kill-pane commands' commands "$@"
+    _describe -t commands 'sumi cli kill-pane commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__kill-pane_commands] )) ||
 _kaku__help__cli__kill-pane_commands() {
@@ -821,12 +821,12 @@ _kaku__help__cli__kill-pane_commands() {
 (( $+functions[_kaku__cli__help__list_commands] )) ||
 _kaku__cli__help__list_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help list commands' commands "$@"
+    _describe -t commands 'sumi cli help list commands' commands "$@"
 }
 (( $+functions[_kaku__cli__list_commands] )) ||
 _kaku__cli__list_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli list commands' commands "$@"
+    _describe -t commands 'sumi cli list commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__list_commands] )) ||
 _kaku__help__cli__list_commands() {
@@ -836,12 +836,12 @@ _kaku__help__cli__list_commands() {
 (( $+functions[_kaku__cli__help__list-clients_commands] )) ||
 _kaku__cli__help__list-clients_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help list-clients commands' commands "$@"
+    _describe -t commands 'sumi cli help list-clients commands' commands "$@"
 }
 (( $+functions[_kaku__cli__list-clients_commands] )) ||
 _kaku__cli__list-clients_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli list-clients commands' commands "$@"
+    _describe -t commands 'sumi cli list-clients commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__list-clients_commands] )) ||
 _kaku__help__cli__list-clients_commands() {
@@ -853,12 +853,12 @@ _kaku__help__cli__list-clients_commands() {
 (( $+functions[_kaku__cli__help__move-pane-to-new-tab_commands] )) ||
 _kaku__cli__help__move-pane-to-new-tab_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help move-pane-to-new-tab commands' commands "$@"
+    _describe -t commands 'sumi cli help move-pane-to-new-tab commands' commands "$@"
 }
 (( $+functions[_kaku__cli__move-pane-to-new-tab_commands] )) ||
 _kaku__cli__move-pane-to-new-tab_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli move-pane-to-new-tab commands' commands "$@"
+    _describe -t commands 'sumi cli move-pane-to-new-tab commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__move-pane-to-new-tab_commands] )) ||
 _kaku__help__cli__move-pane-to-new-tab_commands() {
@@ -868,12 +868,12 @@ _kaku__help__cli__move-pane-to-new-tab_commands() {
 (( $+functions[_kaku__cli__help__proxy_commands] )) ||
 _kaku__cli__help__proxy_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help proxy commands' commands "$@"
+    _describe -t commands 'sumi cli help proxy commands' commands "$@"
 }
 (( $+functions[_kaku__cli__proxy_commands] )) ||
 _kaku__cli__proxy_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli proxy commands' commands "$@"
+    _describe -t commands 'sumi cli proxy commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__proxy_commands] )) ||
 _kaku__help__cli__proxy_commands() {
@@ -893,12 +893,12 @@ _kaku__record_commands() {
 (( $+functions[_kaku__cli__help__rename-workspace_commands] )) ||
 _kaku__cli__help__rename-workspace_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help rename-workspace commands' commands "$@"
+    _describe -t commands 'sumi cli help rename-workspace commands' commands "$@"
 }
 (( $+functions[_kaku__cli__rename-workspace_commands] )) ||
 _kaku__cli__rename-workspace_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli rename-workspace commands' commands "$@"
+    _describe -t commands 'sumi cli rename-workspace commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__rename-workspace_commands] )) ||
 _kaku__help__cli__rename-workspace_commands() {
@@ -918,12 +918,12 @@ _kaku__replay_commands() {
 (( $+functions[_kaku__cli__help__send-text_commands] )) ||
 _kaku__cli__help__send-text_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help send-text commands' commands "$@"
+    _describe -t commands 'sumi cli help send-text commands' commands "$@"
 }
 (( $+functions[_kaku__cli__send-text_commands] )) ||
 _kaku__cli__send-text_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli send-text commands' commands "$@"
+    _describe -t commands 'sumi cli send-text commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__send-text_commands] )) ||
 _kaku__help__cli__send-text_commands() {
@@ -935,12 +935,12 @@ _kaku__help__cli__send-text_commands() {
 (( $+functions[_kaku__cli__help__set-tab-title_commands] )) ||
 _kaku__cli__help__set-tab-title_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help set-tab-title commands' commands "$@"
+    _describe -t commands 'sumi cli help set-tab-title commands' commands "$@"
 }
 (( $+functions[_kaku__cli__set-tab-title_commands] )) ||
 _kaku__cli__set-tab-title_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli set-tab-title commands' commands "$@"
+    _describe -t commands 'sumi cli set-tab-title commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__set-tab-title_commands] )) ||
 _kaku__help__cli__set-tab-title_commands() {
@@ -950,12 +950,12 @@ _kaku__help__cli__set-tab-title_commands() {
 (( $+functions[_kaku__cli__help__set-window-title_commands] )) ||
 _kaku__cli__help__set-window-title_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help set-window-title commands' commands "$@"
+    _describe -t commands 'sumi cli help set-window-title commands' commands "$@"
 }
 (( $+functions[_kaku__cli__set-window-title_commands] )) ||
 _kaku__cli__set-window-title_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli set-window-title commands' commands "$@"
+    _describe -t commands 'sumi cli set-window-title commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__set-window-title_commands] )) ||
 _kaku__help__cli__set-window-title_commands() {
@@ -970,7 +970,7 @@ _kaku__help__set-working-directory_commands() {
 (( $+functions[_kaku__set-working-directory_commands] )) ||
 _kaku__set-working-directory_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku set-working-directory commands' commands "$@"
+    _describe -t commands 'sumi set-working-directory commands' commands "$@"
 }
 (( $+functions[_kaku__help__shell-completion_commands] )) ||
 _kaku__help__shell-completion_commands() {
@@ -980,19 +980,19 @@ _kaku__help__shell-completion_commands() {
 (( $+functions[_kaku__shell-completion_commands] )) ||
 _kaku__shell-completion_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku shell-completion commands' commands "$@"
+    _describe -t commands 'sumi shell-completion commands' commands "$@"
 }
 
 
 (( $+functions[_kaku__cli__help__spawn_commands] )) ||
 _kaku__cli__help__spawn_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help spawn commands' commands "$@"
+    _describe -t commands 'sumi cli help spawn commands' commands "$@"
 }
 (( $+functions[_kaku__cli__spawn_commands] )) ||
 _kaku__cli__spawn_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli spawn commands' commands "$@"
+    _describe -t commands 'sumi cli spawn commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__spawn_commands] )) ||
 _kaku__help__cli__spawn_commands() {
@@ -1002,12 +1002,12 @@ _kaku__help__cli__spawn_commands() {
 (( $+functions[_kaku__cli__help__split-pane_commands] )) ||
 _kaku__cli__help__split-pane_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help split-pane commands' commands "$@"
+    _describe -t commands 'sumi cli help split-pane commands' commands "$@"
 }
 (( $+functions[_kaku__cli__split-pane_commands] )) ||
 _kaku__cli__split-pane_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli split-pane commands' commands "$@"
+    _describe -t commands 'sumi cli split-pane commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__split-pane_commands] )) ||
 _kaku__help__cli__split-pane_commands() {
@@ -1032,17 +1032,17 @@ _kaku__help__start_commands() {
 (( $+functions[_kaku__start_commands] )) ||
 _kaku__start_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku start commands' commands "$@"
+    _describe -t commands 'sumi start commands' commands "$@"
 }
 (( $+functions[_kaku__cli__help__tlscreds_commands] )) ||
 _kaku__cli__help__tlscreds_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help tlscreds commands' commands "$@"
+    _describe -t commands 'sumi cli help tlscreds commands' commands "$@"
 }
 (( $+functions[_kaku__cli__tlscreds_commands] )) ||
 _kaku__cli__tlscreds_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli tlscreds commands' commands "$@"
+    _describe -t commands 'sumi cli tlscreds commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__tlscreds_commands] )) ||
 _kaku__help__cli__tlscreds_commands() {
@@ -1052,12 +1052,12 @@ _kaku__help__cli__tlscreds_commands() {
 (( $+functions[_kaku__cli__help__zoom-pane_commands] )) ||
 _kaku__cli__help__zoom-pane_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli help zoom-pane commands' commands "$@"
+    _describe -t commands 'sumi cli help zoom-pane commands' commands "$@"
 }
 (( $+functions[_kaku__cli__zoom-pane_commands] )) ||
 _kaku__cli__zoom-pane_commands() {
     local commands; commands=()
-    _describe -t commands 'kaku cli zoom-pane commands' commands "$@"
+    _describe -t commands 'sumi cli zoom-pane commands' commands "$@"
 }
 (( $+functions[_kaku__help__cli__zoom-pane_commands] )) ||
 _kaku__help__cli__zoom-pane_commands() {

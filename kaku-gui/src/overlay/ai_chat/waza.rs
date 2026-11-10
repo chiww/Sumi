@@ -61,12 +61,12 @@ pub(crate) fn system_instruction(skill: &Skill) -> String {
 }
 
 const WAZA_PREAMBLE: &str = "\
-You are running a built-in Waza skill inside Kaku AI chat. This instruction is \
+You are running a built-in Waza skill inside Sumi AI chat. This instruction is \
 active for the current user turn only.
 
-Adapt the workflow to Kaku's available tools. Use grep_search for code search, \
+Adapt the workflow to Sumi's available tools. Use grep_search for code search, \
 fs_read/fs_list for file inspection, shell_exec for verification, web_fetch for \
-URLs, web_search/read_url only when configured, and existing Kaku approval gates \
+URLs, web_search/read_url only when configured, and existing Sumi approval gates \
 for any mutating operation. Keep the answer concise and operational. Do not rely \
 on Claude-only commands, subagents, local Waza files, or external scripts unless \
 the user explicitly provides them.";
@@ -114,7 +114,7 @@ files during this planning turn.";
 
 const READ_INSTRUCTION: &str = "\
 Goal: fetch or inspect a URL, GitHub page, web article, or PDF as accurately as \
-Kaku's tools allow.
+Sumi's tools allow.
 
 For GitHub URLs, prefer direct raw or repository inspection when possible. For \
 general pages, use web_fetch; if a search provider is configured, use \
@@ -123,7 +123,7 @@ empty JS shells, and failed fetches. Do not silently summarize empty or partial 
 content as if it succeeded.
 
 Return the source title or URL, what was successfully read, and the requested \
-analysis or summary. If the request is only to save content and Kaku lacks a \
+analysis or summary. If the request is only to save content and Sumi lacks a \
 dedicated save pipeline, state the limitation and provide the clean extracted \
 content instead.";
 

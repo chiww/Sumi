@@ -41,7 +41,7 @@ if [[ "$setup_status" -ne 0 ]]; then
   fail "setup_zsh.sh failed with exit $setup_status"
 fi
 
-kaku_zsh="$HOME/.config/kaku/zsh/kaku.zsh"
+kaku_zsh="$HOME/.config/sumi/zsh/sumi.zsh"
 [[ -f "$kaku_zsh" ]] || fail "managed init file not created at $kaku_zsh"
 
 binding_out=""
@@ -50,12 +50,12 @@ if ! binding_out="$(
   HOME="$HOME" \
   ZDOTDIR="$ZDOTDIR" \
   zsh -f -c '
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 bindkey "^U"
 ' 2>&1
 )"; then
   echo "$binding_out" >&2
-  fail "sourcing generated kaku.zsh failed"
+  fail "sourcing generated sumi.zsh failed"
 fi
 
 case "$binding_out" in

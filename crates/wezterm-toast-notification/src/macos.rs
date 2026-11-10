@@ -20,7 +20,7 @@ use std::sync::Once;
 
 /// Opens System Settings > Notifications > Kaku.
 pub const NOTIFICATION_SETTINGS_URL: &str =
-    "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=fun.tw93.kaku";
+    "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=com.github.chiww.sumi";
 
 const BLOCKED_NONE: u8 = 0;
 const BLOCKED_PENDING: u8 = 1;
@@ -67,7 +67,7 @@ fn note_if_blocked(center: &UNUserNotificationCenter) {
                 && mark_blocked(&BLOCKED_NOTICE)
             {
                 log::warn!(
-                    "notification dropped: notifications are turned off for Kaku in \
+                    "notification dropped: notifications are turned off for Sumi in \
                      System Settings > Notifications"
                 );
             }
@@ -141,7 +141,7 @@ define_class!(
                 if let Some(url) = url {
                     if let Ok(url_str) = url.downcast::<NSString>() {
                         let url_string = url_str.to_string();
-                        if url_string == "kaku://update" {
+                        if url_string == "sumi://update" {
                             spawn_kaku_update();
                         } else {
                             wezterm_open_url::open_url(&url_string);
@@ -313,7 +313,7 @@ const SHOW_URL_ACTION_IDENTIFIER: &str = "SHOW_URL";
 
 /// The notification category opts into CustomDismissAction, so a dismissal is
 /// delivered to the delegate too; only a tap or the Show action may act on
-/// the url (e.g. start the in-app update for `kaku://update`).
+/// the url (e.g. start the in-app update for `sumi://update`).
 fn action_opens_url(action: &str) -> bool {
     action == DEFAULT_ACTION_IDENTIFIER || action == SHOW_URL_ACTION_IDENTIFIER
 }
@@ -332,19 +332,19 @@ fn spawn_kaku_update() {
             .and_then(|exe| exe.parent().map(|p| p.join("kaku-gui")))
             .filter(|p| p.exists())
             .unwrap_or_else(|| {
-                std::path::PathBuf::from("/Applications/Kaku.app/Contents/MacOS/kaku-gui")
+                std::path::PathBuf::from("/Applications/Sumi.app/Contents/MacOS/kaku-gui")
             });
 
         let kaku_cli = kaku_gui
             .parent()
-            .map(|p| p.join("kaku"))
+            .map(|p| p.join("sumi"))
             .filter(|p| p.exists())
             .unwrap_or_else(|| {
-                std::path::PathBuf::from("/Applications/Kaku.app/Contents/MacOS/kaku")
+                std::path::PathBuf::from("/Applications/Sumi.app/Contents/MacOS/sumi")
             });
 
         let result = std::process::Command::new(&kaku_gui)
-            .args(["start", "--", kaku_cli.to_str().unwrap_or("kaku"), "update"])
+            .args(["start", "--", kaku_cli.to_str().unwrap_or("sumi"), "update"])
             .spawn();
 
         match result {

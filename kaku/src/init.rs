@@ -37,7 +37,7 @@ mod imp {
             bail!(
                 "cannot configure {name}: no `{name}` executable found on PATH or in \
                  standard locations. Install it, or pick the other shell with \
-                 `kaku init --shell <shell>`.",
+                 `sumi init --shell <shell>`.",
                 name = shell.name()
             );
         }
@@ -54,7 +54,7 @@ mod imp {
             ManagedShell::Zsh => "setup_zsh.sh",
         };
         let script = resolve_setup_script(script_name)
-            .ok_or_else(|| anyhow!("failed to locate {} for Kaku initialization", script_name))?;
+            .ok_or_else(|| anyhow!("failed to locate {} for Sumi initialization", script_name))?;
 
         let mut cmd = Command::new("/bin/bash");
         cmd.arg(&script)
@@ -74,7 +74,7 @@ mod imp {
             return Ok(());
         }
 
-        bail!("kaku init failed with status {}", status);
+        bail!("sumi init failed with status {}", status);
     }
 
     fn select_shell(
@@ -105,7 +105,7 @@ mod imp {
         zsh_path: &Path,
         fish_path: &Path,
     ) -> anyhow::Result<ManagedShell> {
-        println!("Which shell should Kaku configure?");
+        println!("Which shell should Sumi configure?");
         println!(
             "  1) zsh  ({}){}",
             zsh_path.display(),
@@ -176,7 +176,7 @@ mod imp {
         }
 
         let preferred_bin = resolve_preferred_kaku_bin()
-            .unwrap_or_else(|| PathBuf::from("/Applications/Kaku.app/Contents/MacOS/kaku"));
+            .unwrap_or_else(|| PathBuf::from("/Applications/Sumi.app/Contents/MacOS/sumi"));
         let preferred_bin = escape_for_double_quotes(&preferred_bin.display().to_string());
 
         let script = format!(
@@ -189,14 +189,14 @@ fi
 
 for candidate in \
 	"{preferred_bin}" \
-	"/Applications/Kaku.app/Contents/MacOS/kaku" \
-	"$HOME/Applications/Kaku.app/Contents/MacOS/kaku"; do
+	"/Applications/Sumi.app/Contents/MacOS/sumi" \
+	"$HOME/Applications/Sumi.app/Contents/MacOS/sumi"; do
 	if [[ -n "$candidate" && -x "$candidate" ]]; then
 		exec "$candidate" "$@"
 	fi
 done
 
-echo "kaku: Kaku.app not found. Expected /Applications/Kaku.app." >&2
+echo "kaku: Sumi.app not found. Expected /Applications/Sumi.app." >&2
 exit 127
 "#
         );
@@ -220,7 +220,7 @@ exit 127
         // If something else already owns this path and it is not our wrapper, skip.
         if k_path.exists() {
             let content = fs::read_to_string(&k_path).unwrap_or_default();
-            if !content.contains("Kaku") && !content.contains("kaku") {
+            if !content.contains("Sumi") && !content.contains("kaku") {
                 eprintln!(
                     "{}",
                     rust_i18n::t!(
@@ -240,7 +240,7 @@ exit 127
         }
 
         let preferred_k_bin = resolve_preferred_k_bin()
-            .unwrap_or_else(|| PathBuf::from("/Applications/Kaku.app/Contents/MacOS/k"));
+            .unwrap_or_else(|| PathBuf::from("/Applications/Sumi.app/Contents/MacOS/k"));
         let preferred_k_bin = escape_for_double_quotes(&preferred_k_bin.display().to_string());
 
         let script = format!(
@@ -249,14 +249,14 @@ set -euo pipefail
 
 for candidate in \
 	"{preferred_k_bin}" \
-	"/Applications/Kaku.app/Contents/MacOS/k" \
-	"$HOME/Applications/Kaku.app/Contents/MacOS/k"; do
+	"/Applications/Sumi.app/Contents/MacOS/k" \
+	"$HOME/Applications/Sumi.app/Contents/MacOS/k"; do
 	if [[ -n "$candidate" && -x "$candidate" ]]; then
 		exec "$candidate" "$@"
 	fi
 done
 
-echo "k: Kaku.app not found. Run 'kaku init' after installing Kaku." >&2
+echo "k: Sumi.app not found. Run 'sumi init' after installing Sumi." >&2
 exit 127
 "#
         );
@@ -277,7 +277,7 @@ exit 127
         };
         config::HOME_DIR
             .join(".config")
-            .join("kaku")
+            .join("sumi")
             .join(dir)
             .join("bin")
             .join("k")
@@ -285,17 +285,17 @@ exit 127
 
     fn resolve_preferred_k_bin() -> Option<PathBuf> {
         if let Ok(exe) = std::env::current_exe() {
-            // current_exe is the `kaku` binary; `k` sits alongside it.
+            // current_exe is the `sumi` binary; `k` sits alongside it.
             let k_candidate = exe.with_file_name("k");
             if is_executable_file(&k_candidate) {
                 return Some(k_candidate);
             }
         }
         for candidate in [
-            PathBuf::from("/Applications/Kaku.app/Contents/MacOS/k"),
+            PathBuf::from("/Applications/Sumi.app/Contents/MacOS/k"),
             config::HOME_DIR
                 .join("Applications")
-                .join("Kaku.app")
+                .join("Sumi.app")
                 .join("Contents")
                 .join("MacOS")
                 .join("k"),
@@ -314,10 +314,10 @@ exit 127
         };
         config::HOME_DIR
             .join(".config")
-            .join("kaku")
+            .join("sumi")
             .join(dir)
             .join("bin")
-            .join("kaku")
+            .join("sumi")
     }
 
     fn resolve_preferred_kaku_bin() -> Option<PathBuf> {
@@ -332,7 +332,7 @@ exit 127
             if exe
                 .file_name()
                 .and_then(|n| n.to_str())
-                .map(|n| n.eq_ignore_ascii_case("kaku"))
+                .map(|n| n.eq_ignore_ascii_case("sumi"))
                 .unwrap_or(false)
                 && is_executable_file(&exe)
             {
@@ -341,13 +341,13 @@ exit 127
         }
 
         for candidate in [
-            PathBuf::from("/Applications/Kaku.app/Contents/MacOS/kaku"),
+            PathBuf::from("/Applications/Sumi.app/Contents/MacOS/sumi"),
             config::HOME_DIR
                 .join("Applications")
-                .join("Kaku.app")
+                .join("Sumi.app")
                 .join("Contents")
                 .join("MacOS")
-                .join("kaku"),
+                .join("sumi"),
         ] {
             if is_executable_file(&candidate) {
                 return Some(candidate);
@@ -409,13 +409,13 @@ exit 127
         }
 
         candidates.push(PathBuf::from(format!(
-            "/Applications/Kaku.app/Contents/Resources/{}",
+            "/Applications/Sumi.app/Contents/Resources/{}",
             script_name
         )));
         candidates.push(
             config::HOME_DIR
                 .join("Applications")
-                .join("Kaku.app")
+                .join("Sumi.app")
                 .join("Contents")
                 .join("Resources")
                 .join(script_name),
@@ -473,11 +473,11 @@ exit 127
         }
 
         fn checkout() -> PathBuf {
-            PathBuf::from("/Users/someone/src/Kaku")
+            PathBuf::from("/Users/someone/src/Sumi")
         }
 
         fn app_exe() -> PathBuf {
-            PathBuf::from("/Applications/Kaku.app/Contents/MacOS/kaku")
+            PathBuf::from("/Applications/Sumi.app/Contents/MacOS/sumi")
         }
 
         #[test]
@@ -494,7 +494,7 @@ exit 127
             assert_eq!(
                 candidates.first(),
                 Some(&PathBuf::from(
-                    "/Applications/Kaku.app/Contents/Resources/setup_zsh.sh"
+                    "/Applications/Sumi.app/Contents/Resources/setup_zsh.sh"
                 )),
                 "the bundled script comes first: {candidates:?}"
             );

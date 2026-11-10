@@ -668,9 +668,9 @@ __kaku_check_update_notification() {
   # macOS uses ~/Library/Application Support, Linux uses XDG_DATA_HOME
   local check_file
   if [[ "$OSTYPE" == darwin* ]]; then
-    check_file="$HOME/Library/Application Support/kaku/check_update"
+    check_file="$HOME/Library/Application Support/sumi/check_update"
   else
-    check_file="${XDG_DATA_HOME:-$HOME/.local/share}/kaku/check_update"
+    check_file="${XDG_DATA_HOME:-$HOME/.local/share}/sumi/check_update"
   fi
   [[ -f "$check_file" ]] || return 0
 
@@ -680,8 +680,8 @@ __kaku_check_update_notification() {
   [[ -z "$latest_tag" ]] && return 0
 
   # Get current version
-  if command -v kaku >/dev/null 2>&1; then
-    current_version=$(kaku --version 2>/dev/null | head -1 | awk '{print $2}')
+  if command -v sumi >/dev/null 2>&1; then
+    current_version=$(sumi --version 2>/dev/null | head -1 | awk '{print $2}')
   fi
   [[ -z "$current_version" ]] && return 0
 
@@ -696,9 +696,9 @@ __kaku_check_update_notification() {
   # Check if already notified for this version
   local data_dir
   if [[ "$OSTYPE" == darwin* ]]; then
-    data_dir="$HOME/Library/Application Support/kaku"
+    data_dir="$HOME/Library/Application Support/sumi"
   else
-    data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/kaku"
+    data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/sumi"
   fi
   notified_file="$data_dir/update_notified_${latest_clean}"
   [[ -f "$notified_file" ]] && return 0
@@ -717,7 +717,7 @@ __kaku_check_update_notification() {
     fi
     echo
     if [[ -z "$key" ]]; then
-      kaku update
+      sumi update
     fi
     # Mark as notified
     mkdir -p "$(dirname "$notified_file")" 2>/dev/null

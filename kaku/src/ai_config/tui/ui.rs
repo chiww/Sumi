@@ -92,7 +92,7 @@ fn resolve_main_layout(area_height: u16, content_rows: u16) -> MainLayoutMode {
 fn render_header(frame: &mut ratatui::Frame, area: Rect, status: Option<&str>) {
     let mut spans = vec![
         Span::styled(
-            "  Kaku",
+            "  Sumi",
             Style::default().fg(primary()).add_modifier(Modifier::BOLD),
         ),
         Span::styled(" · ", Style::default().fg(muted())),

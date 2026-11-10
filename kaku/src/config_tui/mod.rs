@@ -14,7 +14,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-const KAKU_AUTO_COLOR_SCHEME_EXPR: &str = "(wezterm.gui and wezterm.gui.get_appearance() or 'Dark'):find('Dark') and 'Kaku Dark' or 'Kaku Light'";
+const KAKU_AUTO_COLOR_SCHEME_EXPR: &str = "(wezterm.gui and wezterm.gui.get_appearance() or 'Dark'):find('Dark') and 'Sumi Dark' or 'Sumi Light'";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum NormalModeAction {
@@ -363,7 +363,7 @@ fn theme_choices() -> Vec<String> {
 /// Appends discovered scheme names after the fixed labels, dropping duplicates
 /// so a scheme that shares a label cannot appear twice.
 fn merge_theme_choices(discovered: Vec<String>) -> Vec<String> {
-    let mut labels = choices(&["Auto", "Kaku Dark", "Kaku Light"]);
+    let mut labels = choices(&["Auto", "Sumi Dark", "Sumi Light"]);
     for name in discovered {
         if !labels.iter().any(|existing| existing == &name) {
             labels.push(name);
@@ -1345,7 +1345,7 @@ impl App {
                 continue;
             }
             // Always write the field, even when the value matches the default.
-            // kaku.lua is a single-file config (not an overlay on bundled
+            // sumi.lua is a single-file config (not an overlay on bundled
             // defaults): removing a "default-valued" line deletes it from the
             // only source of truth, which silently breaks line_height,
             // window_decorations, opacity, and close-confirmation settings.
@@ -1378,7 +1378,7 @@ impl App {
                 };
                 // Always write window_decorations explicitly. Removing the
                 // line when all bits match the bundled default is unsafe:
-                // kaku.lua is the single source of truth and the line may
+                // sumi.lua is the single source of truth and the line may
                 // not be re-synthesized on the next load.
                 let lua_value = Self::compose_window_decorations(tl_on, sh_on, resize);
                 content = self.set_lua_config(&content, "window_decorations", lua_value);
@@ -1453,8 +1453,8 @@ impl App {
 
     fn strip_managed_theme_blocks(content: &str) -> String {
         let (content, _) =
-            Self::strip_theme_block(content, "-- ===== Kaku Theme Defaults (managed) =====");
-        let (content, _) = Self::strip_theme_block(&content, "-- ===== Kaku Theme =====");
+            Self::strip_theme_block(content, "-- ===== Sumi Theme Defaults (managed) =====");
+        let (content, _) = Self::strip_theme_block(&content, "-- ===== Sumi Theme =====");
         content
     }
 
@@ -1705,7 +1705,7 @@ mod tests {
     fn test_app_at(config_path: PathBuf) -> App {
         // Inject the fixed labels so tests never read the developer's real
         // config directory; theme discovery has its own fixtures.
-        App::with_theme_choices(config_path, choices(&["Auto", "Kaku Dark", "Kaku Light"]))
+        App::with_theme_choices(config_path, choices(&["Auto", "Sumi Dark", "Sumi Light"]))
     }
 
     fn test_app() -> App {
@@ -1814,13 +1814,13 @@ mod tests {
     fn discovered_schemes_append_after_the_fixed_theme_labels() {
         let labels = super::merge_theme_choices(vec![
             "Example Dark".to_string(),
-            "Kaku Dark".to_string(),
+            "Sumi Dark".to_string(),
             "Example Dark".to_string(),
         ]);
 
         assert_eq!(
             labels,
-            choices(&["Auto", "Kaku Dark", "Kaku Light", "Example Dark"])
+            choices(&["Auto", "Sumi Dark", "Sumi Light", "Example Dark"])
         );
     }
 
@@ -1828,7 +1828,7 @@ mod tests {
     fn selecting_a_user_scheme_writes_its_name() {
         let mut app = App::with_theme_choices(
             PathBuf::from("/tmp/kaku-config-tui-test.lua"),
-            choices(&["Auto", "Kaku Dark", "Kaku Light", "Example Dark"]),
+            choices(&["Auto", "Sumi Dark", "Sumi Light", "Example Dark"]),
         );
         app.selected = app
             .fields
@@ -1861,7 +1861,7 @@ mod tests {
     #[test]
     fn user_scheme_names_with_quotes_survive_a_save_and_reload() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         for name in [
             "O'Brien Dark",
             r"Back\slash",
@@ -1869,11 +1869,11 @@ mod tests {
             "Say \"hi\"",
             "中文 主题",
         ] {
-            std::fs::write(&config_path, "config.color_scheme = 'Kaku Dark'\n")
+            std::fs::write(&config_path, "config.color_scheme = 'Sumi Dark'\n")
                 .expect("write config");
             let mut app = App::with_theme_choices(
                 config_path.clone(),
-                choices(&["Auto", "Kaku Dark", "Kaku Light", name]),
+                choices(&["Auto", "Sumi Dark", "Sumi Light", name]),
             );
             app.load_config();
             let idx = app
@@ -1906,7 +1906,7 @@ mod tests {
     #[test]
     fn load_config_keeps_a_selected_scheme_that_was_not_discovered() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(&config_path, "config.color_scheme = 'Local Only'\n").expect("write config");
 
         let mut app = test_app_at(config_path);
@@ -1993,7 +1993,7 @@ mod tests {
     #[test]
     fn load_config_keeps_a_non_preset_line_height_selectable() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(&config_path, "config.line_height = 1.33\n").expect("write config");
 
         let mut app = test_app_at(config_path);
@@ -2014,13 +2014,13 @@ mod tests {
             .iter()
             .position(|f| f.lua_key == "color_scheme")
             .expect("color_scheme field to exist");
-        app.fields[idx].value = "Kaku Light".to_string();
+        app.fields[idx].value = "Sumi Light".to_string();
 
         let content = "\
 local wezterm = require 'wezterm'
 local config = {}
 
--- ===== Kaku Theme =====
+-- ===== Sumi Theme =====
 config.colors = {
   foreground = '#d4d4d4',
   background = '#1e1e1e',
@@ -2028,16 +2028,16 @@ config.colors = {
 config.window_frame = {
   active_titlebar_bg = '#1e1e1e',
 }
-config.color_scheme = 'Kaku Dark'
+config.color_scheme = 'Sumi Dark'
 return config
 ";
 
         let updated = app.update_lua_config(content, &app.fields[idx]);
 
-        assert!(!updated.contains("-- ===== Kaku Theme ====="));
+        assert!(!updated.contains("-- ===== Sumi Theme ====="));
         assert!(!updated.contains("config.colors"));
         assert!(!updated.contains("config.window_frame"));
-        assert!(updated.contains("config.color_scheme = 'Kaku Light'"));
+        assert!(updated.contains("config.color_scheme = 'Sumi Light'"));
         assert!(updated.contains("return config"));
     }
 
@@ -2049,14 +2049,14 @@ return config
             .iter()
             .position(|f| f.lua_key == "color_scheme")
             .expect("color_scheme field to exist");
-        app.fields[idx].value = "Kaku Light".to_string();
+        app.fields[idx].value = "Sumi Light".to_string();
 
         let content = "\
 local config = {}
 config.colors = {
   background = '#111111',
 }
-config.color_scheme = 'Kaku Dark'
+config.color_scheme = 'Sumi Dark'
 return config
 ";
 
@@ -2064,7 +2064,7 @@ return config
 
         assert!(updated.contains("config.colors"));
         assert!(updated.contains("background = '#111111'"));
-        assert!(updated.contains("config.color_scheme = 'Kaku Light'"));
+        assert!(updated.contains("config.color_scheme = 'Sumi Light'"));
     }
 
     /// #545: a user file carrying its own palette makes the Theme row cosmetic,
@@ -2073,10 +2073,10 @@ return config
     #[test]
     fn load_config_flags_a_theme_overridden_by_user_colors() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(
             &config_path,
-            "config.color_scheme = 'Kaku Light'\nconfig.colors = { background = '#15141b' }\n",
+            "config.color_scheme = 'Sumi Light'\nconfig.colors = { background = '#15141b' }\n",
         )
         .expect("write config");
 
@@ -2089,8 +2089,8 @@ return config
     #[test]
     fn load_config_leaves_theme_unflagged_without_palette_overrides() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
-        std::fs::write(&config_path, "config.color_scheme = 'Kaku Light'\n").expect("write config");
+        let config_path = dir.path().join("sumi.lua");
+        std::fs::write(&config_path, "config.color_scheme = 'Sumi Light'\n").expect("write config");
 
         let mut app = test_app_at(config_path);
         app.load_config();
@@ -2101,7 +2101,7 @@ return config
     #[test]
     fn load_config_round_trips_serialized_auto_theme_expression() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(
             &config_path,
             format!("config.color_scheme = {KAKU_AUTO_COLOR_SCHEME_EXPR}\n"),
@@ -2130,8 +2130,8 @@ return config
             .find(|f| f.lua_key == "show_new_tab_button_in_tab_bar")
             .expect("show_new_tab_button_in_tab_bar field to exist");
         let bundled = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
-        let content = std::fs::read_to_string(bundled).expect("read bundled kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
+        let content = std::fs::read_to_string(bundled).expect("read bundled sumi.lua");
 
         assert_eq!(field.default, "On");
         assert!(content.contains("config.show_new_tab_button_in_tab_bar = true\n"));
@@ -2222,7 +2222,7 @@ return config
 
         // A config that already turned it on by hand opens with the toggle On.
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(&config_path, "config.show_tab_index_in_tab_bar = true\n")
             .expect("write config");
         let mut app = test_app_at(config_path);
@@ -2373,7 +2373,7 @@ return config
     #[test]
     fn dynamic_color_scheme_expression_is_not_parsed_as_writable_value() {
         let content =
-            "config.color_scheme = appearance == 'Dark' and 'Kaku Dark' or 'Kaku Light'\n";
+            "config.color_scheme = appearance == 'Dark' and 'Sumi Dark' or 'Sumi Light'\n";
 
         assert_eq!(App::extract_lua_value(content, "color_scheme"), None);
         assert!(App::has_config_line(content, "color_scheme"));
@@ -2399,7 +2399,7 @@ return config
     #[test]
     fn ensure_editable_config_creates_missing_custom_path() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("nested").join("custom-kaku.lua");
+        let config_path = dir.path().join("nested").join("custom-sumi.lua");
 
         let ensured = ensure_editable_config_exists(Some(&config_path)).expect("ensure config");
 
@@ -2432,7 +2432,7 @@ return config
             app.dirty,
             "ESC in Selecting mode should commit the selection"
         );
-        assert_eq!(app.fields[idx].value, "Kaku Dark");
+        assert_eq!(app.fields[idx].value, "Sumi Dark");
     }
 
     #[test]
@@ -2614,7 +2614,7 @@ return config
     #[test]
     fn save_config_produces_trailing_newline() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         // Write a minimal valid config so save_config has something to update.
         std::fs::write(
             &config_path,
@@ -2706,7 +2706,7 @@ return config
         ];
         for (lua_val, expected_tl, expected_shadow, expected_resize) in &cases {
             let dir = tempdir().expect("tempdir");
-            let config_path = dir.path().join("kaku.lua");
+            let config_path = dir.path().join("sumi.lua");
             std::fs::write(
                 &config_path,
                 format!("config.window_decorations = \"{}\"\n", lua_val),
@@ -2771,7 +2771,7 @@ return config
         ];
         for (tl_val, sh_val, expected_line) in cases {
             let dir = tempdir().expect("tempdir");
-            let config_path = dir.path().join("kaku.lua");
+            let config_path = dir.path().join("sumi.lua");
             std::fs::write(
                 &config_path,
                 "local wezterm = require 'wezterm'\nlocal config = {}\nreturn config\n",
@@ -2806,7 +2806,7 @@ return config
     #[test]
     fn window_decorations_integrated_buttons_no_resize_preserved_on_save() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(
             &config_path,
             "local wezterm = require 'wezterm'\nlocal config = {}\nconfig.window_decorations = \"INTEGRATED_BUTTONS\"\nreturn config\n",
@@ -2828,7 +2828,7 @@ return config
     #[test]
     fn window_decorations_integrated_buttons_no_resize_preserved_on_shadow_toggle() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(
             &config_path,
             "local wezterm = require 'wezterm'\nlocal config = {}\nconfig.window_decorations = \"INTEGRATED_BUTTONS\"\nreturn config\n",
@@ -2861,7 +2861,7 @@ return config
     #[test]
     fn window_decorations_unsupported_preserved_on_noop_save() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         let original = "local wezterm = require 'wezterm'\nlocal config = {}\nconfig.window_decorations = \"TITLE|RESIZE\"\nreturn config\n";
         std::fs::write(&config_path, original).expect("write");
 
@@ -2902,7 +2902,7 @@ return config
         // Toggling traffic lights (Off→On) should produce INTEGRATED_BUTTONS|RESIZE
         // while preserving the shadow state.
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(
             &config_path,
             "local wezterm = require 'wezterm'\nlocal config = {}\nconfig.window_decorations = \"TITLE|RESIZE\"\nreturn config\n",
@@ -2939,7 +2939,7 @@ return config
         // TITLE|RESIZE|MACOS_FORCE_DISABLE_SHADOW: bits → TL=Off, Shadow=Off.
         // Toggling only traffic lights should preserve Shadow=Off.
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(
             &config_path,
             "local wezterm = require 'wezterm'\nlocal config = {}\nconfig.window_decorations = \"TITLE|RESIZE|MACOS_FORCE_DISABLE_SHADOW\"\nreturn config\n",
@@ -2990,7 +2990,7 @@ return config
     #[test]
     fn window_decorations_default_state_preserves_explicit_line() {
         let dir = tempdir().expect("tempdir");
-        let config_path = dir.path().join("kaku.lua");
+        let config_path = dir.path().join("sumi.lua");
         std::fs::write(
             &config_path,
             "local wezterm = require 'wezterm'\nlocal config = {}\nconfig.window_decorations = \"INTEGRATED_BUTTONS|RESIZE\"\nreturn config\n",
@@ -3001,7 +3001,7 @@ return config
         app.load_config();
 
         // Both loaded as "On" (default state). Save must keep the line
-        // because kaku.lua is the single source of truth; removing it
+        // because sumi.lua is the single source of truth; removing it
         // would silently break window_decorations on the next launch.
         app.save_config().expect("save_config");
         let content = std::fs::read_to_string(&config_path).expect("read config");

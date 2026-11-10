@@ -42,7 +42,7 @@ const XTERM_UNICODE11_JS: &str = include_str!("../assets/web/xterm-unicode11.js"
 /// The desktop view, loaded by the page only when Kaku offers it.
 const DESKTOP_JS: &str = include_str!("../assets/web/desktop.js");
 // Kaku's bundled terminal font: Regular for text, Medium for bold, matching
-// the dark-theme weights in the bundled kaku.lua, and the icons of its
+// the dark-theme weights in the bundled sumi.lua, and the icons of its
 // bundled Symbols Nerd Font. WOFF2 from scripts/build_web_fonts.py.
 const FONT_REGULAR: &[u8] = include_bytes!("../assets/web/font-regular.woff2");
 const FONT_MEDIUM: &[u8] = include_bytes!("../assets/web/font-medium.woff2");

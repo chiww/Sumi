@@ -39,13 +39,13 @@ async function until(fn, ms = 15000) {
   };
   try {
     const local = await port(), relay = await port();
-    fs.mkdirSync(path.join(home, '.config/kaku'), { recursive: true });
+    fs.mkdirSync(path.join(home, '.config/sumi'), { recursive: true });
     fs.mkdirSync(path.join(home, 'tmp'));
-    const config = path.join(home, '.config/kaku/kaku.lua');
+    const config = path.join(home, '.config/sumi/sumi.lua');
     fs.writeFileSync(config, `return {default_prog={'/bin/zsh','-f'}, default_cwd=${JSON.stringify(home)}, restore_previous_session=false, pane_close_confirmation="AlwaysPrompt", tab_close_confirmation="AlwaysPrompt", initial_cols=80, initial_rows=24, font_size=16, remote={enabled=true,bind='127.0.0.1',port=${local},tunnel=true,tunnel_url='ws://127.0.0.1:${relay}'}}`);
     start(path.join(root, 'crates/kaku-relay/target/debug/kaku-relay'), [], { PORT: String(relay), KAKU_RELAY_ACCESS_CODE: 'live-code' });
     await until(async () => { try { return (await fetch(`http://127.0.0.1:${relay}/health`)).ok; } catch { return false; } });
-    const app = process.env.KAKU_TEST_APP || path.join(root, 'dist/Kaku.app');
+    const app = process.env.KAKU_TEST_APP || path.join(root, 'dist/Sumi.app');
     start(path.join(app, 'Contents/MacOS/kaku-gui'), ['--config-file', config, 'start', '--always-new-process'], {
       HOME: home, XDG_CONFIG_HOME: path.join(home, '.config'), TMPDIR: path.join(home, 'tmp/')
     });
@@ -231,26 +231,26 @@ async function until(fn, ms = 15000) {
     await sleep(250);
 
     // Through the loopback relay, an incorrect but well-formed key is final.
-    const identityPath = path.join(home, 'Library/Application Support/kaku/remote-share.json');
+    const identityPath = path.join(home, 'Library/Application Support/sumi/remote-share.json');
     await until(() => fs.existsSync(identityPath));
     const identity = JSON.parse(fs.readFileSync(identityPath));
     const id = crypto.createHash('sha256').update(identity.secret).digest('hex').slice(0, 32);
     const relayBase = `http://127.0.0.1:${relay}/${id}/`;
     const legacyBase = `http://127.0.0.1:${relay}/t/${id}/`;
     // This relay asks for an access code: without one the Mac is turned
-    // away and says so; once `kaku remote` saves it, Kaku tries again within
+    // away and says so; once `sumi remote` saves it, Kaku tries again within
     // a second or two instead of waiting out its backoff.
     const statusPath = path.join(home, 'tmp/kaku-remote-relay.json');
     await until(() => fs.existsSync(statusPath) && JSON.parse(fs.readFileSync(statusPath)).last_error.includes('access code required'));
     assert.equal((await fetch(relayBase)).status, 404);
-    fs.writeFileSync(path.join(home, 'Library/Application Support/kaku/remote-access'), 'live-code\n', { mode: 0o600 });
+    fs.writeFileSync(path.join(home, 'Library/Application Support/sumi/remote-access'), 'live-code\n', { mode: 0o600 });
     const saved = Date.now();
     await until(async () => (await fetch(relayBase)).ok, 8000);
     console.log(`access code accepted after ${Date.now() - saved} ms`);
     await until(async () => (await fetch(legacyBase)).ok);
     await until(async () => (await fetch(relayBase)).ok);
     const cli = (...args) => new Promise((resolve, reject) => {
-      const child = spawn(path.join(app, 'Contents/MacOS/kaku'), args, {
+      const child = spawn(path.join(app, 'Contents/MacOS/sumi'), args, {
         env: { ...inheritedEnv, HOME: home, XDG_CONFIG_HOME: path.join(home, '.config'), TMPDIR: path.join(home, 'tmp/') },
       });
       let out = '';
@@ -258,17 +258,17 @@ async function until(fn, ms = 15000) {
       child.once('error', reject);
       child.once('exit', code => code === 0 ? resolve(out) : reject(new Error(`kaku ${args.join(' ')} exited ${code}: ${out}`)));
     });
-    // A new pairing waits for Enter in `kaku remote`, which reads it only
+    // A new pairing waits for Enter in `sumi remote`, which reads it only
     // from a terminal: run it on a pty and press Enter once the code shows.
     const confirmPairing = () => new Promise((resolve, reject) => {
       const pty = 'import os, pty, sys\npid, fd = pty.fork()\nif pid == 0: os.execv(sys.argv[1], sys.argv[1:])\nout, sent = b"", False\nwhile True:\n    try: data = os.read(fd, 4096)\n    except OSError: break\n    if not data: break\n    out += data\n    if not sent and b"press Enter" in out: os.write(fd, b"\\r"); sent = True\nsys.stdout.buffer.write(out)\nsys.exit(os.waitstatus_to_exitcode(os.waitpid(pid, 0)[1]))\n';
-      const child = spawn('python3', ['-I', '-c', pty, path.join(app, 'Contents/MacOS/kaku'), 'remote'], {
+      const child = spawn('python3', ['-I', '-c', pty, path.join(app, 'Contents/MacOS/sumi'), 'remote'], {
         env: { ...inheritedEnv, HOME: home, XDG_CONFIG_HOME: path.join(home, '.config'), TMPDIR: path.join(home, 'tmp/') },
       });
       let out = '';
       child.stdout.on('data', d => { out += d; });
       child.once('error', reject);
-      child.once('exit', code => code === 0 ? resolve(out) : reject(new Error(`kaku remote on a pty exited ${code}: ${out}`)));
+      child.once('exit', code => code === 0 ? resolve(out) : reject(new Error(`sumi remote on a pty exited ${code}: ${out}`)));
     });
     const pairingLink = async () => (await cli('remote')).split('\n').find(line => /#[A-Za-z0-9_-]{22}$/.test(line));
     // Without pairing, the page says how to pair and opens no socket.
@@ -488,7 +488,7 @@ async function until(fn, ms = 15000) {
     await new Promise(resolve => racing.once('open', resolve));
     for (let i = 0; i < 100; i++) racing.send(Buffer.from('queued-input'));
     assert.equal(await Promise.race([rejected, sleep(2000).then(() => 'timeout')]), 4403);
-    const reset = start(path.join(app, 'Contents/MacOS/kaku'), ['remote', '--reset'], {
+    const reset = start(path.join(app, 'Contents/MacOS/sumi'), ['remote', '--reset'], {
       HOME: home, XDG_CONFIG_HOME: path.join(home, '.config'), TMPDIR: path.join(home, 'tmp/')
     });
     const resetExit = await new Promise(resolve => reset.once('exit', resolve));

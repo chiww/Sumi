@@ -1,4 +1,4 @@
-//! Support bundle written at the end of every `kaku doctor` run.
+//! Support bundle written at the end of every `sumi doctor` run.
 //!
 //! Collectors run in parallel so the whole bundle costs about as long as the
 //! slowest one (the 2 second `sample` of a running Kaku). Every external
@@ -14,7 +14,7 @@ use std::process::{Command, Stdio};
 use std::sync::{LazyLock, Mutex};
 use std::time::{Duration, Instant, SystemTime};
 
-const BUNDLE_NAME: &str = "Kaku-Diagnose";
+const BUNDLE_NAME: &str = "Sumi-Diagnose";
 const COMMAND_TIMEOUT: Duration = Duration::from_secs(5);
 const SAMPLE_SECONDS: &str = "2";
 const LOG_FILES: usize = 5;
@@ -57,7 +57,7 @@ pub fn write_bundle(doctor_report: &str) -> anyhow::Result<PathBuf> {
         }
     });
     if gui_pids.is_empty() {
-        bundle.note("Kaku was not running, so no live sample was taken");
+        bundle.note("Sumi was not running, so no live sample was taken");
     }
     bundle.write_readme();
 
@@ -108,7 +108,7 @@ impl Bundle {
 
     fn write_readme(&self) {
         let mut text = String::from(
-            "Kaku diagnostic bundle. Home paths, host name, MAC addresses, serial\n\
+            "Sumi diagnostic bundle. Home paths, host name, MAC addresses, serial\n\
              numbers and credential-looking values are replaced before writing.\n\
              assistant.toml is never collected.\n",
         );
@@ -128,7 +128,7 @@ impl Bundle {
 
 fn collect_environment(bundle: &Bundle) {
     let mut text = format!(
-        "Kaku: {}\nApp: {}\n",
+        "Sumi: {}\nApp: {}\n",
         crate::doctor::doctor_version_string(),
         std::env::current_exe()
             .map(|p| p.display().to_string())
@@ -226,7 +226,7 @@ fn collect_crash_reports(bundle: &Bundle) {
     let cutoff = SystemTime::now().checked_sub(CRASH_REPORT_MAX_AGE);
     let reports = newest_files(
         &dir,
-        |n| (n.starts_with("Kaku") || n.starts_with("kaku")) && n.ends_with(".ips"),
+        |n| (n.starts_with("Sumi") || n.starts_with("kaku")) && n.ends_with(".ips"),
         CRASH_REPORTS,
     );
     for path in reports {
@@ -243,8 +243,8 @@ fn collect_crash_reports(bundle: &Bundle) {
 fn collect_config(bundle: &Bundle) {
     let config_file = config::user_config_path();
     match fs::read(&config_file) {
-        Ok(bytes) => bundle.write("config/kaku.lua", &bytes),
-        Err(err) => bundle.note(format!("config/kaku.lua: {err}")),
+        Ok(bytes) => bundle.write("config/sumi.lua", &bytes),
+        Err(err) => bundle.note(format!("config/sumi.lua: {err}")),
     }
     let Some(config_dir) = config_file.parent() else {
         return;
@@ -582,7 +582,7 @@ key_down: sending "\r", Char('\r') NONE
 
     #[test]
     fn leaves_ordinary_text_alone() {
-        let input = "Kaku 0.21.0 on macOS 26.1, font_size = 17, line_height = 1.28\n";
+        let input = "Sumi 0.21.0 on macOS 26.1, font_size = 17, line_height = 1.28\n";
         assert_eq!(redactor().redact(input), input);
     }
 

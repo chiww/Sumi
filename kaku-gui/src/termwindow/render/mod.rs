@@ -123,7 +123,7 @@ pub(crate) fn forces_opaque_kaku_tui_background(pane: &Arc<dyn Pane>) -> bool {
                 .executable
                 .file_name()
                 .map(|name| name.to_string_lossy().into_owned());
-            if executable.as_deref() != Some("kaku") {
+            if executable.as_deref() != Some("sumi") {
                 return false;
             }
 
@@ -143,7 +143,7 @@ fn kaku_tui_background_for_process(
     // The cached leader path avoids a system-wide process scan on ordinary paints.
     let is_kaku = process_name
         .and_then(|path| std::path::Path::new(path).file_name())
-        .is_some_and(|name| name == "kaku");
+        .is_some_and(|name| name == "sumi");
     is_kaku && check_process_args()
 }
 
@@ -173,7 +173,7 @@ mod kaku_tui_process_tests {
 
     #[test]
     fn kaku_still_requires_process_argument_confirmation() {
-        for name in ["kaku", "/Applications/Kaku.app/Contents/MacOS/kaku"] {
+        for name in ["sumi", "/Applications/Sumi.app/Contents/MacOS/sumi"] {
             assert!(kaku_tui_background_for_process(Some(name), || true));
             assert!(!kaku_tui_background_for_process(Some(name), || false));
         }
@@ -184,11 +184,11 @@ mod kaku_tui_process_tests {
         let lookups = std::cell::Cell::new(0);
         for (name, args_match, expected) in [
             ("/bin/zsh", false, false),
-            ("/opt/bin/kaku", true, true),
+            ("/opt/bin/sumi", true, true),
             // The leader path can be stale after exit; argv must still confirm.
-            ("/opt/bin/kaku", false, false),
+            ("/opt/bin/sumi", false, false),
             ("/bin/zsh", false, false),
-            ("/opt/bin/kaku", true, true),
+            ("/opt/bin/sumi", true, true),
         ] {
             assert_eq!(
                 kaku_tui_background_for_process(Some(name), || {

@@ -1,6 +1,6 @@
 //! AI client for Kaku's built-in chat overlay.
 //!
-//! Reads API config from `~/.config/kaku/assistant.toml` and provides
+//! Reads API config from `~/.config/sumi/assistant.toml` and provides
 //! synchronous streaming clients for OpenAI-compatible Chat Completions and
 //! Responses APIs.
 //! Supports function/tool calling for agentic workflows.
@@ -1700,7 +1700,7 @@ mod tests {
             chat_model_choices: Vec::new(),
             base_url: "https://example.test/v1".to_string(),
             custom_headers: vec![
-                ("User-Agent".to_string(), "Kaku-Test".to_string()),
+                ("User-Agent".to_string(), "Sumi-Test".to_string()),
                 ("X-Customer-ID".to_string(), "acme".to_string()),
             ],
             provider: "Custom".to_string(),
@@ -1724,7 +1724,7 @@ mod tests {
         let user_agents = headers.get_all(USER_AGENT).iter().collect::<Vec<_>>();
 
         assert_eq!(user_agents.len(), 1);
-        assert_eq!(user_agents[0], "Kaku-Test");
+        assert_eq!(user_agents[0], "Sumi-Test");
         assert_eq!(
             headers.get(AUTHORIZATION).and_then(|v| v.to_str().ok()),
             Some("Bearer test-token")

@@ -32,7 +32,7 @@ pub struct StagedUpdateInfo {
     pub body: String,
     pub staged_at: u64,
     pub verified: bool,
-    /// Path to the extracted Kaku.app inside the staged_update directory.
+    /// Path to the extracted Sumi.app inside the staged_update directory.
     pub app_path: String,
 }
 
@@ -42,9 +42,9 @@ const STAGED_META_NAME: &str = "metadata.json";
 const UPDATE_ZIP_NAME: &str = "kaku_for_update.zip";
 const UPDATE_SHA_NAME: &str = "kaku_for_update.zip.sha256";
 const LATEST_ZIP_URL: &str =
-    "https://github.com/tw93/Kaku/releases/latest/download/kaku_for_update.zip";
+    "https://github.com/chiww/Sumi/releases/latest/download/kaku_for_update.zip";
 const LATEST_SHA_URL: &str =
-    "https://github.com/tw93/Kaku/releases/latest/download/kaku_for_update.zip.sha256";
+    "https://github.com/chiww/Sumi/releases/latest/download/kaku_for_update.zip.sha256";
 /// Staged updates older than this are considered expired.
 const STAGED_MAX_AGE_SECS: u64 = 7 * 24 * 3600;
 
@@ -158,7 +158,7 @@ impl StagedUpdateLock {
         if rc != 0 {
             let err = std::io::Error::last_os_error();
             if matches!(err.raw_os_error(), Some(libc::EWOULDBLOCK)) {
-                anyhow::bail!("another Kaku process is already staging an update");
+                anyhow::bail!("another Sumi process is already staging an update");
             }
             return Err(anyhow!(
                 "failed to acquire staging lock {}: {}",
@@ -198,7 +198,7 @@ fn curl_get_release_json(url: &str, proxy: &Option<String>) -> anyhow::Result<Re
 pub fn get_latest_release_info() -> anyhow::Result<Release> {
     let proxy = detect_system_proxy();
     curl_get_release_json(
-        "https://api.github.com/repos/tw93/Kaku/releases/latest",
+        "https://api.github.com/repos/chiww/Sumi/releases/latest",
         &proxy,
     )
     .or_else(|_| get_latest_tag_via_redirect(&proxy))
@@ -218,7 +218,7 @@ fn get_latest_tag_via_redirect(proxy: &Option<String>) -> anyhow::Result<Release
         .arg("%{url_effective}")
         .arg("--output")
         .arg("/dev/null")
-        .arg("https://github.com/tw93/Kaku/releases/latest");
+        .arg("https://github.com/chiww/Sumi/releases/latest");
     apply_to_command(&mut cmd, proxy);
 
     let output = cmd.output().map_err(|e| anyhow!("curl failed: {}", e))?;
@@ -238,7 +238,7 @@ fn get_latest_tag_via_redirect(proxy: &Option<String>) -> anyhow::Result<Release
     Ok(Release {
         url: String::new(),
         body: String::new(),
-        html_url: "https://github.com/tw93/Kaku/releases/latest".to_string(),
+        html_url: "https://github.com/chiww/Sumi/releases/latest".to_string(),
         tag_name: tag.to_string(),
         assets: vec![],
     })
@@ -248,7 +248,7 @@ fn get_latest_tag_via_redirect(proxy: &Option<String>) -> anyhow::Result<Release
 pub fn get_nightly_release_info() -> anyhow::Result<Release> {
     let proxy = detect_system_proxy();
     curl_get_release_json(
-        "https://api.github.com/repos/tw93/Kaku/releases/tags/nightly",
+        "https://api.github.com/repos/chiww/Sumi/releases/tags/nightly",
         &proxy,
     )
 }
@@ -414,7 +414,7 @@ fn verify_sha256(zip_path: &Path, checksum_text: &str) -> anyhow::Result<()> {
 }
 
 fn find_kaku_app(extracted_dir: &Path) -> Option<PathBuf> {
-    let direct = extracted_dir.join("Kaku.app");
+    let direct = extracted_dir.join("Sumi.app");
     if direct.exists() {
         return Some(direct);
     }
@@ -425,7 +425,7 @@ fn find_kaku_app(extracted_dir: &Path) -> Option<PathBuf> {
         if path
             .file_name()
             .and_then(|n| n.to_str())
-            .map(|n| n.eq_ignore_ascii_case("Kaku.app"))
+            .map(|n| n.eq_ignore_ascii_case("Sumi.app"))
             .unwrap_or(false)
         {
             return Some(path);
@@ -512,7 +512,7 @@ fn download_and_stage_update(
 
     // 4. Find and verify the extracted app
     let new_app_path = find_kaku_app(&extracted_dir)
-        .ok_or_else(|| anyhow!("update package does not contain Kaku.app"))?;
+        .ok_or_else(|| anyhow!("update package does not contain Sumi.app"))?;
 
     let new_version = read_app_version(&new_app_path)?;
     let current = wezterm_version();
@@ -725,13 +725,13 @@ fn show_update_notification(tag: &str) {
         persistent_toast_notification_with_click_to_open_url(
             "Update Ready",
             &format!("{} is ready. Click to restart and update.", version),
-            "kaku://update",
+            "sumi://update",
         );
     } else {
         persistent_toast_notification_with_click_to_open_url(
             "Update Available",
             &format!("{} is available. Click to update.", version),
-            "kaku://update",
+            "sumi://update",
         );
     }
 }
@@ -807,14 +807,14 @@ fn check_update_completed() {
 // because kaku-gui does not depend on the kaku crate).
 // ---------------------------------------------------------------------------
 
-/// Resolve the installed Kaku.app path, matching the logic in the CLI crate.
+/// Resolve the installed Sumi.app path, matching the logic in the CLI crate.
 pub fn resolve_target_app_path() -> anyhow::Result<PathBuf> {
     if let Some(path) = std::env::var_os("KAKU_UPDATE_TARGET_APP") {
         let app = PathBuf::from(path);
-        if app.ends_with("Kaku.app") {
+        if app.ends_with("Sumi.app") {
             return Ok(app);
         }
-        anyhow::bail!("KAKU_UPDATE_TARGET_APP must point to Kaku.app");
+        anyhow::bail!("KAKU_UPDATE_TARGET_APP must point to Sumi.app");
     }
 
     let exe = std::env::current_exe().map_err(|e| anyhow!("resolve current executable: {}", e))?;
@@ -822,19 +822,19 @@ pub fn resolve_target_app_path() -> anyhow::Result<PathBuf> {
         if ancestor
             .file_name()
             .and_then(|n| n.to_str())
-            .map(|n| n.eq_ignore_ascii_case("Kaku.app"))
+            .map(|n| n.eq_ignore_ascii_case("Sumi.app"))
             .unwrap_or(false)
         {
             return Ok(ancestor.to_path_buf());
         }
     }
 
-    let default_app = PathBuf::from("/Applications/Kaku.app");
+    let default_app = PathBuf::from("/Applications/Sumi.app");
     if default_app.exists() {
         return Ok(default_app);
     }
 
-    anyhow::bail!("cannot locate installed Kaku.app")
+    anyhow::bail!("cannot locate installed Sumi.app")
 }
 
 pub fn write_update_helper_script(script_path: &Path) -> anyhow::Result<()> {
@@ -862,15 +862,15 @@ pub fn spawn_update_helper(
     use std::os::unix::process::CommandExt;
     use std::process::{Command, Stdio};
 
-    // Validate paths end with Kaku.app.
-    if !target_app.ends_with("Kaku.app") {
+    // Validate paths end with Sumi.app.
+    if !target_app.ends_with("Sumi.app") {
         anyhow::bail!(
-            "target_app must end with Kaku.app: {}",
+            "target_app must end with Sumi.app: {}",
             target_app.display()
         );
     }
-    if !new_app.ends_with("Kaku.app") {
-        anyhow::bail!("new_app must end with Kaku.app: {}", new_app.display());
+    if !new_app.ends_with("Sumi.app") {
+        anyhow::bail!("new_app must end with Sumi.app: {}", new_app.display());
     }
 
     Command::new("/usr/bin/nohup")
@@ -882,7 +882,7 @@ pub fn spawn_update_helper(
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        // Kaku.app runs as a launchd job, and launchd kills what is left of
+        // Sumi.app runs as a launchd job, and launchd kills what is left of
         // its process group when kaku-gui exits: the helper stops Kaku first,
         // so in Kaku's group it died before replacing the app (#591). The
         // group only covers the moment until the helper hands itself to its
@@ -897,7 +897,7 @@ pub fn spawn_update_helper(
 mod tests {
     use super::*;
 
-    // A Kaku.app launched from Finder is a launchd job whose process group
+    // A Sumi.app launched from Finder is a launchd job whose process group
     // launchd kills once kaku-gui exits, so the helper must lead its own group
     // or it dies right after stopping Kaku (#591).
     #[test]
@@ -910,7 +910,7 @@ mod tests {
             "printf '%s %s\\n' \"$$\" \"$(ps -o pgid= -p $$ | tr -d ' ')\" > \"$3/pgid.tmp\"\nmv \"$3/pgid.tmp\" \"$3/pgid\"\n",
         )
         .unwrap();
-        let app = tmp.path().join("Kaku.app");
+        let app = tmp.path().join("Sumi.app");
         spawn_update_helper(&script, &app, &app, tmp.path()).expect("spawn helper");
 
         let deadline = std::time::Instant::now() + Duration::from_secs(5);
@@ -945,13 +945,13 @@ mod tests {
             body: "some release notes".to_string(),
             staged_at: 1700000000,
             verified: true,
-            app_path: "/tmp/test/Kaku.app".to_string(),
+            app_path: "/tmp/test/Sumi.app".to_string(),
         };
         let json = serde_json::to_string_pretty(&info).unwrap();
         let parsed: StagedUpdateInfo = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed.tag, "V0.9.0");
         assert!(parsed.verified);
-        assert_eq!(parsed.app_path, "/tmp/test/Kaku.app");
+        assert_eq!(parsed.app_path, "/tmp/test/Sumi.app");
     }
 
     #[test]
@@ -1024,8 +1024,8 @@ mod tests {
             .expect("ditto");
         assert!(ditto_status.success(), "ditto extraction should succeed");
 
-        // Find Kaku.app
-        let app_path = find_kaku_app(&extracted).expect("should find Kaku.app");
+        // Find Sumi.app
+        let app_path = find_kaku_app(&extracted).expect("should find Sumi.app");
         println!("found app: {}", app_path.display());
         assert!(app_path.exists());
 

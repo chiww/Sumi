@@ -14,14 +14,14 @@ class RestartTests(unittest.TestCase):
     def run_fixture(self, pids, owner=None, detached=True, extra_env=None):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            gui = root / "Kaku.app/Contents/MacOS/kaku-gui"
+            gui = root / "Sumi.app/Contents/MacOS/kaku-gui"
             gui.parent.mkdir(parents=True)
             gui.touch()
             gui.chmod(0o755)
             (root / "Library/Logs").mkdir(parents=True)
             (root / "running").write_text("".join(f"{pid}\n" for pid in pids))
             if owner is not None:
-                session = root / ".config/kaku/last_session.json"
+                session = root / ".config/sumi/last_session.json"
                 session.parent.mkdir(parents=True)
                 session.write_text(f'{{"content_dir":"session-{owner}-fixture"}}')
             # Override every process-facing command, including bash's kill.

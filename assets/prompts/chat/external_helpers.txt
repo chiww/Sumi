@@ -1,5 +1,5 @@
 <!--
-name: 'Kaku Chat: external helpers (opencli)'
+name: 'Sumi Chat: external helpers (opencli)'
 description: When and how to probe the optional opencli bridge for authenticated web content. Three-state behavior.
 kakuVersion: 0.12.0
 -->

@@ -968,7 +968,7 @@ struct PersistedWindowPosition {
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct PersistedState {
     // Never serialize an absent version as `null`. A missing version marks an
-    // incomplete initialization that bundled kaku.lua will retry while
+    // incomplete initialization that bundled sumi.lua will retry while
     // preserving the window fields written here.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     config_version: Option<u64>,
@@ -992,7 +992,7 @@ fn config_dir_file(name: &str) -> PathBuf {
     config::CONFIG_DIRS
         .first()
         .cloned()
-        .unwrap_or_else(|| config::HOME_DIR.join(".config").join("kaku"))
+        .unwrap_or_else(|| config::HOME_DIR.join(".config").join("sumi"))
         .join(name)
 }
 

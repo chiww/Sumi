@@ -1057,7 +1057,7 @@ fn font_size_state_file(window_state: WindowState) -> PathBuf {
     config::CONFIG_DIRS
         .first()
         .cloned()
-        .unwrap_or_else(|| config::HOME_DIR.join(".config").join("kaku"))
+        .unwrap_or_else(|| config::HOME_DIR.join(".config").join("sumi"))
         .join(font_size_state_name(window_state))
 }
 
@@ -1435,13 +1435,13 @@ mod tests {
 
         let root = std::path::PathBuf::from(root);
         assert_eq!(*config::HOME_DIR, root.join("home"));
-        assert_eq!(*config::CONFIG_DIRS, vec![root.join("config/kaku")]);
+        assert_eq!(*config::CONFIG_DIRS, vec![root.join("config/sumi")]);
         let ordinary_state = WindowState::empty();
         let drawer_state = WindowState::HOTKEY_WINDOW;
         let ordinary_file = super::font_size_state_file(ordinary_state);
         let drawer_file = super::font_size_state_file(drawer_state);
         for file in [&ordinary_file, &drawer_file] {
-            assert_eq!(file.parent().unwrap(), root.join("config/kaku"));
+            assert_eq!(file.parent().unwrap(), root.join("config/sumi"));
         }
 
         let mut base = Config::default_config();

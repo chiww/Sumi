@@ -13,7 +13,7 @@ export CMAKE_OSX_DEPLOYMENT_TARGET="${CMAKE_OSX_DEPLOYMENT_TARGET:-11.0}"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
-APP_NAME="Kaku"
+APP_NAME="Sumi"
 TARGET_DIR="${TARGET_DIR:-target}"
 PROFILE="${PROFILE:-release}"
 OUT_DIR="${OUT_DIR:-dist}"
@@ -178,7 +178,7 @@ done
 require_command cargo
 require_command rustup
 
-APP_BUNDLE_SRC="assets/macos/Kaku.app"
+APP_BUNDLE_SRC="assets/macos/Sumi.app"
 APP_BUNDLE_OUT="$OUT_DIR/$APP_NAME.app"
 
 echo "[1/7] Building binaries ($PROFILE, $BUILD_ARCH)..."
@@ -324,11 +324,11 @@ fi
 
 cp "$BIN_DIR/kaku-gui" "$APP_BUNDLE_OUT/Contents/MacOS/kaku-gui"
 chmod +x "$APP_BUNDLE_OUT/Contents/MacOS/kaku-gui"
-# One binary serves all three names: kaku-gui starts the CLI or `k` when run
+# One binary serves all three names: kaku-gui starts the `sumi` CLI or `k` when run
 # under those names (multicall_entry in kaku-gui/src/main.rs). Separate CLI
 # binaries were 93% and 87% the same code as kaku-gui. The links are relative
 # so they stay inside the bundle, which `codesign --strict` requires.
-for bin in kaku k; do
+for bin in sumi k; do
 	ln -s kaku-gui "$APP_BUNDLE_OUT/Contents/MacOS/$bin"
 done
 
@@ -376,7 +376,7 @@ BASE_SIGN_ARGS=(
 RUNTIME_SIGN_ARGS=(
 	"${BASE_SIGN_ARGS[@]}"
 	--options runtime
-	--entitlements assets/macos/Kaku.entitlements
+	--entitlements assets/macos/Sumi.entitlements
 )
 
 if [[ "$SIGNING_IDENTITY" == "-" ]]; then
@@ -398,7 +398,7 @@ touch "$APP_BUNDLE_OUT"
 # validates the other executables in Contents/MacOS as nested code and refuses
 # while any of them is still unsigned ("code object is not signed at all,
 # In subcomponent: .../kaku-desktop"), so the helper must be signed before
-# it. `kaku` and `k` are symlinks to kaku-gui, sealed as links, not signed.
+# it. `sumi` and `k` are symlinks to kaku-gui, sealed as links, not signed.
 SIGN_BINARIES=()
 if [[ -n "${KAKU_DESKTOP_HELPER:-}" ]]; then
 	SIGN_BINARIES+=(kaku-desktop)

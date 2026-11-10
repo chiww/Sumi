@@ -1,0 +1,27 @@
+{
+  "spec": 0,
+  "name": "Sumi",
+  "macos": {
+    "id": "com.github.chiww.sumi",
+    "paths": [
+      { "path": "~/.config/sumi", "kind": "data" },
+      { "path": "~/.config/sumi/sumi.lua", "kind": "user" },
+      { "path": "~/.config/sumi/zsh", "kind": "component" },
+      { "path": "~/.config/sumi/fish", "kind": "component" },
+      { "path": "~/.config/fish/conf.d/sumi.fish", "kind": "component" },
+      { "path": "~/.config/starship.toml", "kind": "user", "shared_with": ["starship"] },
+      { "path": "~/.config/yazi/flavors/kaku-dark.yazi", "kind": "config", "shared_with": ["yazi"] },
+      { "path": "~/.config/yazi/flavors/kaku-light.yazi", "kind": "config", "shared_with": ["yazi"] },
+      { "path": "~/.terminfo/6b/kaku", "kind": "component" },
+      { "path": "~/.cache/sumi", "kind": "cache" },
+      { "path": "~/.local/share/sumi", "kind": "state" },
+      { "path": "~/Library/Application Support/sumi", "kind": "data" },
+      { "path": "~/Library/Application Support/sumi/updates", "kind": "cache" },
+      { "path": "~/Library/Application Support/sumi/staged_update", "kind": "cache" },
+      { "path": "~/Library/Caches/sumi", "kind": "cache" },
+      { "path": "~/Library/Caches/com.github.chiww.sumi", "kind": "cache" },
+      { "path": "~/Library/Preferences/com.github.chiww.sumi.plist", "kind": "config" },
+      { "path": "~/Library/Saved Application State/com.github.chiww.sumi.savedState", "kind": "state" }
+    ]
+  }
+}

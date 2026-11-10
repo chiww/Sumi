@@ -8,7 +8,7 @@ VERSION_FILE="assets/shell-integration/config_version.txt"
 HIGHLIGHTS_FILE="assets/shell-integration/config_update_highlights.tsv"
 CHECK_SCRIPT="assets/shell-integration/check_config_version.sh"
 FIRST_RUN_SCRIPT="assets/shell-integration/first_run.sh"
-KAKU_LUA="assets/macos/Kaku.app/Contents/Resources/kaku.lua"
+KAKU_LUA="assets/macos/Sumi.app/Contents/Resources/sumi.lua"
 
 file_contains_literal() {
 	local needle="$1"

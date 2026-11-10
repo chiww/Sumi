@@ -23,7 +23,7 @@ fn command(home: &Path) -> Command {
 }
 
 fn default_config(home: &Path) -> PathBuf {
-    let path = home.join(".config/kaku/kaku.lua");
+    let path = home.join(".config/sumi/sumi.lua");
     fs::create_dir_all(path.parent().unwrap()).unwrap();
     fs::write(&path, ORIGINAL).unwrap();
     path
@@ -146,8 +146,8 @@ fn remote_errors_reach_the_terminal() {
     assert_eq!(output.status.code(), Some(1), "{output:?}");
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("Kaku is not serving it right now"),
-        "kaku remote failed silently: {:?}",
+        stderr.contains("Sumi is not serving it right now"),
+        "sumi remote failed silently: {:?}",
         output
     );
 

@@ -156,7 +156,7 @@ fn access_path() -> PathBuf {
 }
 
 /// A short fingerprint of an access code, recorded with each attempt so
-/// `kaku remote` knows the relay's answer was to the code it just saved.
+/// `sumi remote` knows the relay's answer was to the code it just saved.
 pub fn access_fingerprint(code: &str) -> String {
     let digest = ring::digest::digest(&ring::digest::SHA256, code.trim().as_bytes());
     digest.as_ref()[..4]
@@ -172,7 +172,7 @@ pub(crate) fn tried_access() -> String {
     TRIED_ACCESS.lock().clone()
 }
 
-/// The relay's access code, once `kaku remote` asked for it.
+/// The relay's access code, once `sumi remote` asked for it.
 fn read_access_code() -> Option<String> {
     let code = std::fs::read_to_string(access_path()).ok()?;
     let code = code.trim();
@@ -272,7 +272,7 @@ enum Stage {
         transcript: [u8; 32],
         keys: Arc<SessionKeys>,
     },
-    /// A new browser with a valid link, waiting for Enter in `kaku remote`.
+    /// A new browser with a valid link, waiting for Enter in `sumi remote`.
     /// What it sends meanwhile (its hello, attach) is kept for the session.
     Confirm {
         keys: Arc<SessionKeys>,
@@ -319,7 +319,7 @@ enum Step {
 /// Messages a page waiting for confirmation may have kept for its session.
 const HELD_WHILE_CONFIRMING: usize = 16;
 
-/// How long a new browser may wait for Enter in `kaku remote`; the link
+/// How long a new browser may wait for Enter in `sumi remote`; the link
 /// itself expires sooner unless it was printed just before.
 const CONFIRM_LIMIT: Duration = pairing::OFFER_LIFETIME;
 
@@ -512,7 +512,7 @@ fn advance(
     }
 }
 
-/// The relay's refusal as `kaku remote` and `kaku doctor` print it. The
+/// The relay's refusal as `sumi remote` and `sumi doctor` print it. The
 /// relay is not trusted with the terminal: escape sequences in its text
 /// (a clipboard write, a title, a link) are dropped, not printed.
 fn refusal_text(body: &[u8]) -> String {
@@ -899,7 +899,7 @@ async fn serve(
     let socket = connect_relay(request, CONNECT_TIMEOUT).await?;
     *connected_at = Some(tokio::time::Instant::now());
     // The id is half of every link to this Mac; the log, which goes into
-    // `kaku doctor` bundles, keeps only enough of it to tell links apart.
+    // `sumi doctor` bundles, keeps only enough of it to tell links apart.
     log::info!("kaku-share: registered with relay as {}…", &id[..8.min(id.len())]);
     crate::record_relay_status(relay_url, true, None);
     let (mut relay_tx, mut relay_rx) = socket.split();
@@ -929,7 +929,7 @@ async fn serve(
     let (ended_tx, mut ended_rx) = mpsc::unbounded_channel();
     let mut identity_check = tokio::time::interval(IDENTITY_CHECK);
     identity_check.tick().await;
-    // Short, so Enter in `kaku remote` lets the browser in at once; it reads
+    // Short, so Enter in `sumi remote` lets the browser in at once; it reads
     // a file only while a browser waits.
     let mut confirm_check = tokio::time::interval(CONFIRM_CHECK);
     confirm_check.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
@@ -1067,7 +1067,7 @@ async fn serve(
             _ = identity_check.tick() => {
                 let paired = pairing::paired_ids();
                 let ended: Vec<(u32, u16)> = browsers.iter().filter_map(|(&c, browser)| match &browser.stage {
-                    // Removed with `kaku remote revoke`: end its session.
+                    // Removed with `sumi remote revoke`: end its session.
                     Stage::Session { device, .. } if !paired.contains(device) => Some((c, 4403)),
                     Stage::Session { .. } => None,
                     // Waiting for Enter has its own limit.
@@ -1802,7 +1802,7 @@ mod tests {
             code,
             pairing::pairing_code(&[1u8; 16], conn.device.public_key())
         );
-        // Enter in `kaku remote`.
+        // Enter in `sumi remote`.
         fx.store.request.as_mut().unwrap().allowed = Some(true);
         let Some(Step::Admitted {
             device,

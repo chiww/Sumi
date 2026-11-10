@@ -90,7 +90,7 @@ run_setup "$home_new"
 theme_new="$home_new/.config/yazi/theme.toml"
 dark_new="$home_new/.config/yazi/flavors/kaku-dark.yazi/flavor.toml"
 light_new="$home_new/.config/yazi/flavors/kaku-light.yazi/flavor.toml"
-wrapper_new="$home_new/.config/kaku/${shell_variant}/bin/yazi"
+wrapper_new="$home_new/.config/sumi/${shell_variant}/bin/yazi"
 
 [[ -f "$theme_new" ]]
 [[ -f "$dark_new" ]]
@@ -172,8 +172,8 @@ assert_file_contains "dark = \"$expected_flavor\"" "$theme_static"
 assert_file_contains "light = \"$expected_flavor\"" "$theme_static"
 
 home_auto="$tmp_dir/home-auto"
-mkdir -p "$home_auto/.config/kaku"
-cat <<'EOF' >"$home_auto/.config/kaku/kaku.lua"
+mkdir -p "$home_auto/.config/sumi"
+cat <<'EOF' >"$home_auto/.config/sumi/sumi.lua"
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 config.color_scheme = 'Auto'
@@ -188,11 +188,11 @@ assert_file_contains "dark = \"$auto_flavor\"" "$theme_auto"
 assert_file_contains "light = \"$auto_flavor\"" "$theme_auto"
 
 home_light="$tmp_dir/home-light"
-mkdir -p "$home_light/.config/kaku"
-cat <<'EOF' >"$home_light/.config/kaku/kaku.lua"
+mkdir -p "$home_light/.config/sumi"
+cat <<'EOF' >"$home_light/.config/sumi/sumi.lua"
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
-config.color_scheme = 'Kaku Light'
+config.color_scheme = 'Sumi Light'
 return config
 EOF
 
@@ -205,11 +205,11 @@ echo "real-yazi $*"
 EOF
 chmod +x "$tmp_dir/realbin/yazi"
 
-wrapper_light="$home_light/.config/kaku/${shell_variant}/bin/yazi"
+wrapper_light="$home_light/.config/sumi/${shell_variant}/bin/yazi"
 theme_light="$home_light/.config/yazi/theme.toml"
 output="$(
   HOME="$home_light" \
-  PATH="$home_light/.config/kaku/${shell_variant}/bin:$tmp_dir/realbin:$PATH" \
+  PATH="$home_light/.config/sumi/${shell_variant}/bin:$tmp_dir/realbin:$PATH" \
   "$wrapper_light" --version
 )"
 [[ "$output" == "real-yazi --version" ]]
@@ -262,7 +262,7 @@ prepend_keymap = []
 EOF
 output="$(
   HOME="$home_light" \
-  PATH="$home_light/.config/kaku/${shell_variant}/bin:$tmp_dir/realbin:$PATH" \
+  PATH="$home_light/.config/sumi/${shell_variant}/bin:$tmp_dir/realbin:$PATH" \
   "$wrapper_light" --version
 )"
 [[ "$output" == "real-yazi --version" ]]
@@ -271,8 +271,8 @@ assert_file_not_contains '$schema' "$home_light/.config/yazi/keymap.toml"
 
 # the wrapper's theme sync keeps a symlinked theme.toml a symlink
 home_linked="$tmp_dir/home-linked"
-mkdir -p "$home_linked/.config/kaku" "$tmp_dir/linked-dotfiles"
-cp "$home_light/.config/kaku/kaku.lua" "$home_linked/.config/kaku/kaku.lua"
+mkdir -p "$home_linked/.config/sumi" "$tmp_dir/linked-dotfiles"
+cp "$home_light/.config/sumi/sumi.lua" "$home_linked/.config/sumi/sumi.lua"
 run_setup "$home_linked"
 theme_linked="$home_linked/.config/yazi/theme.toml"
 theme_linked_target="$tmp_dir/linked-dotfiles/theme.toml"
@@ -291,8 +291,8 @@ rm -f "$theme_linked"
 ln -s "$theme_linked_target" "$theme_linked"
 output="$(
   HOME="$home_linked" \
-  PATH="$home_linked/.config/kaku/${shell_variant}/bin:$tmp_dir/realbin:$PATH" \
-  "$home_linked/.config/kaku/${shell_variant}/bin/yazi" --version
+  PATH="$home_linked/.config/sumi/${shell_variant}/bin:$tmp_dir/realbin:$PATH" \
+  "$home_linked/.config/sumi/${shell_variant}/bin/yazi" --version
 )"
 [[ "$output" == "real-yazi --version" ]] || fail "wrapper did not launch yazi with a linked theme.toml"
 [[ -L "$theme_linked" ]] || fail "wrapper replaced the theme.toml symlink with a regular file"
@@ -302,8 +302,8 @@ assert_file_contains 'border_symbol = "x"' "$theme_linked_target"
 
 # the wrapper's theme sync replaces a regular theme.toml by rename: new inode
 home_regular="$tmp_dir/home-regular"
-mkdir -p "$home_regular/.config/kaku"
-cp "$home_light/.config/kaku/kaku.lua" "$home_regular/.config/kaku/kaku.lua"
+mkdir -p "$home_regular/.config/sumi"
+cp "$home_light/.config/sumi/sumi.lua" "$home_regular/.config/sumi/sumi.lua"
 run_setup "$home_regular"
 theme_regular="$home_regular/.config/yazi/theme.toml"
 rm -f "$theme_regular"
@@ -320,8 +320,8 @@ EOF
 theme_regular_inode="$(stat -f %i "$theme_regular")"
 output="$(
   HOME="$home_regular" \
-  PATH="$home_regular/.config/kaku/${shell_variant}/bin:$tmp_dir/realbin:$PATH" \
-  "$home_regular/.config/kaku/${shell_variant}/bin/yazi" --version
+  PATH="$home_regular/.config/sumi/${shell_variant}/bin:$tmp_dir/realbin:$PATH" \
+  "$home_regular/.config/sumi/${shell_variant}/bin/yazi" --version
 )"
 [[ "$output" == "real-yazi --version" ]] || fail "wrapper did not launch yazi with a regular theme.toml"
 [[ ! -L "$theme_regular" && -f "$theme_regular" ]] || fail "wrapper left theme.toml something other than a regular file"

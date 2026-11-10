@@ -25,7 +25,7 @@ NC='\033[0m'
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Thin entrypoint: delegate to `kaku init` whenever possible.
+# Thin entrypoint: delegate to `sumi init` whenever possible.
 # The rust command owns wrapper installation and orchestration.
 if [[ "${KAKU_INIT_INTERNAL:-0}" != "1" ]]; then
 	if [[ -n "${KAKU_BIN:-}" && -x "${KAKU_BIN}" ]]; then
@@ -33,9 +33,9 @@ if [[ "${KAKU_INIT_INTERNAL:-0}" != "1" ]]; then
 	fi
 
 	for candidate in \
-		"$SCRIPT_DIR/../MacOS/kaku" \
-		"/Applications/Kaku.app/Contents/MacOS/kaku" \
-		"$HOME/Applications/Kaku.app/Contents/MacOS/kaku"; do
+		"$SCRIPT_DIR/../MacOS/sumi" \
+		"/Applications/Sumi.app/Contents/MacOS/sumi" \
+		"$HOME/Applications/Sumi.app/Contents/MacOS/sumi"; do
 		if [[ -x "$candidate" ]]; then
 			exec "$candidate" init --shell zsh "$@"
 		fi
@@ -49,12 +49,12 @@ if [[ -d "$SCRIPT_DIR/vendor" ]]; then
 	RESOURCES_DIR="$SCRIPT_DIR"
 elif [[ -d "$SCRIPT_DIR/../vendor" ]]; then
 	RESOURCES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-elif [[ -d "/Applications/Kaku.app/Contents/Resources/vendor" ]]; then
-	RESOURCES_DIR="/Applications/Kaku.app/Contents/Resources"
-elif [[ -d "$HOME/Applications/Kaku.app/Contents/Resources/vendor" ]]; then
-	RESOURCES_DIR="$HOME/Applications/Kaku.app/Contents/Resources"
+elif [[ -d "/Applications/Sumi.app/Contents/Resources/vendor" ]]; then
+	RESOURCES_DIR="/Applications/Sumi.app/Contents/Resources"
+elif [[ -d "$HOME/Applications/Sumi.app/Contents/Resources/vendor" ]]; then
+	RESOURCES_DIR="$HOME/Applications/Sumi.app/Contents/Resources"
 else
-	echo -e "${YELLOW}Error: Could not locate Kaku resources (vendor directory missing).${NC}"
+	echo -e "${YELLOW}Error: Could not locate Sumi resources (vendor directory missing).${NC}"
 	exit 1
 fi
 
@@ -67,10 +67,10 @@ TOOL_INSTALL_SCRIPT="$SCRIPT_DIR/install_cli_tools.sh"
 if [[ ! -f "$TOOL_INSTALL_SCRIPT" ]]; then
 	TOOL_INSTALL_SCRIPT="$RESOURCES_DIR/install_cli_tools.sh"
 fi
-USER_CONFIG_DIR="$HOME/.config/kaku/zsh"
-KAKU_INIT_FILE="$USER_CONFIG_DIR/kaku.zsh"
-KAKU_TMUX_DIR="$HOME/.config/kaku/tmux"
-KAKU_TMUX_FILE="$KAKU_TMUX_DIR/kaku.tmux.conf"
+USER_CONFIG_DIR="$HOME/.config/sumi/zsh"
+KAKU_INIT_FILE="$USER_CONFIG_DIR/sumi.zsh"
+KAKU_TMUX_DIR="$HOME/.config/sumi/tmux"
+KAKU_TMUX_FILE="$KAKU_TMUX_DIR/sumi.tmux.conf"
 STARSHIP_CONFIG="$HOME/.config/starship.toml"
 YAZI_CONFIG_DIR="$HOME/.config/yazi"
 YAZI_CONFIG_FILE="$YAZI_CONFIG_DIR/yazi.toml"
@@ -136,9 +136,9 @@ write_through() {
 
 default_kaku_config_path() {
 	if [[ -n "${XDG_CONFIG_HOME:-}" ]]; then
-		printf '%s\n' "${XDG_CONFIG_HOME}/kaku/kaku.lua"
+		printf '%s\n' "${XDG_CONFIG_HOME}/sumi/sumi.lua"
 	else
-		printf '%s\n' "${HOME}/.config/kaku/kaku.lua"
+		printf '%s\n' "${HOME}/.config/sumi/sumi.lua"
 	fi
 }
 
@@ -176,11 +176,11 @@ resolve_kaku_flavor_from_config() {
 			' "$config_file"
 		)"
 		if [[ -n "$scheme_line" ]]; then
-			if [[ "$scheme_line" == *"Kaku Light"* ]]; then
+			if [[ "$scheme_line" == *"Sumi Light"* ]]; then
 				printf '%s\n' "kaku-light"
 				return
 			fi
-			if [[ "$scheme_line" == *"Kaku Dark"* || "$scheme_line" == *"Kaku Theme"* ]]; then
+			if [[ "$scheme_line" == *"Sumi Dark"* || "$scheme_line" == *"Sumi Theme"* ]]; then
 				printf '%s\n' "kaku-dark"
 				return
 			fi
@@ -277,7 +277,7 @@ sync_kaku_yazi_flavors() {
 		cp "$source_dir/flavor.toml" "$target_dir/flavor.toml"
 	done
 
-	echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Refreshed Kaku yazi flavors ${NC}(dark + light)${NC}"
+	echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Refreshed Sumi yazi flavors ${NC}(dark + light)${NC}"
 }
 
 ensure_kaku_yazi_theme() {
@@ -297,7 +297,7 @@ ensure_kaku_yazi_theme() {
 # Add your own theme overrides in other sections if needed.
 $(kaku_yazi_theme_block "$managed_flavor")
 EOF
-		echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Initialized yazi theme ${NC}(managed Kaku flavor: $managed_flavor)${NC}"
+		echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Initialized yazi theme ${NC}(managed Sumi flavor: $managed_flavor)${NC}"
 		return
 	fi
 
@@ -332,7 +332,7 @@ EOF
 		return
 	fi
 	write_through "${tmp_theme}.next" "$YAZI_THEME_FILE"
-	echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Updated yazi theme ${NC}(managed Kaku flavor: $managed_flavor)${NC}"
+	echo -e "  ${GREEN}✓${NC} ${BOLD}Config${NC}      Updated yazi theme ${NC}(managed Sumi flavor: $managed_flavor)${NC}"
 }
 
 install_yazi_wrapper() {
@@ -360,9 +360,9 @@ system_kaku_flavor() {
 
 default_kaku_config_path() {
 	if [[ -n "${XDG_CONFIG_HOME:-}" ]]; then
-		printf '%s\n' "${XDG_CONFIG_HOME}/kaku/kaku.lua"
+		printf '%s\n' "${XDG_CONFIG_HOME}/sumi/sumi.lua"
 	else
-		printf '%s\n' "${HOME}/.config/kaku/kaku.lua"
+		printf '%s\n' "${HOME}/.config/sumi/sumi.lua"
 	fi
 }
 
@@ -388,11 +388,11 @@ resolve_kaku_flavor_from_config() {
 			' "$config_file"
 		)"
 		if [[ -n "$scheme_line" ]]; then
-			if [[ "$scheme_line" == *"Kaku Light"* ]]; then
+			if [[ "$scheme_line" == *"Sumi Light"* ]]; then
 				printf '%s\n' "kaku-light"
 				return
 			fi
-			if [[ "$scheme_line" == *"Kaku Dark"* || "$scheme_line" == *"Kaku Theme"* ]]; then
+			if [[ "$scheme_line" == *"Sumi Dark"* || "$scheme_line" == *"Sumi Theme"* ]]; then
 				printf '%s\n' "kaku-dark"
 				return
 			fi
@@ -630,7 +630,7 @@ install_kaku_terminfo() {
 
 install_kaku_terminfo
 
-echo -e "${BOLD}Setting up Kaku Shell Environment${NC}"
+echo -e "${BOLD}Setting up Sumi Shell Environment${NC}"
 
 # 1. Prepare User Config Directory
 mkdir -p "$USER_CONFIG_DIR"
@@ -667,7 +667,7 @@ cp -R "$VENDOR_DIR/fast-syntax-highlighting" "$USER_CONFIG_DIR/plugins/"
 cp -R "$VENDOR_DIR/zsh-autosuggestions" "$USER_CONFIG_DIR/plugins/"
 cp -R "$VENDOR_DIR/zsh-completions" "$USER_CONFIG_DIR/plugins/"
 cp -R "$VENDOR_DIR/zsh-z" "$USER_CONFIG_DIR/plugins/"
-echo -e "  ${GREEN}✓${NC} ${BOLD}Tools${NC}       Installed Zsh plugins ${NC}(~/.config/kaku/zsh/plugins)${NC}"
+echo -e "  ${GREEN}✓${NC} ${BOLD}Tools${NC}       Installed Zsh plugins ${NC}(~/.config/sumi/zsh/plugins)${NC}"
 
 # Copy Starship Config (if not exists)
 if [[ ! -f "$STARSHIP_CONFIG" ]]; then
@@ -886,7 +886,7 @@ fi
 
 if [[ -n "$AUTOSUGGEST_CLI_PROVIDER" ]]; then
 	AUTOSUGGEST_BLOCK="$(cat <<EOF
-# Kaku defers autosuggestions to the external provider detected during kaku init.
+# Kaku defers autosuggestions to the external provider detected during sumi init.
 typeset -g _kaku_autosuggest_cli_provider="${AUTOSUGGEST_CLI_PROVIDER}"
 typeset -g _kaku_external_autosuggest_provider=0
 
@@ -924,9 +924,9 @@ fi
 KAKU_INIT_TMPFILE="${KAKU_INIT_FILE}.tmp.$$"
 cat <<EOF >"$KAKU_INIT_TMPFILE"
 # Kaku Zsh Integration - DO NOT EDIT MANUALLY
-# This file is managed by Kaku.app. Any changes may be overwritten.
+# This file is managed by Sumi.app. Any changes may be overwritten.
 
-export KAKU_ZSH_DIR="\$HOME/.config/kaku/zsh"
+export KAKU_ZSH_DIR="\$HOME/.config/sumi/zsh"
 
 # Add Kaku managed bin to PATH (kaku wrapper and user tools)
 export PATH="\$KAKU_ZSH_DIR/bin:\$PATH"
@@ -936,13 +936,13 @@ export PATH="\$KAKU_ZSH_DIR/bin:\$PATH"
 # and Smart Tab. KAKU_SESSION is exported in a Kaku shell and inherited by
 # that tmux server. Any other terminal sets its own TERM_PROGRAM, so a value
 # that leaked through (VS Code launched from Kaku) is dropped here (#503).
-if [[ "\${TERM_PROGRAM:-}" == "Kaku" ]]; then
+if [[ "\${TERM_PROGRAM:-}" == "Sumi" ]]; then
     export KAKU_SESSION=1
 elif [[ -z "\${TMUX:-}" ]]; then
     unset KAKU_SESSION
 fi
 _kaku_in_kaku=0
-if [[ "\${TERM_PROGRAM:-}" == "Kaku" ]] || [[ -n "\${TMUX:-}" && -n "\${KAKU_SESSION:-}" ]]; then
+if [[ "\${TERM_PROGRAM:-}" == "Sumi" ]] || [[ -n "\${TMUX:-}" && -n "\${KAKU_SESSION:-}" ]]; then
     _kaku_in_kaku=1
 fi
 
@@ -1332,15 +1332,15 @@ alias glgp='git log --stat -p'
     local k_cmd
     for _candidate in \
         "\${KAKU_ZSH_DIR:+\$KAKU_ZSH_DIR/../../MacOS/k}" \
-        "\$HOME/Applications/Kaku.app/Contents/MacOS/k" \
-        "/Applications/Kaku.app/Contents/MacOS/k"; do
+        "\$HOME/Applications/Sumi.app/Contents/MacOS/k" \
+        "/Applications/Sumi.app/Contents/MacOS/k"; do
         if [[ -x "\$_candidate" ]]; then
             k_cmd="\$_candidate"
             break
         fi
     done
     if [[ -z "\$k_cmd" ]]; then
-        echo "k: Kaku app not found. Install Kaku from https://github.com/tw93/Kaku"
+        echo "k: Sumi app not found. Install Sumi from https://github.com/chiww/Sumi"
         return 127
     fi
     "\$k_cmd" "\$@"
@@ -1531,7 +1531,7 @@ _kaku_reset_mouse_tracking() {
         return 0
     fi
     _kaku_mouse_tracking_needs_reset=0
-    if [[ "\${TERM_PROGRAM:-}" == "Kaku" || ( -n "\${TMUX:-}" && -n "\${KAKU_SESSION:-}" ) ]]; then
+    if [[ "\${TERM_PROGRAM:-}" == "Sumi" || ( -n "\${TMUX:-}" && -n "\${KAKU_SESSION:-}" ) ]]; then
         printf '\033[?1000;1002;1003;1004;1005;1006;1007;1016l\033[?25h'
     fi
     return 0
@@ -1583,7 +1583,7 @@ _kaku_set_user_var() {
 _kaku_set_ai_user_var() {
     local name="\$1"
     local value="\$2"
-    local capability_file="\$HOME/.config/kaku/ai_inline_capability"
+    local capability_file="\$HOME/.config/sumi/ai_inline_capability"
     local capability=""
 
     [[ -r "\$capability_file" ]] || return 1
@@ -1860,25 +1860,25 @@ EOF
 if [[ -s "$KAKU_INIT_TMPFILE" ]]; then
     mv "$KAKU_INIT_TMPFILE" "$KAKU_INIT_FILE"
     # Byte-compile the (~1600 line) init file so each new shell skips the
-    # parse. zsh's `source` automatically prefers kaku.zsh.zwc while it is
-    # not older than kaku.zsh, and falls back to the source file otherwise,
+    # parse. zsh's `source` automatically prefers sumi.zsh.zwc while it is
+    # not older than sumi.zsh, and falls back to the source file otherwise,
     # so a failed or skipped zcompile is harmless.
     zsh -fc 'zcompile -R -- "$1"' zcompile "$KAKU_INIT_FILE" 2>/dev/null || rm -f "${KAKU_INIT_FILE}.zwc"
 else
-    echo -e "  ${RED}✗${NC} Generated kaku.zsh is empty, keeping previous version" >&2
+    echo -e "  ${RED}✗${NC} Generated sumi.zsh is empty, keeping previous version" >&2
     rm -f "$KAKU_INIT_TMPFILE"
 fi
 
-echo -e "  ${GREEN}✓${NC} ${BOLD}Script${NC}      Generated kaku.zsh init script"
+echo -e "  ${GREEN}✓${NC} ${BOLD}Script${NC}      Generated sumi.zsh init script"
 
 # 4. Configure tmux (Optional)
-TMUX_SOURCE_LINE='source-file "$HOME/.config/kaku/tmux/kaku.tmux.conf" # Kaku tmux Integration'
+TMUX_SOURCE_LINE='source-file "$HOME/.config/sumi/tmux/sumi.tmux.conf" # Sumi tmux Integration'
 
 write_kaku_tmux_file() {
 	mkdir -p "$KAKU_TMUX_DIR"
 	cat <<'EOF' >"$KAKU_TMUX_FILE"
 # Kaku tmux Integration - DO NOT EDIT MANUALLY
-# This file is managed by Kaku.app. Any changes may be overwritten.
+# This file is managed by Sumi.app. Any changes may be overwritten.
 
 set -g mouse on
 # Panes opened after attaching from Kaku keep the Kaku prompt (#503)
@@ -1909,7 +1909,7 @@ BEGIN { replaced = 0; extra = 0 }
 	}
 
 	if ($0 ~ /^[[:space:]]*source-file[[:space:]]+/ &&
-	    $0 ~ /kaku\/tmux\/kaku\.tmux\.conf/) {
+	    $0 ~ /sumi\/tmux\/sumi\.tmux\.conf/) {
 		if (!replaced) {
 			print source_line
 			replaced = 1
@@ -1933,7 +1933,7 @@ END {
 		if ! cmp -s "$TMUXRC" "$tmp_file"; then
 			backup_tmuxrc_once
 			write_through "$tmp_file" "$TMUXRC"
-			echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Updated Kaku source line in .tmux.conf"
+			echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Updated Sumi source line in .tmux.conf"
 		else
 			rm -f "$tmp_file"
 		fi
@@ -1943,14 +1943,14 @@ END {
 			if ! cmp -s "$TMUXRC" "$tmp_file"; then
 				backup_tmuxrc_once
 				write_through "$tmp_file" "$TMUXRC"
-				echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Removed duplicate Kaku source line(s) from .tmux.conf"
+				echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Removed duplicate Sumi source line(s) from .tmux.conf"
 			else
 				rm -f "$tmp_file"
 			fi
 		else
 			rm -f "$tmp_file"
 			if [[ "$awk_status" != "3" ]]; then
-				echo -e "${YELLOW}Warning: failed to normalize Kaku source line in .tmux.conf; leaving it unchanged.${NC}"
+				echo -e "${YELLOW}Warning: failed to normalize Sumi source line in .tmux.conf; leaving it unchanged.${NC}"
 			fi
 		fi
 	fi
@@ -1965,7 +1965,7 @@ has_kaku_tmux_source_line() {
 		return 0
 	fi
 
-	grep -Eq '^[[:space:]]*source-file[[:space:]].*kaku/tmux/kaku\.tmux\.conf([[:space:]]|$)' "$TMUXRC"
+	grep -Eq '^[[:space:]]*source-file[[:space:]].*sumi/tmux/sumi\.tmux\.conf([[:space:]]|$)' "$TMUXRC"
 }
 
 ensure_kaku_tmux_integration() {
@@ -2008,8 +2008,8 @@ ensure_kaku_tmux_integration() {
 ensure_kaku_tmux_integration
 
 # 5. Configure .zshrc
-PATH_LINE='[[ ":$PATH:" != *":$HOME/.config/kaku/zsh/bin:"* ]] && export PATH="$HOME/.config/kaku/zsh/bin:$PATH" # Kaku PATH Integration'
-SOURCE_LINE='[[ -f "$HOME/.config/kaku/zsh/kaku.zsh" ]] && source "$HOME/.config/kaku/zsh/kaku.zsh" # Kaku Shell Integration'
+PATH_LINE='[[ ":$PATH:" != *":$HOME/.config/sumi/zsh/bin:"* ]] && export PATH="$HOME/.config/sumi/zsh/bin:$PATH" # Sumi PATH Integration'
+SOURCE_LINE='[[ -f "$HOME/.config/sumi/zsh/sumi.zsh" ]] && source "$HOME/.config/sumi/zsh/sumi.zsh" # Sumi Shell Integration'
 LEGACY_INLINE_BLOCK_PRESERVED=0
 
 # SYNC: the heredoc below must stay in sync with KAKU_LEGACY_INLINE_KNOWN_LINES
@@ -2024,8 +2024,8 @@ legacy_inline_block_has_only_kaku_managed_lines() {
 
 		if ! grep -Fqx -- "$line" <<'EOF'
 # Kaku Zsh Integration - DO NOT EDIT MANUALLY
-# This file is managed by Kaku.app. Any changes may be overwritten.
-export KAKU_ZSH_DIR="$HOME/.config/kaku/zsh"
+# This file is managed by Sumi.app. Any changes may be overwritten.
+export KAKU_ZSH_DIR="$HOME/.config/sumi/zsh"
 # Add bundled binaries to PATH
 export PATH="$KAKU_ZSH_DIR/bin:$PATH"
 # Initialize Starship (Cross-shell prompt)
@@ -2171,7 +2171,7 @@ cleanup_legacy_inline_block() {
 		return
 	fi
 
-	if ! grep -q "^# Kaku Shell Integration$" "$ZSHRC"; then
+	if ! grep -q "^# Sumi Shell Integration$" "$ZSHRC"; then
 		return
 	fi
 
@@ -2201,7 +2201,7 @@ cleanup_legacy_inline_block() {
 			fi
 			skip_blank_after_removed=0
 
-			if [[ "$line" == "# Kaku Shell Integration" ]]; then
+			if [[ "$line" == "# Sumi Shell Integration" ]]; then
 				in_block=1
 				saw_kaku_var=0
 				saw_syntax=0
@@ -2223,7 +2223,7 @@ cleanup_legacy_inline_block() {
 				skip_blank_after_removed=1
 			else
 				preserved_block=1
-				printf '%s\n' "# Kaku Shell Integration" >>"$tmp_file"
+				printf '%s\n' "# Sumi Shell Integration" >>"$tmp_file"
 				local block_line
 				for block_line in "${block_lines[@]}"; do
 					printf '%s\n' "$block_line" >>"$tmp_file"
@@ -2240,7 +2240,7 @@ cleanup_legacy_inline_block() {
 	if [[ "$in_block" == "1" ]]; then
 		rm -f "$tmp_file"
 		LEGACY_INLINE_BLOCK_PRESERVED=1
-		echo -e "${YELLOW}Warning: found unterminated legacy Kaku block; leaving .zshrc unchanged.${NC}"
+		echo -e "${YELLOW}Warning: found unterminated legacy Sumi block; leaving .zshrc unchanged.${NC}"
 		return
 	fi
 
@@ -2248,17 +2248,17 @@ cleanup_legacy_inline_block() {
 		backup_zshrc_once
 		write_through "$tmp_file" "$ZSHRC"
 		if [[ "$removed_block" == "1" ]]; then
-			echo -e "  ${GREEN}✓${NC} ${BOLD}Migrate${NC}     Removed legacy inline Kaku block from .zshrc"
+			echo -e "  ${GREEN}✓${NC} ${BOLD}Migrate${NC}     Removed legacy inline Sumi block from .zshrc"
 		fi
 		if [[ "$preserved_block" == "1" ]]; then
 			LEGACY_INLINE_BLOCK_PRESERVED=1
-			echo -e "${YELLOW}Warning: kept legacy Kaku block with custom lines to avoid deleting user shell config.${NC}"
+			echo -e "${YELLOW}Warning: kept legacy Sumi block with custom lines to avoid deleting user shell config.${NC}"
 		fi
 	else
 		rm -f "$tmp_file"
 		if [[ "$preserved_block" == "1" ]]; then
 			LEGACY_INLINE_BLOCK_PRESERVED=1
-			echo -e "${YELLOW}Warning: kept legacy Kaku block with custom lines to avoid deleting user shell config.${NC}"
+			echo -e "${YELLOW}Warning: kept legacy Sumi block with custom lines to avoid deleting user shell config.${NC}"
 		fi
 	fi
 }
@@ -2288,7 +2288,7 @@ BEGIN { replaced = 0; extra = 0 }
 	}
 
 	if ($0 ~ /^[[:space:]]*\[\[/ &&
-	    $0 ~ /kaku\/zsh\/bin/ &&
+	    $0 ~ /sumi\/zsh\/bin/ &&
 	    $0 ~ /&&[[:space:]]*export[[:space:]]+PATH=/) {
 		if (!replaced) {
 			print path_line
@@ -2313,7 +2313,7 @@ END {
 		if ! cmp -s "$ZSHRC" "$tmp_file"; then
 			backup_zshrc_once
 			write_through "$tmp_file" "$ZSHRC"
-			echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Updated Kaku PATH line in .zshrc"
+			echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Updated Sumi PATH line in .zshrc"
 		else
 			rm -f "$tmp_file"
 		fi
@@ -2323,14 +2323,14 @@ END {
 			if ! cmp -s "$ZSHRC" "$tmp_file"; then
 				backup_zshrc_once
 				write_through "$tmp_file" "$ZSHRC"
-				echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Removed duplicate Kaku PATH line(s) from .zshrc"
+				echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Removed duplicate Sumi PATH line(s) from .zshrc"
 			else
 				rm -f "$tmp_file"
 			fi
 		else
 			rm -f "$tmp_file"
 			if [[ "$awk_status" != "3" ]]; then
-				echo -e "${YELLOW}Warning: failed to normalize Kaku PATH line in .zshrc; leaving it unchanged.${NC}"
+				echo -e "${YELLOW}Warning: failed to normalize Sumi PATH line in .zshrc; leaving it unchanged.${NC}"
 			fi
 		fi
 	fi
@@ -2359,7 +2359,7 @@ BEGIN { replaced = 0; extra = 0 }
 	}
 
 	if ($0 ~ /^[[:space:]]*\[\[/ &&
-	    $0 ~ /kaku\/zsh\/kaku\.zsh/ &&
+	    $0 ~ /sumi\/zsh\/sumi\.zsh/ &&
 	    $0 ~ /&&[[:space:]]*source[[:space:]]/) {
 		if (!replaced) {
 			print source_line
@@ -2384,7 +2384,7 @@ END {
 		if ! cmp -s "$ZSHRC" "$tmp_file"; then
 			backup_zshrc_once
 			write_through "$tmp_file" "$ZSHRC"
-			echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Updated Kaku source line in .zshrc"
+			echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Updated Sumi source line in .zshrc"
 		else
 			rm -f "$tmp_file"
 		fi
@@ -2395,14 +2395,14 @@ END {
 			if ! cmp -s "$ZSHRC" "$tmp_file"; then
 				backup_zshrc_once
 				write_through "$tmp_file" "$ZSHRC"
-				echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Removed duplicate Kaku source line(s) from .zshrc"
+				echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Removed duplicate Sumi source line(s) from .zshrc"
 			else
 				rm -f "$tmp_file"
 			fi
 		else
 			rm -f "$tmp_file"
 			if [[ "$awk_status" != "3" ]]; then
-				echo -e "${YELLOW}Warning: failed to normalize Kaku source line in .zshrc; leaving it unchanged.${NC}"
+				echo -e "${YELLOW}Warning: failed to normalize Sumi source line in .zshrc; leaving it unchanged.${NC}"
 			fi
 		fi
 	fi
@@ -2419,7 +2419,7 @@ has_kaku_path_line() {
 		return 0
 	fi
 
-	grep -Eq '^[[:space:]]*\[\[.*kaku/zsh/bin.*\]\][[:space:]]*&&[[:space:]]*export[[:space:]]+PATH=.*kaku/zsh/bin' "$ZSHRC"
+	grep -Eq '^[[:space:]]*\[\[.*sumi/zsh/bin.*\]\][[:space:]]*&&[[:space:]]*export[[:space:]]+PATH=.*sumi/zsh/bin' "$ZSHRC"
 }
 
 has_kaku_source_line() {
@@ -2433,14 +2433,14 @@ has_kaku_source_line() {
 	fi
 
 	# Fallback: accept equivalent active source lines while avoiding comment-only matches.
-	grep -Eq '^[[:space:]]*\[\[.*kaku/zsh/kaku\.zsh.*\]\][[:space:]]*&&[[:space:]]*source[[:space:]].*kaku/zsh/kaku\.zsh([[:space:]]|$)' "$ZSHRC"
+	grep -Eq '^[[:space:]]*\[\[.*sumi/zsh/sumi\.zsh.*\]\][[:space:]]*&&[[:space:]]*source[[:space:]].*sumi/zsh/sumi\.zsh([[:space:]]|$)' "$ZSHRC"
 }
 
 # Check if the managed lines already exist
 if has_kaku_path_line && has_kaku_source_line; then
 	echo -e "  ${GREEN}✓${NC} ${BOLD}Integrate${NC}   Already linked in .zshrc"
 elif [[ "$LEGACY_INLINE_BLOCK_PRESERVED" == "1" ]]; then
-	echo -e "  ${BLUE}•${NC} ${BOLD}Integrate${NC}   Preserved legacy inline Kaku block ${NC}(move custom lines outside it, then rerun kaku init)${NC}"
+	echo -e "  ${BLUE}•${NC} ${BOLD}Integrate${NC}   Preserved legacy inline Sumi block ${NC}(move custom lines outside it, then rerun sumi init)${NC}"
 else
 	if [[ -f "$ZSHRC" && ! -w "$ZSHRC" ]]; then
 		echo -e "  ${YELLOW}!${NC} ${BOLD}Integrate${NC}   .zshrc is read-only (symlink or permission). Add manually:"
@@ -2493,7 +2493,7 @@ configure_touchid() {
 	echo "" # Move to next line for result display
 	# Writing under /etc/pam.d is a protected change, so macOS asks once to let
 	# Kaku administer the computer; say so before its dialog appears.
-	echo -e "  macOS may ask to let Kaku administer this Mac. Allow it to add Touch ID to sudo."
+	echo -e "  macOS may ask to let Sumi administer this Mac. Allow it to add Touch ID to sudo."
 
 	local pam_target pam_tmp
 	pam_tmp=$(mktemp)

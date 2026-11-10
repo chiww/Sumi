@@ -1,5 +1,5 @@
 <!--
-name: 'Kaku Chat: output format'
+name: 'Sumi Chat: output format'
 description: TUI panel rendering rules and "ground every claim" quality bar.
 kakuVersion: 0.12.0
 -->

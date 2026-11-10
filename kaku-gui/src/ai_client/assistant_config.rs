@@ -19,7 +19,7 @@ impl ApiMode {
             "chat_completions" => Self::ChatCompletions,
             "responses" => Self::Responses,
             other => {
-                // Same tolerant policy as the `kaku ai` TUI, which coerces
+                // Same tolerant policy as the `sumi ai` TUI, which coerces
                 // unknown values to chat_completions: a typo in assistant.toml
                 // must degrade to the default, not disable AI entirely.
                 log::warn!("unknown api_mode `{other}` in assistant.toml; using chat_completions");
@@ -111,7 +111,7 @@ impl AssistantConfig {
         // mangle Gemini requests.
         if auth_type == "gemini_key" {
             anyhow::bail!(
-                "Gemini provider was removed in V0.10.0. Open `kaku ai` and \
+                "Gemini provider was removed in V0.10.0. Open `sumi ai` and \
                  switch to a different provider (OpenAI, Copilot, Codex, or a \
                  custom OpenAI-compatible endpoint), then update {}.",
                 path.display()
@@ -329,7 +329,7 @@ fn assistant_toml_path() -> Result<PathBuf> {
 
 /// Maps (base_url, auth_type) to a display provider name.
 ///
-/// Single source of truth for provider naming. The `kaku` binary used to
+/// Single source of truth for provider naming. The `sumi` binary used to
 /// carry a parallel `#[allow(dead_code)]` table; that copy was removed in
 /// V0.10.0 because it never matched the GUI version under maintenance.
 fn detect_provider_with_auth(base_url: &str, auth_type: &str) -> &'static str {
@@ -344,7 +344,7 @@ fn detect_provider_with_auth(base_url: &str, auth_type: &str) -> &'static str {
 mod tests {
     use super::{detect_provider_with_auth, parse_custom_headers, AssistantConfig};
 
-    /// `kaku ai` writes assistant.toml and the GUI reads it; both sides assert
+    /// `sumi ai` writes assistant.toml and the GUI reads it; both sides assert
     /// the same fixture so neither can reinterpret a key on its own.
     #[test]
     fn assistant_config_matches_shared_cli_contract() {

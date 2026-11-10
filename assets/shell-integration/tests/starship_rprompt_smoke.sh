@@ -70,22 +70,22 @@ if [[ "$setup_status" -ne 0 ]]; then
   exit 1
 fi
 
-kaku_zsh="$HOME/.config/kaku/zsh/kaku.zsh"
+kaku_zsh="$HOME/.config/sumi/zsh/sumi.zsh"
 if [[ ! -f "$kaku_zsh" ]]; then
-  echo "starship_rprompt: kaku.zsh not created at $kaku_zsh" >&2
+  echo "starship_rprompt: sumi.zsh not created at $kaku_zsh" >&2
   exit 1
 fi
-echo "starship_rprompt: kaku.zsh created ok, running zsh" >&2
+echo "starship_rprompt: sumi.zsh created ok, running zsh" >&2
 
 output=""
 if ! output="$(
   TERM=xterm-256color \
-  TERM_PROGRAM=Kaku \
+  TERM_PROGRAM=Sumi \
   PATH="$tmp_dir/bin:$PATH" \
   HOME="$HOME" \
   ZDOTDIR="$ZDOTDIR" \
   zsh -f -c '
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 RPROMPT='\''$(starship prompt --right)'\''
 _kaku_fix_starship_rprompt
 print -r -- "__KAKU_RPROMPT__:$RPROMPT"
@@ -121,12 +121,12 @@ esac
 seeded_output=""
 if ! seeded_output="$(
   TERM=xterm-256color \
-  TERM_PROGRAM=Kaku \
+  TERM_PROGRAM=Sumi \
   PATH="$tmp_dir/bin:$PATH" \
   HOME="$HOME" \
   ZDOTDIR="$ZDOTDIR" \
   zsh -f -c '
-source "$HOME/.config/kaku/zsh/kaku.zsh"
+source "$HOME/.config/sumi/zsh/sumi.zsh"
 RPROMPT='\''$(echo fake-right-prompt)'\''
 _kaku_starship_rprompt_cmd="$RPROMPT"
 _kaku_fix_starship_rprompt

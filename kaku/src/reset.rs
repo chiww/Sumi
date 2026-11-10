@@ -29,19 +29,19 @@ mod imp {
         detect_shell_kind, find_shell_executable, persisted_managed_shell, ManagedShell,
     };
 
-    const KAKU_SOURCE_PATTERN: &str = "kaku/zsh/kaku.zsh";
-    const KAKU_PATH_MARKER: &str = "# Kaku PATH Integration";
-    const KAKU_TMUX_SOURCE_PATTERN: &str = "kaku/tmux/kaku.tmux.conf";
-    const KAKU_LEGACY_INLINE_MARKER: &str = "# Kaku Shell Integration";
+    const KAKU_SOURCE_PATTERN: &str = "sumi/zsh/sumi.zsh";
+    const KAKU_PATH_MARKER: &str = "# Sumi PATH Integration";
+    const KAKU_TMUX_SOURCE_PATTERN: &str = "sumi/tmux/sumi.tmux.conf";
+    const KAKU_LEGACY_INLINE_MARKER: &str = "# Sumi Shell Integration";
     const KAKU_LEGACY_INLINE_VAR: &str = "KAKU_ZSH_DIR";
     const KAKU_LEGACY_SYNTAX_HINT: &str = "zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
     // SYNC: this list must stay in sync with the heredoc in
     // assets/shell-integration/setup_zsh.sh legacy_inline_block_has_only_kaku_managed_lines().
     // When adding or removing lines, update both places.
     const KAKU_LEGACY_INLINE_KNOWN_LINES: &[&str] = &[
-        "# Kaku Zsh Integration - DO NOT EDIT MANUALLY",
-        "# This file is managed by Kaku.app. Any changes may be overwritten.",
-        r#"export KAKU_ZSH_DIR="$HOME/.config/kaku/zsh""#,
+        "# Sumi Zsh Integration - DO NOT EDIT MANUALLY",
+        "# This file is managed by Sumi.app. Any changes may be overwritten.",
+        r#"export KAKU_ZSH_DIR="$HOME/.config/sumi/zsh""#,
         "# Add bundled binaries to PATH",
         r#"export PATH="$KAKU_ZSH_DIR/bin:$PATH""#,
         "# Initialize Starship (Cross-shell prompt)",
@@ -121,12 +121,12 @@ mod imp {
         "    compinit -C",
         "# Load zsh-z (smart directory jumping) - Fast, no delay needed",
         r#"if [[ -f "$KAKU_ZSH_DIR/plugins/zsh-z/zsh-z.plugin.zsh" ]]; then"#,
-        "    # Default to smart case matching so `z kaku` prefers `Kaku` over lowercase",
+        "    # Default to smart case matching so `z kaku` prefers `Sumi` over lowercase",
         "    # path entries. Users can still override this in their own shell config.",
         r#"    : "${ZSHZ_CASE:=smart}""#,
         "    export ZSHZ_CASE",
         r#"    source "$KAKU_ZSH_DIR/plugins/zsh-z/zsh-z.plugin.zsh""#,
-        "# Kaku defers autosuggestions to the external provider detected during kaku init.",
+        "# Sumi defers autosuggestions to the external provider detected during sumi init.",
         r#"typeset -g _kaku_autosuggest_cli_provider="""#,
         r#"typeset -g _kaku_autosuggest_cli_provider="kiro-cli""#,
         r#"typeset -g _kaku_autosuggest_cli_provider="q""#,
@@ -138,7 +138,7 @@ mod imp {
         "# 1. User config has not loaded it yet (_zsh_autosuggest_start not defined)",
         "# 2. No other autosuggest system is active (to avoid widget wrapping conflicts)",
         r#"if ! (( ${+functions[_zsh_autosuggest_start]} )) && [[ "${_kaku_external_autosuggest_provider:-0}" != "1" ]] && [[ -f "$KAKU_ZSH_DIR/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then"#,
-        "# When Kaku defers autosuggestions to an external provider, keep Tab",
+        "# When Sumi defers autosuggestions to an external provider, keep Tab",
         "# as completion-only to avoid widget recursion.",
         "# Load zoxide (smart directory jumping) if not already provided by user config.",
         r#"if command -v zoxide &>/dev/null && ! (( ${+functions[__zoxide_z]} )); then"#,
@@ -251,7 +251,7 @@ mod imp {
         remove_fish_integration(&mut report)?;
         remove_tmux_integration(&mut report)?;
         remove_file_if_exists(
-            home_kaku_dir().join("tmux").join("kaku.tmux.conf"),
+            home_kaku_dir().join("tmux").join("sumi.tmux.conf"),
             "removed managed tmux integration script",
             &mut report,
         )?;
@@ -259,17 +259,17 @@ mod imp {
         cleanup_theme_block(&mut report)?;
         remove_file_if_exists(
             config_home().join("state.json"),
-            "removed persisted Kaku state",
+            "removed persisted Sumi state",
             &mut report,
         )?;
         remove_file_if_exists(
             config_home().join(".kaku_config_version"),
-            "removed legacy Kaku config version marker",
+            "removed legacy Sumi config version marker",
             &mut report,
         )?;
         remove_file_if_exists(
             config_home().join(".kaku_window_geometry"),
-            "removed legacy Kaku window geometry marker",
+            "removed legacy Sumi window geometry marker",
             &mut report,
         )?;
         // With XDG_CONFIG_HOME set, GUI processes launched outside the shell
@@ -278,15 +278,15 @@ mod imp {
             for (name, label) in [
                 (
                     "state.json",
-                    "removed persisted Kaku state (default location)",
+                    "removed persisted Sumi state (default location)",
                 ),
                 (
                     ".kaku_config_version",
-                    "removed legacy Kaku config version marker (default location)",
+                    "removed legacy Sumi config version marker (default location)",
                 ),
                 (
                     ".kaku_window_geometry",
-                    "removed legacy Kaku window geometry marker (default location)",
+                    "removed legacy Sumi window geometry marker (default location)",
                 ),
             ] {
                 remove_file_if_exists(home_kaku_dir().join(name), label, &mut report)?;
@@ -299,12 +299,12 @@ mod imp {
         )?;
         remove_dir_if_exists(
             config_home().join("backups"),
-            "removed Kaku backup directory",
+            "removed Sumi backup directory",
             &mut report,
         )?;
         remove_dir_if_exists(
             config_home().join("soul"),
-            "removed Kaku soul directory",
+            "removed Sumi soul directory",
             &mut report,
         )?;
         remove_file_if_exists(
@@ -326,16 +326,16 @@ mod imp {
         let is_fish = selected_shell == ManagedShell::Fish;
 
         let tools_dir = if is_fish {
-            "~/.config/kaku/fish/"
+            "~/.config/sumi/fish/"
         } else {
-            "~/.config/kaku/zsh/"
+            "~/.config/sumi/zsh/"
         };
         let restart_cmd = if is_fish {
             "exec fish -l"
         } else {
             "exec zsh -l"
         };
-        let restore_cmd = format!("kaku init --shell {}", selected_shell.name());
+        let restore_cmd = format!("sumi init --shell {}", selected_shell.name());
 
         println!("\nShell restart required.");
         println!("Tools preserved in {}\n", tools_dir);
@@ -383,7 +383,7 @@ mod imp {
         }
 
         println!(
-            "This will remove Kaku shell and tmux integration and reset Kaku-managed git defaults."
+            "This will remove Sumi shell and tmux integration and reset Sumi-managed git defaults."
         );
         println!(
             "It also deletes AI memory and backups in {}:",
@@ -415,18 +415,18 @@ mod imp {
         config::CONFIG_DIRS
             .first()
             .cloned()
-            .unwrap_or_else(|| home_dir().join(".config").join("kaku"))
+            .unwrap_or_else(|| home_dir().join(".config").join("sumi"))
     }
 
     // Shell assets and the legacy Lazygit hint state are intentionally anchored
-    // at `$HOME/.config/kaku`. Keep this separate from `config_home()`, which
-    // follows XDG_CONFIG_HOME for application state and kaku.lua.
+    // at `$HOME/.config/sumi`. Keep this separate from `config_home()`, which
+    // follows XDG_CONFIG_HOME for application state and sumi.lua.
     fn home_kaku_dir() -> PathBuf {
         home_kaku_dir_for(&home_dir())
     }
 
     fn home_kaku_dir_for(home: &Path) -> PathBuf {
-        home.join(".config").join("kaku")
+        home.join(".config").join("sumi")
     }
 
     fn zshrc_path() -> PathBuf {
@@ -476,7 +476,7 @@ mod imp {
         let (updated, removed_legacy_block) = strip_legacy_inline_block(&updated);
         if !removed_managed_lines && !removed_legacy_block {
             report.skipped(format!(
-                "no Kaku shell integration found in {}",
+                "no Sumi shell integration found in {}",
                 zshrc.display()
             ));
             return Ok(());
@@ -485,17 +485,17 @@ mod imp {
         std::fs::write(&zshrc, updated).with_context(|| format!("write {}", zshrc.display()))?;
         if removed_managed_lines && removed_legacy_block {
             report.changed(format!(
-                "removed Kaku-managed .zshrc lines and legacy inline block from {}",
+                "removed Sumi-managed .zshrc lines and legacy inline block from {}",
                 zshrc.display()
             ));
         } else if removed_managed_lines {
             report.changed(format!(
-                "removed Kaku-managed .zshrc lines from {}",
+                "removed Sumi-managed .zshrc lines from {}",
                 zshrc.display()
             ));
         } else {
             report.changed(format!(
-                "removed legacy inline Kaku block from {}",
+                "removed legacy inline Sumi block from {}",
                 zshrc.display()
             ));
         }
@@ -503,7 +503,7 @@ mod imp {
     }
 
     fn remove_kaku_shell_dir(report: &mut ResetReport) -> anyhow::Result<()> {
-        let kaku_init = home_kaku_dir().join("zsh").join("kaku.zsh");
+        let kaku_init = home_kaku_dir().join("zsh").join("sumi.zsh");
         if kaku_init.exists() {
             std::fs::remove_file(&kaku_init)
                 .with_context(|| format!("remove {}", kaku_init.display()))?;
@@ -520,22 +520,22 @@ mod imp {
             .join(".config")
             .join("fish")
             .join("conf.d")
-            .join("kaku.fish");
+            .join("sumi.fish");
         remove_file_if_exists(
             conf_d_file,
-            "removed ~/.config/fish/conf.d/kaku.fish",
+            "removed ~/.config/fish/conf.d/sumi.fish",
             report,
         )?;
 
         // Remove managed fish init file
-        let fish_init = home_kaku_dir().join("fish").join("kaku.fish");
-        remove_file_if_exists(fish_init, "removed ~/.config/kaku/fish/kaku.fish", report)?;
+        let fish_init = home_kaku_dir().join("fish").join("sumi.fish");
+        remove_file_if_exists(fish_init, "removed ~/.config/sumi/fish/sumi.fish", report)?;
 
         // Remove fish wrapper bin
-        let fish_wrapper = home_kaku_dir().join("fish").join("bin").join("kaku");
+        let fish_wrapper = home_kaku_dir().join("fish").join("bin").join("sumi");
         remove_file_if_exists(
             fish_wrapper,
-            "removed ~/.config/kaku/fish/bin/kaku wrapper",
+            "removed ~/.config/sumi/fish/bin/sumi wrapper",
             report,
         )?;
 
@@ -558,7 +558,7 @@ mod imp {
 
         if filtered.len() == original.lines().count() {
             report.skipped(format!(
-                "no Kaku tmux integration found in {}",
+                "no Sumi tmux integration found in {}",
                 tmuxrc.display()
             ));
             return Ok(());
@@ -570,7 +570,7 @@ mod imp {
         }
         std::fs::write(&tmuxrc, updated).with_context(|| format!("write {}", tmuxrc.display()))?;
         report.changed(format!(
-            "removed Kaku-managed tmux source line from {}",
+            "removed Sumi-managed tmux source line from {}",
             tmuxrc.display()
         ));
         Ok(())
@@ -590,7 +590,7 @@ mod imp {
         }
 
         if removed.is_empty() {
-            report.skipped("no Kaku-managed git defaults to remove");
+            report.skipped("no Sumi-managed git defaults to remove");
         } else {
             report.changed(format!("removed git defaults: {}", removed.join(", ")));
         }
@@ -645,7 +645,7 @@ mod imp {
     }
 
     fn cleanup_theme_block(report: &mut ResetReport) -> anyhow::Result<()> {
-        let config_path = config_home().join("kaku.lua");
+        let config_path = config_home().join("sumi.lua");
         if !config_path.exists() {
             report.skipped(format!("{} not found", config_path.display()));
             return Ok(());
@@ -655,18 +655,18 @@ mod imp {
             .with_context(|| format!("read {}", config_path.display()))?;
 
         let (after_managed, changed_managed) =
-            strip_theme_block(&original, "-- ===== Kaku Theme Defaults (managed) =====");
+            strip_theme_block(&original, "-- ===== Sumi Theme Defaults (managed) =====");
         let (after_legacy, changed_legacy) =
-            strip_theme_block(&after_managed, "-- ===== Kaku Theme =====");
+            strip_theme_block(&after_managed, "-- ===== Sumi Theme =====");
 
         if !changed_managed && !changed_legacy {
-            report.skipped("no managed Kaku theme block found in ~/.config/kaku/kaku.lua");
+            report.skipped("no managed Sumi theme block found in ~/.config/sumi/sumi.lua");
             return Ok(());
         }
 
         std::fs::write(&config_path, after_legacy)
             .with_context(|| format!("write {}", config_path.display()))?;
-        report.changed("removed managed Kaku theme block from ~/.config/kaku/kaku.lua");
+        report.changed("removed managed Sumi theme block from ~/.config/sumi/sumi.lua");
         Ok(())
     }
 
@@ -706,7 +706,7 @@ mod imp {
     }
 
     /// Strips the old inline Kaku shell integration block that was written directly
-    /// into .zshrc in early Kaku versions (before the source-based kaku.zsh approach).
+    /// into .zshrc in early Kaku versions (before the source-based sumi.zsh approach).
     /// The block starts with `# Kaku Shell Integration`, contains `KAKU_ZSH_DIR`, and
     /// ends with a `fi` that follows the zsh-syntax-highlighting line.
     fn strip_legacy_inline_block(content: &str) -> (String, bool) {
@@ -847,20 +847,20 @@ mod imp {
         fn home_anchored_kaku_files_stay_under_home_dot_config() {
             assert_eq!(
                 home_kaku_dir_for(Path::new("/Users/tester")),
-                Path::new("/Users/tester/.config/kaku")
+                Path::new("/Users/tester/.config/sumi")
             );
         }
 
         #[test]
         fn active_tmux_source_line_is_detected() {
             let line =
-                r#"source-file "$HOME/.config/kaku/tmux/kaku.tmux.conf" # Kaku tmux Integration"#;
+                r#"source-file "$HOME/.config/sumi/tmux/sumi.tmux.conf" # Sumi tmux Integration"#;
             assert!(is_active_kaku_tmux_source_line(line));
         }
 
         #[test]
         fn commented_tmux_source_line_is_ignored() {
-            let line = r#"# source-file "$HOME/.config/kaku/tmux/kaku.tmux.conf""#;
+            let line = r#"# source-file "$HOME/.config/sumi/tmux/sumi.tmux.conf""#;
             assert!(!is_active_kaku_tmux_source_line(line));
         }
 
@@ -873,8 +873,8 @@ mod imp {
         #[test]
         fn strip_legacy_inline_block_removes_known_minimal_block() {
             let input = r#"export PATH="$HOME/bin:$PATH"
-# Kaku Shell Integration
-export KAKU_ZSH_DIR="$HOME/.config/kaku/zsh"
+# Sumi Shell Integration
+export KAKU_ZSH_DIR="$HOME/.config/sumi/zsh"
 source "$KAKU_ZSH_DIR/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 fi
 export FOO=bar
@@ -893,8 +893,8 @@ export FOO=bar
         #[test]
         fn strip_legacy_inline_block_preserves_unknown_user_lines() {
             let input = r#"export PATH="$HOME/bin:$PATH"
-# Kaku Shell Integration
-export KAKU_ZSH_DIR="$HOME/.config/kaku/zsh"
+# Sumi Shell Integration
+export KAKU_ZSH_DIR="$HOME/.config/sumi/zsh"
 export PATH="$HOME/.claude/bin:$PATH"
 source "$HOME/.claude/shell/zshrc"
 source "$KAKU_ZSH_DIR/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"

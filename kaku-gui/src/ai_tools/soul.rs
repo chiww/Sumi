@@ -14,12 +14,12 @@ pub(crate) fn memory_file_path() -> PathBuf {
 #[allow(dead_code)]
 pub(crate) fn onboarding_flag_path() -> PathBuf {
     if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
-        PathBuf::from(xdg).join("kaku").join("ai_chat_onboarded")
+        PathBuf::from(xdg).join("sumi").join("ai_chat_onboarded")
     } else {
         let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
         PathBuf::from(home)
             .join(".config")
-            .join("kaku")
+            .join("sumi")
             .join("ai_chat_onboarded")
     }
 }

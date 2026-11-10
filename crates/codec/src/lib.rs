@@ -447,7 +447,7 @@ macro_rules! pdu {
 /// are made to the types and protocol.
 /// 46: search Pattern gained CaseSmartString, which Cmd+F always sends and an
 /// older server cannot decode, so it would drop the whole connection.
-/// 47: PaneEntry gained program_status (OSC 7501) for `kaku cli wait`; an
+/// 47: PaneEntry gained program_status (OSC 7501) for `sumi cli wait`; an
 /// older peer would misread every pane entry after it.
 pub const CODEC_VERSION: usize = 47;
 

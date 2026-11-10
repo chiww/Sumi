@@ -38,7 +38,7 @@ enum CompletionOutcome {
 }
 
 fn kaku_state_dir() -> PathBuf {
-    config::HOME_DIR.join(".config").join("kaku")
+    config::HOME_DIR.join(".config").join("sumi")
 }
 
 fn classify_config_load_error(config_file_exists: bool) -> CompletionError {
@@ -240,7 +240,7 @@ mod tests {
     use super::*;
 
     fn bundled_lua_section(start: &str, end: &str) -> String {
-        let source = include_str!("../../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+        let source = include_str!("../../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let body = source.split_once(start).unwrap().1;
         format!("{start}{}", body.split_once(end).unwrap().0)
     }
@@ -297,7 +297,7 @@ mod tests {
         let dangerous: Function = lua.load(&script).eval().unwrap();
         // The suggestion that quit the proxy and Kaku itself after `mo slim`.
         for command in [
-            "osascript -e 'tell application \"Stash\" to quit' -e 'tell application \"Kaku\" to quit'; mo slim",
+            "osascript -e 'tell application \"Stash\" to quit' -e 'tell application \"Sumi\" to quit'; mo slim",
             "killall Stash",
             "pkill -f helium && mo slim",
             "kill -9 4242",
@@ -323,7 +323,7 @@ mod tests {
     fn inline_details_preserve_commands() {
         use config::lua::mlua::Lua;
         let script = format!(
-            "{}\n{}\nresolve_appearance_color_scheme = function() return 'Kaku Dark' end\n\
+            "{}\n{}\nresolve_appearance_color_scheme = function() return 'Sumi Dark' end\n\
              local output = ''\nlocal sent = ''\n\
              local pane = {{ inject_output = function(_, text) output = output .. text end,\n\
              send_text = function(_, text) sent = sent .. text end }}\n\
@@ -412,7 +412,7 @@ mod tests {
 
     #[test]
     fn request_start_failure_clears_query_before_finalizing() {
-        let source = include_str!("../../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+        let source = include_str!("../../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let branch = source
             .split_once("local ok, err = request_ai_generate_async(")
             .unwrap()
@@ -528,7 +528,7 @@ mod tests {
 
     #[test]
     fn bridge_contract_stays_in_sync_with_bundled_lua() {
-        let lua = include_str!("../../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+        let lua = include_str!("../../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         assert!(lua.contains(&format!(
             "wezterm.action.EmitEvent(\"{}\" .. job.id)",
             EVENT_PREFIX

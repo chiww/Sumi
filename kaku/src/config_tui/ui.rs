@@ -244,7 +244,7 @@ fn rendered_field_row_count(app: &App) -> u16 {
 fn render_header(frame: &mut ratatui::Frame, area: Rect) {
     let line = Line::from(vec![
         Span::styled(
-            "  Kaku",
+            "  Sumi",
             Style::default().fg(primary()).add_modifier(Modifier::BOLD),
         ),
         Span::styled(" · ", Style::default().fg(muted())),

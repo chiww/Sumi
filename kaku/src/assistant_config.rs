@@ -29,7 +29,7 @@ pub const DEFAULT_BASE_URL: &str = "https://api.openai.com/v1";
 /// Returns the path to the assistant.toml configuration file.
 ///
 /// The file is located in the same directory as the user's Kaku config,
-/// typically `~/.config/kaku/assistant.toml` on macOS/Linux.
+/// typically `~/.config/sumi/assistant.toml` on macOS/Linux.
 ///
 /// # Errors
 /// Returns an error if the user config path cannot be determined or has no parent directory.
@@ -93,14 +93,14 @@ pub fn ensure_assistant_toml_exists() -> anyhow::Result<PathBuf> {
 /// requiring the user to explicitly configure their API key.
 pub fn default_assistant_toml_template() -> String {
     format!(
-        "# Kaku Assistant configuration\n\
+        "# Sumi Assistant configuration\n\
 #\n\
 # enabled: true enables command analysis suggestions; false disables requests.\n\
 # api_key: provider API key, example: \"sk-xxxx\".\n\
 # model: Simple Model for quick command generation and lightweight chat.\n\
 # chat_model: Deep Model for Cmd+L, k, and tool-using chat. Omit to reuse `model`.\n\
 # chat_model_choices: optional curated list for the chat overlay. When set,\n\
-#                     Kaku skips auto-fetching from /models and cycles only\n\
+#                     Sumi skips auto-fetching from /models and cycles only\n\
 #                     through these entries.\n\
 #                     example: [\"gpt-5.4\", \"gpt-5.4-mini\", \"claude-sonnet-4-6\"]\n\
 # auto_fix_ignored_exit_codes: optional exit codes that should not trigger\n\
@@ -126,7 +126,7 @@ base_url = \"{DEFAULT_BASE_URL}\"\n\
 #   \"none\" (default) disables the third-party web_search tool.\n\
 #   \"brave\" | \"pipellm\" | \"tavily\" enables both. Requires web_search_api_key.\n\
 #   Responses native_web_search does not require either third-party setting.\n\
-#   Configure via `kaku ai` instead of editing this file directly.\n\
+#   Configure via `sumi ai` instead of editing this file directly.\n\
 #   Capabilities used per provider:\n\
 #     brave:   web/news search, extra_snippets, freshness filter\n\
 #     pipellm: simple-search, news-search, deep RAG search, page reader\n\

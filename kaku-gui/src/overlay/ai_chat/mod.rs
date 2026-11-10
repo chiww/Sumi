@@ -100,7 +100,7 @@ pub fn ai_chat_overlay(
                     x: Position::Absolute(0),
                     y: Position::Absolute(0),
                 },
-                Change::Text(format!("Kaku AI: {}", e)),
+                Change::Text(format!("Sumi AI: {}", e)),
             ])?;
             std::thread::sleep(Duration::from_secs(3));
             return Ok(());

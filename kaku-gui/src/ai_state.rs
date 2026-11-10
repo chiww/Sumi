@@ -1,6 +1,6 @@
 //! Persistent state for the AI chat overlay.
 //!
-//! Stores UI state like the last selected model in `~/.config/kaku/ai_chat_state.json`.
+//! Stores UI state like the last selected model in `~/.config/sumi/ai_chat_state.json`.
 //! Load once at overlay start; save when the user switches models.
 //!
 //! # Why two model-list caches?
@@ -10,8 +10,8 @@
 //!
 //! | Surface | Path | TTL | Purpose |
 //! |---|---|---|---|
-//! | `kaku ai` TUI | `~/.cache/kaku/assistant_models.json` | 30 min, base_url-keyed | Driving the dropdown picker; refreshed every TUI session so a freshly-added model shows up. |
-//! | Cmd+L overlay (here) | `~/.config/kaku/ai_chat_state.json` `cached_models` | persistent, endpoint-keyed | Show the last list while the same endpoint refreshes. Cached entries are never trusted for the active selection until that refresh succeeds. |
+//! | `sumi ai` TUI | `~/.cache/sumi/assistant_models.json` | 30 min, base_url-keyed | Driving the dropdown picker; refreshed every TUI session so a freshly-added model shows up. |
+//! | Cmd+L overlay (here) | `~/.config/sumi/ai_chat_state.json` `cached_models` | persistent, endpoint-keyed | Show the last list while the same endpoint refreshes. Cached entries are never trusted for the active selection until that refresh succeeds. |
 //!
 //! Merging them would force one TTL policy on both surfaces and add a
 //! cross-binary file lock. The caches are tiny (a list of model IDs) and the

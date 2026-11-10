@@ -5,7 +5,7 @@
 
 set -e
 
-CONFIG_DIR="$HOME/.config/kaku"
+CONFIG_DIR="$HOME/.config/sumi"
 STATE_FILE="$CONFIG_DIR/state.json"
 LEGACY_FILES=(
 	"$CONFIG_DIR/.first_run_completed"
@@ -14,7 +14,7 @@ LEGACY_FILES=(
 	"$CONFIG_DIR/.kaku_window_position"
 )
 
-echo "Resetting Kaku First Run..."
+echo "Resetting Sumi First Run..."
 
 if [[ -f "$STATE_FILE" ]]; then
 	rm "$STATE_FILE"
@@ -30,4 +30,4 @@ for file in "${LEGACY_FILES[@]}"; do
 	fi
 done
 
-echo "Now relaunch Kaku to see the First Run experience."
+echo "Now relaunch Sumi to see the First Run experience."

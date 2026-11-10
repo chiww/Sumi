@@ -207,7 +207,7 @@ static BUNDLED_AT_START: std::sync::LazyLock<Option<BundledDefaults>> =
         if macos.file_name()? != "MacOS" {
             return None;
         }
-        let path = macos.parent()?.join("Resources/kaku.lua");
+        let path = macos.parent()?.join("Resources/sumi.lua");
         let source = std::fs::read(&path).ok()?;
         Some(BundledDefaults { path, source })
     });
@@ -393,7 +393,7 @@ end
 
         // WSL is Windows-only and Kaku dropped it; configs shared with a
         // Windows WezTerm setup still call this, so keep the empty answer it
-        // always gave on macOS instead of failing the whole kaku.lua.
+        // always gave on macOS instead of failing the whole sumi.lua.
         wezterm_mod.set(
             "default_wsl_domains",
             lua.create_function(|lua, ()| lua.create_table())?,
@@ -1000,7 +1000,7 @@ mod test {
     fn a_running_kaku_keeps_the_bundled_defaults_it_started_with() -> anyhow::Result<()> {
         let dir = std::env::temp_dir().join(format!("kaku-dofile-{}", std::process::id()));
         std::fs::create_dir_all(&dir)?;
-        let bundled = dir.join("kaku.lua");
+        let bundled = dir.join("sumi.lua");
         let other = dir.join("other.lua");
         // An update replaced the file on disk since the process started.
         std::fs::write(&bundled, "return 'replaced by an update'")?;
@@ -1161,7 +1161,7 @@ assert(wezterm.emit('bar', 42, 'woot') == true)
     #[test]
     fn bundled_kaku_lua_compiles() -> anyhow::Result<()> {
         let config_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+            .join("../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
         let lua = make_lua_context(&config_path)?;
 
         let source = std::fs::read_to_string(&config_path)?;

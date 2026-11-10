@@ -453,7 +453,7 @@ mod tests {
     #[test]
     fn bundled_padding_stays_in_device_pixels() {
         let bundled_config =
-            include_str!("../../../../assets/macos/Kaku.app/Contents/Resources/kaku.lua");
+            include_str!("../../../../assets/macos/Sumi.app/Contents/Resources/sumi.lua");
 
         assert!(bundled_config
             .contains("return { left = '26px', right = '26px', top = '26px', bottom = '0px' }"));

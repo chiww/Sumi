@@ -45,20 +45,20 @@ run_case() {
 	printf '#!/bin/bash\nexit 0\n' >"$resources/setup_zsh.sh"
 	chmod +x "$resources/setup_zsh.sh"
 
-	printf '#!/bin/bash\nif [[ "${1:-}" == "init" ]]; then exit %s; fi\nexit 0\n' "$init_exit" >"$macos/kaku"
-	chmod +x "$macos/kaku"
+	printf '#!/bin/bash\nif [[ "${1:-}" == "init" ]]; then exit %s; fi\nexit 0\n' "$init_exit" >"$macos/sumi"
+	chmod +x "$macos/sumi"
 
 	printf '\n' | HOME="$home" XDG_CONFIG_HOME="$xdg" SHELL=/usr/bin/true TERM=xterm \
 		KAKU_SKIP_TOOL_BOOTSTRAP=1 bash "$resources/first_run.sh" >/dev/null
 }
 
 run_case failed 1
-assert_file_absent "$TEST_ROOT/failed/xdg/kaku/state.json"
-assert_file_absent "$TEST_ROOT/failed/home/.config/kaku/state.json"
+assert_file_absent "$TEST_ROOT/failed/xdg/sumi/state.json"
+assert_file_absent "$TEST_ROOT/failed/home/.config/sumi/state.json"
 
 run_case successful 0
-primary_state="$TEST_ROOT/successful/xdg/kaku/state.json"
-mirror_state="$TEST_ROOT/successful/home/.config/kaku/state.json"
+primary_state="$TEST_ROOT/successful/xdg/sumi/state.json"
+mirror_state="$TEST_ROOT/successful/home/.config/sumi/state.json"
 assert_file_exists "$primary_state"
 assert_file_exists "$mirror_state"
 expected_version="$(tr -d '[:space:]' <"$REPO_ROOT/assets/shell-integration/config_version.txt")"

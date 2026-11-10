@@ -89,13 +89,13 @@ fn now_unix_secs() -> u64 {
 pub fn get_copilot_token(client: &reqwest::blocking::Client) -> Result<String> {
     let mut auth = load_copilot_auth().ok_or_else(|| {
         anyhow::anyhow!(
-            "Copilot: not logged in. Open `kaku ai` and select Copilot, then press Enter on \
+            "Copilot: not logged in. Open `sumi ai` and select Copilot, then press Enter on \
              the GitHub Auth field to authenticate."
         )
     })?;
 
     if auth.github_token.trim().is_empty() {
-        anyhow::bail!("Copilot: GitHub token missing. Open `kaku ai` and authenticate via GitHub.");
+        anyhow::bail!("Copilot: GitHub token missing. Open `sumi ai` and authenticate via GitHub.");
     }
 
     // Refresh 60 seconds before expiry so tokens don't expire mid-request.
