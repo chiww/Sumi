@@ -300,7 +300,10 @@ pub fn open_kaku_config() {
         let dpi = config.dpi.unwrap_or_else(|| ::window::default_dpi());
         let size = config.initial_size(dpi as u32, None);
         let term_config = Arc::new(config::TermConfig::with_config(config));
-        crate::spawn::spawn_command_internal(
+        // Settings is a utility window: it never shows the left panel.
+        crate::termwindow::left_panel::NEXT_WINDOW_IS_UTILITY
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+        let result = crate::spawn::spawn_command_internal(
             SpawnCommand {
                 domain: SpawnTabDomain::DomainName("local".to_string()),
                 args: Some(kaku_config_command(
@@ -316,7 +319,10 @@ pub fn open_kaku_config() {
             None,
             term_config,
         )
-        .await
+        .await;
+        crate::termwindow::left_panel::NEXT_WINDOW_IS_UTILITY
+            .store(false, std::sync::atomic::Ordering::SeqCst);
+        result
     });
 }
 

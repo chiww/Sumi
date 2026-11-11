@@ -53,6 +53,9 @@ const PLUS_BUTTON: &[Poly] = &[
 impl crate::TermWindow {
     pub fn invalidate_fancy_tab_bar(&mut self) {
         self.fancy_tab_bar.take();
+        // The left panel's layout holds glyph texture coordinates too, so it
+        // goes stale on the same atlas rebuilds and shape cache clears.
+        self.left_panel.invalidate();
     }
 
     pub fn build_fancy_tab_bar(&self, palette: &ColorPalette) -> anyhow::Result<ComputedElement> {
@@ -310,11 +313,16 @@ impl crate::TermWindow {
             - (1.5 * metrics.cell_size.width as f32))
             .max(0.);
 
+        // With the left panel open the tabs start at its right edge and the
+        // titlebar buttons sit on the panel, so the bar reserves no room.
+        let beside_left_panel = self.left_panel_pixel_width() > 0;
+
         // Reserve space for the native titlebar buttons
-        if self
-            .config
-            .window_decorations
-            .contains(::window::WindowDecorations::INTEGRATED_BUTTONS)
+        if !beside_left_panel
+            && self
+                .config
+                .window_decorations
+                .contains(::window::WindowDecorations::INTEGRATED_BUTTONS)
             && self.config.integrated_title_button_style == IntegratedTitleButtonStyle::MacOsNative
             && !self.layout_is_effective_fullscreen()
         {
@@ -379,7 +387,9 @@ impl crate::TermWindow {
                     == IntegratedTitleButtonStyle::MacOsNative);
 
         let is_fullscreen = self.layout_is_effective_fullscreen();
-        let left_padding = if is_fullscreen {
+        let left_padding = if beside_left_panel {
+            Dimension::Cells(0.5)
+        } else if is_fullscreen {
             Dimension::Pixels(self.content_left_inset())
         } else if window_buttons_at_left {
             if self.config.integrated_title_button_style == IntegratedTitleButtonStyle::MacOsNative
@@ -415,18 +425,29 @@ impl crate::TermWindow {
         let tabs = Element::new(&font, content)
             .display(DisplayType::Block)
             .item_type(UIItemType::TabBar(TabBarItem::None))
-            .min_width(Some(Dimension::Pixels(self.dimensions.pixel_width as f32)))
+            .min_width(Some(Dimension::Pixels(if beside_left_panel {
+                (self.dimensions.pixel_width as f32 - self.get_os_border().left.get() as f32)
+                    .max(0.0)
+            } else {
+                self.dimensions.pixel_width as f32
+            })))
             .min_height(Some(Dimension::Pixels(tab_bar_height)))
             .vertical_align(VerticalAlign::Middle)
             .colors(bar_colors);
 
         let border = self.get_os_border();
-        // The left panel sits below the tab bar, so the bar keeps the full
-        // width rather than starting right of the panel.
-        let border_left = border.left.get() as f32 - self.left_panel_pixel_width() as f32;
+        // `border.left` includes the left panel, so the bar starts at its
+        // right edge, aligned with the terminal.
+        let border_left = border.left.get() as f32;
         // In fullscreen, start from 0 since left_padding already handles alignment
-        let bounds_left = if is_fullscreen { 0.0 } else { border_left };
-        let bounds_width = if is_fullscreen {
+        let bounds_left = if is_fullscreen && !beside_left_panel {
+            0.0
+        } else {
+            border_left
+        };
+        let bounds_width = if beside_left_panel {
+            self.dimensions.pixel_width as f32 - border_left - border.right.get() as f32
+        } else if is_fullscreen {
             self.dimensions.pixel_width as f32
         } else {
             self.dimensions.pixel_width as f32 - border_left - border.right.get() as f32

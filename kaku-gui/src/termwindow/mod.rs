@@ -1686,6 +1686,10 @@ impl TermWindow {
         if initial_window_state.contains(WindowState::HOTKEY_WINDOW) {
             initial_left_panel.visible = false;
         }
+        if left_panel::NEXT_WINDOW_IS_UTILITY.swap(false, std::sync::atomic::Ordering::SeqCst) {
+            initial_left_panel.visible = false;
+            initial_left_panel.utility = true;
+        }
         let show_tab_bar = config.enable_tab_bar && !config.hide_tab_bar_if_only_one_tab;
         crate::startup_trace::mark("    tab_bar_pixel_height start");
         // Use a cheap estimate based on terminal cell metrics to avoid paying

@@ -230,8 +230,15 @@ fn save(saved: &SavedPanel) {
 }
 
 /// Per-window panel state.
+/// Set just before Settings spawns its window; the next window to open
+/// takes it and keeps the panel hidden.
+pub(crate) static NEXT_WINDOW_IS_UTILITY: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
 pub(crate) struct LeftPanelState {
     pub visible: bool,
+    /// Set for utility windows such as Settings, which never show the panel.
+    pub utility: bool,
     pub width_pt: f32,
     pub tool: LeftPanelTool,
     files: file_tree::FileTree,
@@ -257,6 +264,7 @@ impl LeftPanelState {
             resolve_saved(load_saved(), config.left_panel, config.left_panel_width);
         Self {
             visible,
+            utility: false,
             width_pt,
             tool,
             files: Default::default(),
@@ -296,7 +304,7 @@ impl LeftPanelState {
         new: &config::ConfigHandle,
         hotkey_window: bool,
     ) -> bool {
-        if hotkey_window {
+        if hotkey_window || self.utility {
             return false;
         }
         let mut changed = false;
@@ -520,9 +528,12 @@ impl crate::TermWindow {
         )
     }
 
+    /// The hotkey drawer and utility windows (Settings) never show the panel.
     fn hotkey_window(&self) -> bool {
-        self.window_state
-            .contains(::window::WindowState::HOTKEY_WINDOW)
+        self.left_panel.utility
+            || self
+                .window_state
+                .contains(::window::WindowState::HOTKEY_WINDOW)
     }
 
     pub(super) fn toggle_left_panel(&mut self) {
@@ -645,42 +656,39 @@ impl crate::TermWindow {
         }
     }
 
-    /// Where the panel starts: below a top tab bar, else the window top.
+    /// The panel runs the full window height, like Warp's: the traffic
+    /// lights sit on its header and the tab bar starts at its right edge.
     fn left_panel_top(&self) -> f32 {
-        if self.show_tab_bar && !self.config.tab_bar_at_bottom {
-            self.tab_bar_pixel_height().unwrap_or(0.0)
-        } else {
-            0.0
-        }
+        0.0
     }
 
-    /// Where the panel ends: above a bottom tab bar, else the window bottom.
     fn left_panel_bottom(&self) -> f32 {
-        let height = self.dimensions.pixel_height as f32;
-        if self.show_tab_bar && self.config.tab_bar_at_bottom {
-            height - self.tab_bar_pixel_height().unwrap_or(0.0)
-        } else {
-            height
-        }
+        self.dimensions.pixel_height as f32
     }
 
+    /// Room above the tool strip: clear of the traffic lights, and level
+    /// with the bottom of a top tab bar so the tools line up with the
+    /// terminal's first row.
     fn left_panel_header_height(&self) -> f32 {
         let dpi = self.dimensions.dpi as f32;
-        let tab_bar_on_top = self.show_tab_bar && !self.config.tab_bar_at_bottom;
         let has_traffic_lights = self
             .config
             .window_decorations
             .contains(::window::WindowDecorations::INTEGRATED_BUTTONS)
-            && !self.layout_is_effective_fullscreen()
-            && !tab_bar_on_top;
-        points_to_pixels(
+            && !self.layout_is_effective_fullscreen();
+        let clearance = points_to_pixels(
             if has_traffic_lights {
                 TRAFFIC_LIGHT_CLEARANCE_PT
             } else {
                 TOP_GAP_PT
             },
             dpi,
-        )
+        );
+        if self.show_tab_bar && !self.config.tab_bar_at_bottom {
+            clearance.max(self.tab_bar_pixel_height().unwrap_or(0.0))
+        } else {
+            clearance
+        }
     }
 
     fn left_panel_colors(&self, palette: &ColorPalette) -> PanelColors {
@@ -2088,6 +2096,20 @@ impl crate::TermWindow {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The panel caches glyph texture coordinates; an atlas rebuild (CJK
+    /// text in the viewer can trigger one) must drop that cache too, or the
+    /// panel draws garbled glyphs.
+    #[test]
+    fn atlas_rebuilds_drop_the_panel_layout() {
+        let src = include_str!("../render/fancy_tab_bar.rs");
+        let body = src
+            .split("pub fn invalidate_fancy_tab_bar(&mut self) {")
+            .nth(1)
+            .and_then(|rest| rest.split("\n    }").next())
+            .unwrap();
+        assert!(body.contains("self.left_panel.invalidate()"));
+    }
 
     #[test]
     fn cmd_shortcuts_map_to_the_viewer_ctrl_keys() {
