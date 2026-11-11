@@ -2771,6 +2771,7 @@ fn compute_default_actions() -> Vec<KeyAssignment> {
         ScrollByPage(NotNan::new(1.0).unwrap()),
         ScrollToTop,
         ScrollToBottom,
+        ToggleVerticalTabs,
         // ----------------- Window
         ToggleFullScreen,
         CenterWindow,
@@ -3101,6 +3102,23 @@ mod tests {
             )]
         );
         assert_eq!(cmd.menubar, &["Shell"]);
+    }
+
+    #[test]
+    fn tab_sidebar_has_default_shortcut_and_view_menu_entry() {
+        // The sidebar shipped once with ToggleVerticalTabs only in the
+        // palette list: Ctrl+Cmd+S was never bound and View had no item.
+        let config = ConfigHandle::default_config();
+        let map = crate::inputmap::InputMap::new(&config);
+        let ctrl_cmd = Modifiers::SUPER.union(Modifiers::CTRL);
+        assert!(map.keys.default.iter().any(|((key, mods), entry)| {
+            *mods == ctrl_cmd
+                && matches!(key, KeyCode::Char('s' | 'S'))
+                && entry.action == KeyAssignment::ToggleVerticalTabs
+        }));
+        assert!(CommandDef::actions_for_palette_and_menubar(&config)
+            .iter()
+            .any(|cmd| cmd.action == KeyAssignment::ToggleVerticalTabs && cmd.menubar == ["View"]));
     }
 
     #[test]
