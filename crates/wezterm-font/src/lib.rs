@@ -500,6 +500,8 @@ enum Entity {
     CommandPalette,
     CharSelect,
     PaneSelect,
+    /// Sumi's left panel: `left_panel_font` / `left_panel_font_size`.
+    LeftPanel,
 }
 
 struct FontConfigInner {
@@ -517,6 +519,7 @@ struct FontConfigInner {
     title_font: RefCell<Option<Rc<LoadedFont>>>,
     caption_font: RefCell<Option<Rc<LoadedFont>>>,
     pane_select_font: RefCell<Option<Rc<LoadedFont>>>,
+    left_panel_font: RefCell<Option<Rc<LoadedFont>>>,
     char_select_font: RefCell<Option<Rc<LoadedFont>>>,
     command_palette_font: RefCell<Option<Rc<LoadedFont>>>,
     fallback_channel: RefCell<Option<Sender<FallbackResolveInfo>>>,
@@ -540,6 +543,7 @@ impl FontConfigInner {
             title_font: RefCell::new(None),
             caption_font: RefCell::new(None),
             pane_select_font: RefCell::new(None),
+            left_panel_font: RefCell::new(None),
             char_select_font: RefCell::new(None),
             command_palette_font: RefCell::new(None),
             font_scale: RefCell::new(1.0),
@@ -560,6 +564,7 @@ impl FontConfigInner {
         self.title_font.borrow_mut().take();
         self.caption_font.borrow_mut().take();
         self.pane_select_font.borrow_mut().take();
+        self.left_panel_font.borrow_mut().take();
         self.char_select_font.borrow_mut().take();
         self.command_palette_font.borrow_mut().take();
         self.metrics.borrow_mut().take();
@@ -669,6 +674,13 @@ impl FontConfigInner {
                 config.pane_select_font_size,
                 config.pane_select_font.as_ref(),
             ),
+            Entity::LeftPanel => (
+                config
+                    .left_panel_font_size
+                    .filter(|size| *size > 0.0)
+                    .unwrap_or_else(|| config.window_frame.font_size.unwrap_or(sys_size)),
+                config.left_panel_font.as_ref(),
+            ),
         };
 
         let text_style =
@@ -773,6 +785,20 @@ impl FontConfigInner {
         let loaded = self.make_entity_font_impl(myself, Entity::PaneSelect)?;
 
         pane_select_font.replace(Rc::clone(&loaded));
+
+        Ok(loaded)
+    }
+
+    fn left_panel_font(&self, myself: &Rc<Self>) -> anyhow::Result<Rc<LoadedFont>> {
+        let mut left_panel_font = self.left_panel_font.borrow_mut();
+
+        if let Some(entry) = left_panel_font.as_ref() {
+            return Ok(Rc::clone(entry));
+        }
+
+        let loaded = self.make_entity_font_impl(myself, Entity::LeftPanel)?;
+
+        left_panel_font.replace(Rc::clone(&loaded));
 
         Ok(loaded)
     }
@@ -1092,6 +1118,7 @@ impl FontConfigInner {
         self.metrics.borrow_mut().take();
         self.title_font.borrow_mut().take();
         self.caption_font.borrow_mut().take();
+        self.left_panel_font.borrow_mut().take();
 
         (prior_font, prior_dpi)
     }
@@ -1220,6 +1247,10 @@ impl FontConfiguration {
 
     pub fn pane_select_font(&self) -> anyhow::Result<Rc<LoadedFont>> {
         self.inner.pane_select_font(&self.inner)
+    }
+
+    pub fn left_panel_font(&self) -> anyhow::Result<Rc<LoadedFont>> {
+        self.inner.left_panel_font(&self.inner)
     }
 
     pub fn char_select_font(&self) -> anyhow::Result<Rc<LoadedFont>> {

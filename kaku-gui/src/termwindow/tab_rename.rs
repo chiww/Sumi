@@ -697,8 +697,10 @@ impl TabRenameModal {
             )
             .to_linear()
         };
-        let fill = mix(0.10);
-        let edge = mix(0.35);
+        // A little brighter than the resting field, so focus shows. Corners
+        // are filled with the border color, so it matches the fill.
+        let fill = mix(0.14);
+        let edge = fill;
         let r = Dimension::Pixels(6.0);
         let corners = Some(Corners {
             top_left: SizedPoly {
@@ -928,10 +930,12 @@ impl TabRenameModal {
     }
 
     fn compute(&self, term_window: &mut TermWindow) -> anyhow::Result<Vec<ComputedElement>> {
-        let font = term_window
-            .fonts
-            .title_font()
-            .context("resolve tab rename font")?;
+        let font = if self.panel_prompt().is_some() {
+            term_window.fonts.left_panel_font()
+        } else {
+            term_window.fonts.title_font()
+        }
+        .context("resolve tab rename font")?;
         let metrics = RenderMetrics::with_font_metrics(&font.metrics());
         let palette = term_window.palette().clone();
         let (element_colors, border_corners) = self.colors(term_window, &palette);
@@ -984,11 +988,7 @@ impl TabRenameModal {
             top: Dimension::Pixels(0.0),
             bottom: Dimension::Pixels(0.0),
         };
-        let border = BoxDimension::new(Dimension::Pixels(if self.panel_prompt().is_some() {
-            1.0
-        } else {
-            0.0
-        }));
+        let border = BoxDimension::new(Dimension::Pixels(0.0));
 
         let mut row = vec![];
         let cursor_element_idx;

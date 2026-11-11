@@ -418,7 +418,12 @@ pub(crate) fn cd_command(dir: &Path) -> String {
 }
 
 /// The command line of a viewer pane for `path`.
-pub(crate) fn viewer_args(path: &Path, line: Option<usize>) -> Vec<String> {
+pub(crate) fn viewer_args(
+    path: &Path,
+    line: Option<usize>,
+    theme: &str,
+    light_terminal: bool,
+) -> Vec<String> {
     let exe = std::env::current_exe()
         .map(|p| p.to_string_lossy().into_owned())
         .unwrap_or_else(|_| "sumi".to_string());
@@ -430,7 +435,17 @@ pub(crate) fn viewer_args(path: &Path, line: Option<usize>) -> Vec<String> {
     if let Some(line) = line {
         args.push(format!("--line={line}"));
     }
+    args.push(format!("--theme={theme}"));
+    if light_terminal {
+        args.push("--light".to_string());
+    }
     args
+}
+
+/// True when the terminal background is light, so the viewer's Auto theme
+/// picks a light syntax theme for code.
+fn is_light(color: SrgbaTuple) -> bool {
+    0.2126 * color.0 + 0.7152 * color.1 + 0.0722 * color.2 > 0.5
 }
 
 /// The paste that makes a running viewer switch to `path`.
@@ -478,7 +493,17 @@ struct PanelColors {
     faint: LinearRgba,
     accent: LinearRgba,
     field: LinearRgba,
-    field_edge: LinearRgba,
+}
+
+/// Padding each row gains above and below for `left_panel_line_height`.
+fn row_extra_padding(line_h: f32, line_height: f64) -> f32 {
+    let (min, max) = config::LEFT_PANEL_LINE_HEIGHT_RANGE;
+    let factor = if line_height.is_finite() {
+        line_height.clamp(min, max)
+    } else {
+        1.0
+    };
+    (line_h * (factor as f32 - 1.0) / 2.0).max(-line_h * 0.1)
 }
 
 /// True for a pane running Sumi's file viewer.
@@ -713,8 +738,7 @@ impl crate::TermWindow {
             accent: palette
                 .resolve_fg(ColorAttribute::PaletteIndex(4))
                 .to_linear(),
-            field: to(mix(bg, fg, 0.08)),
-            field_edge: to(mix(bg, fg, 0.2)),
+            field: to(mix(bg, fg, 0.10)),
         }
     }
 
@@ -731,7 +755,7 @@ impl crate::TermWindow {
         &mut self,
         palette: &ColorPalette,
     ) -> anyhow::Result<(Vec<ComputedElement>, Vec<RowTarget>, usize)> {
-        let font = self.fonts.title_font()?;
+        let font = self.fonts.left_panel_font()?;
         let metrics = RenderMetrics::with_font_metrics(&font.metrics());
         let dpi = self.dimensions.dpi as f32;
         let px = |pt: f32| points_to_pixels(pt, dpi);
@@ -746,7 +770,11 @@ impl crate::TermWindow {
         let text_cells = ((inner_w - px(ROW_PAD_X_PT) * 2.0) / cell_w)
             .floor()
             .max(4.0) as usize;
-        let row_h = line_h + px(ROW_PAD_Y_PT) * 2.0;
+        // `left_panel_line_height` spreads rows apart like the terminal's
+        // `line_height`: the extra height goes to the rows' padding.
+        let row_pad_y =
+            px(ROW_PAD_Y_PT) + row_extra_padding(line_h, self.config.left_panel_line_height);
+        let row_h = line_h + row_pad_y * 2.0;
 
         let gl_state = self.render_state.as_ref().unwrap();
         let layout = |bounds: euclid::Rect<f32, window::PixelUnit>,
@@ -822,14 +850,12 @@ impl crate::TermWindow {
                 .display(DisplayType::Block)
                 // min sizes are content-box; padding is added around them.
                 .min_width(Some(Dimension::Pixels((w - pad_x * 2.0).max(1.0))))
-                .min_height(Some(Dimension::Pixels(
-                    (h - px(ROW_PAD_Y_PT) * 2.0).max(1.0),
-                )))
+                .min_height(Some(Dimension::Pixels((h - row_pad_y * 2.0).max(1.0))))
                 .padding(BoxDimension {
                     left: Dimension::Pixels(pad_x),
                     right: Dimension::Pixels(pad_x),
-                    top: Dimension::Pixels(px(ROW_PAD_Y_PT)),
-                    bottom: Dimension::Pixels(px(ROW_PAD_Y_PT)),
+                    top: Dimension::Pixels(row_pad_y),
+                    bottom: Dimension::Pixels(row_pad_y),
                 })
                 .border_corners(rounded())
                 .colors(ElementColors {
@@ -917,7 +943,7 @@ impl crate::TermWindow {
             )
             .item_type(UIItemType::LeftPanel(PanelItem::Field(kind)))
             .display(DisplayType::Block)
-            .min_width(Some(Dimension::Pixels(w - px(ROW_PAD_X_PT) * 2.0 - 2.0)))
+            .min_width(Some(Dimension::Pixels(w - px(ROW_PAD_X_PT) * 2.0)))
             .min_height(Some(Dimension::Pixels(line_h)))
             .padding(BoxDimension {
                 left: Dimension::Pixels(px(ROW_PAD_X_PT)),
@@ -925,15 +951,17 @@ impl crate::TermWindow {
                 top: Dimension::Pixels(px(FIELD_PAD_Y_PT)),
                 bottom: Dimension::Pixels(px(FIELD_PAD_Y_PT)),
             })
-            .border(BoxDimension::new(Dimension::Pixels(1.0)))
+            // The box model fills rounded corners with the border color, so
+            // a field whose outline differs from its fill shows four corner
+            // blocks (very visible on dark themes). Corners match the fill.
             .border_corners(rounded())
             .colors(ElementColors {
-                border: BorderColor::new(colors.field_edge),
+                border: BorderColor::new(colors.field),
                 bg: colors.field.into(),
                 text: colors.text.into(),
             })
         };
-        let field_h = line_h + px(FIELD_PAD_Y_PT) * 2.0 + 2.0;
+        let field_h = line_h + px(FIELD_PAD_Y_PT) * 2.0;
 
         match self.left_panel.tool {
             LeftPanelTool::Files => {
@@ -1592,7 +1620,7 @@ impl crate::TermWindow {
         let y = self.left_panel_top() + self.left_panel_header_height() + px(TOOL_STRIP_PT);
         let height = self
             .fonts
-            .title_font()
+            .left_panel_font()
             .map(|font| {
                 RenderMetrics::with_font_metrics(&font.metrics())
                     .cell_size
@@ -1767,8 +1795,10 @@ impl crate::TermWindow {
         let Some(pane) = self.get_active_pane_or_overlay() else {
             return;
         };
+        let theme = self.config.markdown_theme.clone();
+        let light_terminal = is_light(self.palette().background);
         let spawn = SpawnCommand {
-            args: Some(viewer_args(path, line)),
+            args: Some(viewer_args(path, line, &theme, light_terminal)),
             cwd: path.parent().map(Path::to_path_buf),
             ..Default::default()
         };

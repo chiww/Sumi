@@ -300,15 +300,20 @@ Sumi has a tool panel at the window's left edge, in the spirit of Warp's: a proj
 
 ```lua
 config.left_panel = true
-config.left_panel_width = 260   -- points, 180 to 560
+config.left_panel_width = 260                    -- points, 180 to 560
+config.left_panel_font = wezterm.font('Menlo')   -- unset: the window title font
+config.left_panel_font_size = 13                 -- unset: window_frame.font_size, else 12
+config.left_panel_line_height = 1.2              -- row spacing, 0.8 to 2.5
 ```
+
+The same three are in `sumi config` under Window (Panel Font, Panel Font Size, Panel Line Height); Font and Panel Font list the installed fonts, and typing jumps through the list.
 
 - **Files** follows the active pane's directory up to its Git root and hides `.gitignore`d entries. Click a folder to expand it and a file to open it beside the terminal; right-click for open in a new tab or the default app, reveal in Finder, `cd` here, new tab here, new file or folder, rename, move to Trash, copy path and set as root.
 - **Search** looks through the project's text files as you type (match case and regex toggles), honouring `.gitignore`. Click a match to open the file at that line.
 - **Snippets** live in `~/.config/sumi/snippets.toml`. Click one to type it into the active pane; right-click to run it. Text in `{{double braces}}` marks a placeholder, so such a snippet is typed without Enter.
 - **AI chats** lists saved Sumi Assistant conversations with a filter; click one to reopen it in the chat overlay.
 
-Files open in Sumi's viewer pane, split to the right; later files reuse it. Markdown opens rendered, `Cmd + P` switches to the editable source, and other text files open in the editor with syntax highlighting. `Cmd + S` saves, `Cmd + Z` / `Cmd + Shift + Z` undo and redo, `Cmd + F` finds, and `Ctrl + Q` closes the viewer (it asks again when there are unsaved edits). A file changed on disk reloads when there are no unsaved edits. Binary files such as images and PDFs open in their default app. You can also run the viewer yourself with `Sumi.app/Contents/MacOS/kaku-gui --sumi-view <file>`.
+Files open in Sumi's viewer pane, split to the right; later files reuse it. Markdown opens rendered, `Cmd + P` switches to the editable source, and other text files open in the editor with syntax highlighting. `Cmd + S` saves, `Cmd + Z` / `Cmd + Shift + Z` undo and redo, `Cmd + F` finds, and `Ctrl + Q` closes the viewer (it asks again when there are unsaved edits). A file changed on disk reloads when there are no unsaved edits. `Ctrl + T` cycles the viewer's color theme; `config.markdown_theme` (or Markdown Theme in `sumi config`) picks the one it opens with: `'Auto'` follows the terminal's colors, and `'GitHub Light'`, `'GitHub Dark'`, `'Solarized Light'`, `'Solarized Dark'`, `'Nord'` and `'Dracula'` bring their own background and code colors. Binary files such as images and PDFs open in their default app. You can also run the viewer yourself with `Sumi.app/Contents/MacOS/kaku-gui --sumi-view <file>`.
 
 The panel's visibility, tool and width are remembered across restarts until you change `left_panel` or `left_panel_width` in the config.
 

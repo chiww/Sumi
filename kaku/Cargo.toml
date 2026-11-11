@@ -30,6 +30,7 @@ clap_complete.workspace = true
 clap_complete_fig.workspace = true
 codec.workspace = true
 config.workspace = true
+core-text.workspace = true
 crossterm.workspace = true
 env-bootstrap.workspace = true
 hostname.workspace = true

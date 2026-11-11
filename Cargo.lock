@@ -3288,6 +3288,7 @@ dependencies = [
  "clap_complete_fig",
  "codec",
  "config",
+ "core-text",
  "crossterm 0.28.1",
  "env-bootstrap",
  "hostname",

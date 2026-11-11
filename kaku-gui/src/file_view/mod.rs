@@ -13,6 +13,7 @@
 //! further files as a marked paste (`left_panel::viewer_open_request`).
 
 pub(crate) mod buffer;
+pub(crate) mod theme;
 
 use self::buffer::{char_width, col_for_x, display_x, Buffer, Pos};
 use crate::overlay::ai_chat::markdown::{parse_markdown_blocks, tokenize_inline, wrap_segments};
@@ -24,7 +25,6 @@ use syntect::highlighting::{HighlightIterator, HighlightState, Highlighter, Them
 use syntect::parsing::{ParseState, ScopeStack, SyntaxReference, SyntaxSet};
 use termwiz::caps::Capabilities;
 use termwiz::cell::{unicode_column_width, CellAttributes, Intensity, Underline};
-use termwiz::color::{ColorAttribute, SrgbaTuple};
 use termwiz::input::{InputEvent, KeyCode, KeyEvent, Modifiers, MouseButtons, MouseEvent};
 use termwiz::surface::{Change, CursorVisibility, Position};
 use termwiz::terminal::{Terminal, UnixTerminal};
@@ -78,20 +78,69 @@ fn t(key: &str) -> String {
 
 struct Syntect {
     syntaxes: SyntaxSet,
-    dark: Theme,
-    light: Theme,
+    themes: ThemeSet,
 }
 
 fn syntect() -> &'static Syntect {
     static INSTANCE: std::sync::OnceLock<Syntect> = std::sync::OnceLock::new();
-    INSTANCE.get_or_init(|| {
-        let mut themes = ThemeSet::load_defaults().themes;
-        Syntect {
-            syntaxes: SyntaxSet::load_defaults_newlines(),
-            dark: themes.remove("base16-ocean.dark").unwrap_or_default(),
-            light: themes.remove("InspiredGitHub").unwrap_or_default(),
-        }
+    INSTANCE.get_or_init(|| Syntect {
+        syntaxes: SyntaxSet::load_defaults_newlines(),
+        themes: ThemeSet::load_defaults(),
     })
+}
+
+/// The syntect theme the current viewer theme uses for code.
+fn code_theme() -> &'static Theme {
+    let st = syntect();
+    st.themes
+        .themes
+        .get(theme::syntax_theme())
+        .or_else(|| st.themes.themes.values().next())
+        .expect("syntect ships themes")
+}
+
+/// Highlights a fenced code block in the current theme. Diff lines keep
+/// their own colors, so a block with any of them is left plain.
+fn highlight_fence(lines: &[(&str, DiffKind)], lang: &str) -> Vec<(Vec<InlineSpan>, DiffKind)> {
+    let plain = |text: &str, diff: DiffKind| {
+        (
+            vec![InlineSpan {
+                text: text.to_string(),
+                style: InlineStyle::Plain,
+            }],
+            diff,
+        )
+    };
+    let st = syntect();
+    let syntax = st.syntaxes.find_syntax_by_token(lang);
+    let Some(syntax) = syntax.filter(|_| lines.iter().all(|(_, d)| *d == DiffKind::None)) else {
+        return lines.iter().map(|(t, d)| plain(t, *d)).collect();
+    };
+    let mut highlighter = syntect::easy::HighlightLines::new(syntax, code_theme());
+    lines
+        .iter()
+        .map(|(text, diff)| {
+            let line = format!("{text}\n");
+            match highlighter.highlight_line(&line, &st.syntaxes) {
+                Ok(ranges) => (
+                    ranges
+                        .into_iter()
+                        .map(|(style, part)| InlineSpan {
+                            text: part.trim_end_matches('\n').to_string(),
+                            style: InlineStyle::Highlighted(
+                                style.foreground.r,
+                                style.foreground.g,
+                                style.foreground.b,
+                            ),
+                        })
+                        .filter(|span| !span.text.is_empty())
+                        .collect(),
+                    *diff,
+                ),
+                Err(_) => plain(text, *diff),
+            }
+        })
+        .collect()
 }
 
 type Styled = Vec<(String, Option<(u8, u8, u8)>)>;
@@ -100,13 +149,12 @@ type Styled = Vec<(String, Option<(u8, u8, u8)>)>;
 /// every line so an edit re-highlights from the changed row only.
 struct LineHighlighter {
     syntax: Option<&'static SyntaxReference>,
-    light: bool,
     states: Vec<(ParseState, HighlightState)>,
     lines: Vec<Styled>,
 }
 
 impl LineHighlighter {
-    fn new(path: &Path, first_line: &str, light: bool) -> Self {
+    fn new(path: &Path, first_line: &str) -> Self {
         let st = syntect();
         let syntax = st
             .syntaxes
@@ -117,7 +165,6 @@ impl LineHighlighter {
             .filter(|s| s.name != "Plain Text");
         Self {
             syntax,
-            light,
             states: vec![],
             lines: vec![],
         }
@@ -137,8 +184,7 @@ impl LineHighlighter {
             return;
         }
         let st = syntect();
-        let theme = if self.light { &st.light } else { &st.dark };
-        let highlighter = Highlighter::new(theme);
+        let highlighter = Highlighter::new(code_theme());
         let upto = upto.min(buffer.lines.len());
         while self.lines.len() < upto {
             let row = self.lines.len();
@@ -180,25 +226,29 @@ impl LineHighlighter {
 type Cell = (String, CellAttributes);
 type DisplayLine = Vec<Cell>;
 
+/// Plain text in the current theme.
 fn attrs() -> CellAttributes {
-    CellAttributes::default()
+    theme::base()
 }
 
-fn fg(idx: u8) -> CellAttributes {
-    let mut a = attrs();
-    a.set_foreground(ColorAttribute::PaletteIndex(idx));
-    a
+fn accent() -> CellAttributes {
+    theme::colored(theme::current().accent)
+}
+
+fn muted() -> CellAttributes {
+    theme::colored(theme::current().muted)
+}
+
+fn warn() -> CellAttributes {
+    theme::colored(theme::current().warn)
+}
+
+fn code() -> CellAttributes {
+    theme::colored(theme::current().code)
 }
 
 fn rgb(r: u8, g: u8, b: u8) -> CellAttributes {
-    let mut a = attrs();
-    a.set_foreground(ColorAttribute::TrueColorWithDefaultFallback(SrgbaTuple(
-        r as f32 / 255.0,
-        g as f32 / 255.0,
-        b as f32 / 255.0,
-        1.0,
-    )));
-    a
+    theme::rgb_text(r, g, b)
 }
 
 fn dim() -> CellAttributes {
@@ -218,7 +268,7 @@ fn span_attrs(style: InlineStyle, base: &CellAttributes) -> CellAttributes {
             a.set_italic(true);
         }
         InlineStyle::Code => {
-            a.set_foreground(ColorAttribute::PaletteIndex(3));
+            a = code();
         }
         InlineStyle::HeadingMarker => {
             a.set_intensity(Intensity::Half);
@@ -239,7 +289,7 @@ fn spans_to_line(prefix: &[Cell], spans: &[InlineSpan], base: &CellAttributes) -
 }
 
 /// Renders Markdown into display lines `width` cells wide.
-pub(crate) fn render_markdown(text: &str, width: usize, light: bool) -> Vec<DisplayLine> {
+pub(crate) fn render_markdown(text: &str, width: usize) -> Vec<DisplayLine> {
     let width = width.max(10);
     let blocks = parse_markdown_blocks(text);
     let mut out: Vec<DisplayLine> = vec![];
@@ -255,7 +305,7 @@ pub(crate) fn render_markdown(text: &str, width: usize, light: bool) -> Vec<Disp
                 if out.last().is_some_and(|l| !l.is_empty()) {
                     out.push(vec![]);
                 }
-                let mut base = if *level <= 2 { fg(4) } else { attrs() };
+                let mut base = if *level <= 2 { accent() } else { attrs() };
                 base.set_intensity(Intensity::Bold);
                 if *level == 1 {
                     base.set_underline(Underline::Single);
@@ -277,7 +327,7 @@ pub(crate) fn render_markdown(text: &str, width: usize, light: bool) -> Vec<Disp
             MdBlock::Quote(text) => {
                 let mut base = attrs();
                 base.set_italic(true);
-                let bar = ("▎ ".to_string(), fg(8));
+                let bar = ("▎ ".to_string(), muted());
                 let spans = tokenize_inline(text);
                 for wrapped in wrap_segments(&spans, width.saturating_sub(2)) {
                     out.push(spans_to_line(std::slice::from_ref(&bar), &wrapped, &base));
@@ -291,7 +341,7 @@ pub(crate) fn render_markdown(text: &str, width: usize, light: bool) -> Vec<Disp
                     .enumerate()
                 {
                     let prefix = if n == 0 {
-                        (format!("{marker} "), fg(4))
+                        (format!("{marker} "), accent())
                     } else {
                         (" ".repeat(indent), attrs())
                     };
@@ -316,16 +366,16 @@ pub(crate) fn render_markdown(text: &str, width: usize, light: bool) -> Vec<Disp
                     lines.push((text.as_str(), *diff));
                     i += 1;
                 }
-                let highlighted =
-                    crate::overlay::ai_chat::syntax::highlight_code_block(&lines, &lang, light);
-                let gutter = ("│ ".to_string(), fg(8));
+                let highlighted = highlight_fence(&lines, &lang);
+                let gutter = ("│ ".to_string(), muted());
+                let current = theme::current();
                 for (spans, diff) in highlighted {
-                    let base = match diff {
-                        DiffKind::Add => fg(2),
-                        DiffKind::Remove => fg(1),
-                        DiffKind::Hunk => fg(6),
-                        DiffKind::None => fg(3),
-                    };
+                    let base = theme::colored(match diff {
+                        DiffKind::Add => current.added,
+                        DiffKind::Remove => current.removed,
+                        DiffKind::Hunk => current.hunk,
+                        DiffKind::None => current.code,
+                    });
                     let mut line = spans_to_line(std::slice::from_ref(&gutter), &spans, &base);
                     clip_line(&mut line, width);
                     out.push(line);
@@ -391,7 +441,6 @@ struct App {
     highlighter: LineHighlighter,
     mode: Mode,
     markdown: bool,
-    light: bool,
     /// Edit view: first row and first display column shown.
     top: usize,
     left: usize,
@@ -438,7 +487,7 @@ fn read_file(path: &Path) -> Result<String, String> {
 }
 
 impl App {
-    fn open(path: PathBuf, line: Option<usize>, light: bool, cols: usize, rows: usize) -> Self {
+    fn open(path: PathBuf, line: Option<usize>, cols: usize, rows: usize) -> Self {
         let (text, blocked) = match read_file(&path) {
             Ok(text) => (text, None),
             Err(err) => (String::new(), Some(err)),
@@ -448,7 +497,6 @@ impl App {
         let highlighter = LineHighlighter::new(
             &path,
             buffer.lines.first().map(String::as_str).unwrap_or(""),
-            light,
         );
         let mut app = Self {
             mtime: file_mtime(&path),
@@ -461,7 +509,6 @@ impl App {
                 Mode::Edit
             },
             markdown,
-            light,
             top: 0,
             left: 0,
             preview: vec![],
@@ -509,7 +556,7 @@ impl App {
     fn ensure_preview(&mut self) {
         let width = self.cols.saturating_sub(4).min(110);
         if self.preview_width != width || self.preview_version != self.buffer.version {
-            self.preview = render_markdown(&self.buffer.text(), width, self.light);
+            self.preview = render_markdown(&self.buffer.text(), width);
             self.preview_width = width;
             self.preview_version = self.buffer.version;
             self.preview_top = self.preview_top.min(self.preview.len().saturating_sub(1));
@@ -587,7 +634,7 @@ impl App {
         }
         let same = path == self.path;
         let keep_mode = self.mode;
-        *self = Self::open(path, line, self.light, self.cols, self.rows);
+        *self = Self::open(path, line, self.cols, self.rows);
         if same && line.is_none() {
             self.mode = keep_mode;
         }
@@ -711,6 +758,13 @@ impl App {
                 if self.blocked.is_none() {
                     self.save();
                 }
+                return true;
+            }
+            KeyCode::Char('t') if ctrl => {
+                let next = theme::cycle();
+                self.highlighter.invalidate_from(0);
+                self.preview_version = u64::MAX;
+                self.status = Some(rust_i18n::t!("file_view.theme", name = next.name).into_owned());
                 return true;
             }
             KeyCode::Char('p') if ctrl && self.markdown => {
@@ -936,7 +990,7 @@ impl App {
             Change::Text("\x1b[?2026h".into()),
             Change::CursorVisibility(CursorVisibility::Hidden),
             Change::AllAttributes(attrs()),
-            Change::ClearScreen(ColorAttribute::Default),
+            Change::ClearScreen(theme::background()),
         ];
         let put = |out: &mut Vec<Change>, x: usize, y: usize, cells: &[Cell]| {
             out.push(Change::CursorPosition {
@@ -967,7 +1021,7 @@ impl App {
             .unwrap_or_default();
         let mut header: DisplayLine = vec![(format!(" {}", self.name()), bold)];
         if self.buffer.is_dirty() {
-            header.push((" ●".into(), fg(3)));
+            header.push((" ●".into(), warn()));
         }
         header.push((format!("  {dir}"), dim()));
         let tabs_x = self.header_tabs_x();
@@ -1089,9 +1143,12 @@ impl App {
             let x =
                 1 + unicode_column_width(&prompt, None) + unicode_column_width(&find.query, None);
             cursor_at = Some((x, status_y));
-            vec![(format!(" {prompt}"), fg(4)), (find.query.clone(), attrs())]
+            vec![
+                (format!(" {prompt}"), accent()),
+                (find.query.clone(), attrs()),
+            ]
         } else if let Some(status) = &self.status {
-            vec![(format!(" {status}"), fg(3))]
+            vec![(format!(" {status}"), warn())]
         } else if self.mode == Mode::Edit {
             let c = self.buffer.cursor;
             vec![(
@@ -1155,9 +1212,12 @@ pub fn main(args: &[String]) -> anyhow::Result<()> {
     let mut path = None;
     let mut line = None;
     let mut light = false;
+    let mut theme_name = String::new();
     for arg in args {
         if let Some(n) = arg.strip_prefix("--line=") {
             line = n.parse().ok();
+        } else if let Some(name) = arg.strip_prefix("--theme=") {
+            theme_name = name.to_string();
         } else if arg == "--light" {
             light = true;
         } else if !arg.starts_with("--") && path.is_none() {
@@ -1176,7 +1236,8 @@ pub fn main(args: &[String]) -> anyhow::Result<()> {
     term.enter_alternate_screen()?;
     term.set_raw_mode()?;
     let size = term.get_screen_size()?;
-    let mut app = App::open(path, line, light, size.cols, size.rows);
+    theme::set(theme::index_of(&theme_name), light);
+    let mut app = App::open(path, line, size.cols, size.rows);
     term.render(&[
         set_user_var(crate::termwindow::left_panel::VIEWER_USER_VAR, "1"),
         Change::Title(app.name()),
@@ -1247,7 +1308,7 @@ mod tests {
     #[test]
     fn markdown_renders_headings_lists_quotes_and_code() {
         let md = "# Title\n\nSome **bold** text.\n\n- one\n- two\n\n> quoted\n\n```rust\nfn main() {}\n```\n";
-        let text = plain(&render_markdown(md, 40, false));
+        let text = plain(&render_markdown(md, 40));
         assert_eq!(text[0], "Title");
         assert!(text[1].starts_with('─'));
         assert!(text.contains(&"Some bold text.".to_string()));
@@ -1261,7 +1322,7 @@ mod tests {
     #[test]
     fn long_paragraphs_wrap_to_the_width() {
         let md = "word ".repeat(30);
-        for line in render_markdown(&md, 20, false) {
+        for line in render_markdown(&md, 20) {
             assert!(unicode_column_width(&line_text(&line), None) <= 20);
         }
     }
@@ -1290,7 +1351,7 @@ mod tests {
     #[test]
     fn highlighter_reuses_state_and_recomputes_after_an_edit() {
         let mut buffer = Buffer::from_text("fn main() {\n    let s = \"x\";\n}\n");
-        let mut h = LineHighlighter::new(Path::new("main.rs"), "fn main() {", false);
+        let mut h = LineHighlighter::new(Path::new("main.rs"), "fn main() {");
         assert!(h.syntax.is_some());
         h.ensure(&buffer, 3);
         assert_eq!(h.lines.len(), 3);
@@ -1302,10 +1363,8 @@ mod tests {
         h.ensure(&buffer, 3);
         let joined: String = h.line(1).unwrap().iter().map(|(t, _)| t.as_str()).collect();
         assert_eq!(joined, "    // let s = \"x\";");
-        assert!(
-            LineHighlighter::new(Path::new("notes.unknownext"), "", false)
-                .syntax
-                .is_none()
-        );
+        assert!(LineHighlighter::new(Path::new("notes.unknownext"), "")
+            .syntax
+            .is_none());
     }
 }

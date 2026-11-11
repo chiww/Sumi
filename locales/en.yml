@@ -93,6 +93,7 @@ left_panel:
   menu_edit_file: "Edit Snippets File"
 
 file_view:
+  theme: "Theme: %{name} (⌃T to switch)"
   preview: "Preview"
   edit: "Edit"
   saved: "Saved"
@@ -103,8 +104,8 @@ file_view:
   unsaved_open: "Unsaved changes: save with Ctrl+S to open %{name}"
   position: "Ln %{line}, Col %{col}"
   hints_edit: "⌘S save · ⌘F find · ⌘Z undo · ⌃Q close"
-  hints_preview: "⌘P edit · ⌘F find · ⌃Q close"
-  hints_markdown_edit: "⌘P preview · ⌘S save · ⌘F find · ⌃Q close"
+  hints_preview: "⌘P edit · ⌘F find · ⌃T theme · ⌃Q close"
+  hints_markdown_edit: "⌘P preview · ⌘S save · ⌘F find · ⌃T theme · ⌃Q close"
   find: "Find: "
   not_found: "“%{query}” not found"
   binary: "This is a binary file and cannot be shown here"

@@ -1,3 +1,4 @@
+mod fonts;
 mod ui;
 
 use crate::utils::open_path_in_editor;
@@ -40,6 +41,7 @@ pub fn run(
     if let Err(e) = config::common_init(config_file.as_ref(), &config_override, skip_config) {
         log::error!("config init failed: {:#}", e);
     }
+    prefetch_font_lists();
     let mut app = App::new(config_path);
     app.load_config();
 
@@ -150,12 +152,22 @@ fn run_app(
                     save_with_feedback(terminal, app)?;
                     return Ok(());
                 }
+                KeyCode::Char(c) if app.select_is_searchable() && c != ' ' => {
+                    app.select_type(Some(c));
+                }
+                KeyCode::Backspace if app.select_is_searchable() => {
+                    app.select_type(None);
+                }
                 KeyCode::Up | KeyCode::Char('k') => {
                     app.select_up();
                 }
                 KeyCode::Down | KeyCode::Char('j') => {
                     app.select_down();
                 }
+                KeyCode::PageUp => app.select_page(-10),
+                KeyCode::PageDown => app.select_page(10),
+                KeyCode::Home => app.select_page(isize::MIN / 2),
+                KeyCode::End => app.select_page(isize::MAX / 2),
                 KeyCode::Enter | KeyCode::Char(' ') => {
                     app.confirm_select();
                 }
@@ -343,7 +355,11 @@ fn line_height_choices() -> Vec<String> {
 /// highlights it instead of falling back to the first entry.
 fn ensure_line_height_option(field: &mut ConfigField) {
     let value = field.value.clone();
-    if value.is_empty() || value == LINE_HEIGHT_CUSTOM || field.options.contains(&value) {
+    if value.is_empty()
+        || value == LINE_HEIGHT_CUSTOM
+        || field.options.contains(&value)
+        || !field.options.iter().any(|o| o == LINE_HEIGHT_CUSTOM)
+    {
         return;
     }
     let at = field
@@ -352,6 +368,66 @@ fn ensure_line_height_option(field: &mut ConfigField) {
         .position(|option| option == LINE_HEIGHT_CUSTOM)
         .unwrap_or(field.options.len());
     field.options.insert(at, value);
+}
+
+/// Selector entry that leaves a setting unset, so the app's own default
+/// applies (the panel font follows the window title font).
+const DEFAULT_OPTION: &str = "Default";
+
+fn left_panel_font_size_choices() -> Vec<String> {
+    choices(&[
+        DEFAULT_OPTION,
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        LINE_HEIGHT_CUSTOM,
+    ])
+}
+
+fn left_panel_line_height_choices() -> Vec<String> {
+    choices(&["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", LINE_HEIGHT_CUSTOM])
+}
+
+/// True for rows whose choices are installed fonts, filled in on first use.
+fn is_font_field(lua_key: &str) -> bool {
+    matches!(lua_key, "font" | "left_panel_font")
+}
+
+/// Font lists take a moment to read from CoreText, so they are gathered on
+/// a background thread as soon as Settings opens.
+fn font_lists() -> &'static (Vec<String>, Vec<String>) {
+    static LISTS: std::sync::OnceLock<(Vec<String>, Vec<String>)> = std::sync::OnceLock::new();
+    LISTS.get_or_init(|| {
+        (
+            fonts::installed_families(true),
+            fonts::installed_families(false),
+        )
+    })
+}
+
+fn prefetch_font_lists() {
+    std::thread::spawn(|| {
+        font_lists();
+    });
+}
+
+/// The choices of a font row: the monospaced families for the terminal,
+/// every family (after Default) for the panel, then Custom for a name
+/// typed by hand.
+fn font_choices(lua_key: &str) -> Vec<String> {
+    let (mono, all) = font_lists();
+    let mut options = vec![];
+    if lua_key == "left_panel_font" {
+        options.push(DEFAULT_OPTION.to_string());
+        options.extend(all.iter().cloned());
+    } else {
+        options.extend(mono.iter().cloned());
+    }
+    options.push(LINE_HEIGHT_CUSTOM.to_string());
+    options
 }
 
 fn theme_choices() -> Vec<String> {
@@ -399,6 +475,8 @@ struct App {
     /// Original value before editing, used to revert on invalid input.
     edit_original: String,
     select_index: usize,
+    /// Typed text that jumps through a long list (the font rows).
+    select_query: String,
     dirty: bool,
     /// Preserve whether the current window_decorations state keeps resize edges.
     window_decorations_resize: bool,
@@ -454,6 +532,24 @@ impl App {
                 skip_write: false,
             },
             ConfigField {
+                section: "Appearance",
+                key: "Markdown Theme",
+                lua_key: "markdown_theme",
+                value: String::new(),
+                default: "Auto".into(),
+                // Keep in step with `file_view::theme::THEMES` in kaku-gui.
+                options: choices(&[
+                    "Auto",
+                    "GitHub Light",
+                    "GitHub Dark",
+                    "Solarized Light",
+                    "Solarized Dark",
+                    "Nord",
+                    "Dracula",
+                ]),
+                skip_write: false,
+            },
+            ConfigField {
                 section: "Integrations",
                 key: "Global Hotkey",
                 lua_key: "macos_global_hotkey",
@@ -478,6 +574,33 @@ impl App {
                 value: String::new(),
                 default: "Off".into(),
                 options: choices(&["On", "Off"]),
+                skip_write: false,
+            },
+            ConfigField {
+                section: "Window",
+                key: "Panel Font",
+                lua_key: "left_panel_font",
+                value: String::new(),
+                default: DEFAULT_OPTION.into(),
+                options: Vec::new(),
+                skip_write: false,
+            },
+            ConfigField {
+                section: "Window",
+                key: "Panel Font Size",
+                lua_key: "left_panel_font_size",
+                value: String::new(),
+                default: DEFAULT_OPTION.into(),
+                options: left_panel_font_size_choices(),
+                skip_write: false,
+            },
+            ConfigField {
+                section: "Window",
+                key: "Panel Line Height",
+                lua_key: "left_panel_line_height",
+                value: String::new(),
+                default: "1.0".into(),
+                options: left_panel_line_height_choices(),
                 skip_write: false,
             },
             ConfigField {
@@ -653,6 +776,7 @@ impl App {
             edit_cursor: 0,
             edit_original: String::new(),
             select_index: 0,
+            select_query: String::new(),
             dirty: false,
             window_decorations_resize: true,
             theme_overridden_by: Vec::new(),
@@ -705,11 +829,7 @@ impl App {
             }
         }
 
-        if let Some(field) = self
-            .fields
-            .iter_mut()
-            .find(|field| field.lua_key == "line_height")
-        {
+        for field in self.fields.iter_mut() {
             ensure_line_height_option(field);
         }
 
@@ -1034,6 +1154,26 @@ impl App {
     /// format; the caller should set skip_write=true to protect the original line.
     fn normalize_value(lua_key: &str, raw: &str) -> Option<String> {
         match lua_key {
+            "left_panel_font" | "left_panel_font_size" if raw.eq_ignore_ascii_case("nil") => {
+                Some(DEFAULT_OPTION.to_string())
+            }
+            "left_panel_font" => {
+                if raw.is_empty() || Self::is_number_literal(raw) {
+                    None
+                } else {
+                    Some(raw.to_string())
+                }
+            }
+            "markdown_theme" => {
+                (!raw.is_empty() && !Self::is_number_literal(raw)).then(|| raw.to_string())
+            }
+            "left_panel_font_size" | "left_panel_line_height" => {
+                if Self::is_number_literal(raw) {
+                    Some(raw.to_string())
+                } else {
+                    None
+                }
+            }
             "color_scheme" | "font" => {
                 if raw.is_empty()
                     || raw.eq_ignore_ascii_case("nil")
@@ -1178,6 +1318,14 @@ impl App {
     }
 
     fn start_edit(&mut self) {
+        if is_font_field(self.fields[self.selected].lua_key)
+            && self.fields[self.selected].options.is_empty()
+        {
+            let field = &mut self.fields[self.selected];
+            field.options = font_choices(field.lua_key);
+            ensure_line_height_option(field);
+        }
+        self.select_query.clear();
         let field = &self.fields[self.selected];
         if field.has_options() {
             if field.options.len() == 2 {
@@ -1231,6 +1379,48 @@ impl App {
         }
     }
 
+    /// Long lists jump as you type instead of taking j/k as arrows.
+    fn select_is_searchable(&self) -> bool {
+        let field = &self.fields[self.selected];
+        is_font_field(field.lua_key) || field.options.len() > 15
+    }
+
+    fn select_page(&mut self, delta: isize) {
+        let len = self.fields[self.selected].options.len();
+        if len == 0 {
+            return;
+        }
+        let idx = (self.select_index as isize + delta).clamp(0, len as isize - 1);
+        self.select_index = idx as usize;
+    }
+
+    /// Moves to the first option starting with the typed text, else the
+    /// first containing it.
+    fn select_type(&mut self, ch: Option<char>) {
+        match ch {
+            Some(ch) => self.select_query.push(ch),
+            None => {
+                self.select_query.pop();
+            }
+        }
+        let query = self.select_query.to_lowercase();
+        if query.is_empty() {
+            return;
+        }
+        let options = &self.fields[self.selected].options;
+        let found = options
+            .iter()
+            .position(|o| o.to_lowercase().starts_with(&query))
+            .or_else(|| {
+                options
+                    .iter()
+                    .position(|o| o.to_lowercase().contains(&query))
+            });
+        if let Some(idx) = found {
+            self.select_index = idx;
+        }
+    }
+
     fn select_down(&mut self) {
         let field = &self.fields[self.selected];
         if self.select_index < field.options.len() - 1 {
@@ -1251,8 +1441,10 @@ impl App {
 
         // config rejects a line_height that is not above zero, which would
         // make the whole file fail to load.
-        if field.lua_key == "line_height"
-            && !new_value.is_empty()
+        if matches!(
+            field.lua_key,
+            "line_height" | "left_panel_line_height" | "left_panel_font_size"
+        ) && !new_value.is_empty()
             && !new_value.parse::<f64>().is_ok_and(|v| v > 0.0)
         {
             new_value = self.edit_original.clone();
@@ -1268,9 +1460,7 @@ impl App {
         }
 
         self.fields[self.selected].value = new_value;
-        if self.fields[self.selected].lua_key == "line_height" {
-            ensure_line_height_option(&mut self.fields[self.selected]);
-        }
+        ensure_line_height_option(&mut self.fields[self.selected]);
         // User explicitly set a value: allow it to be written even if the field
         // was previously marked unwritable due to an unrecognized format.
         self.fields[self.selected].skip_write = false;
@@ -1579,7 +1769,23 @@ impl App {
                     format!("'{}'", escape_lua_string(&field.value))
                 }
             }
-            "font" => format!("wezterm.font('{}')", field.value),
+            "font" => format!("wezterm.font('{}')", escape_lua_string(&field.value)),
+            "left_panel_font" => {
+                if field.value.is_empty() || field.value == DEFAULT_OPTION {
+                    "nil".into()
+                } else {
+                    format!("wezterm.font('{}')", escape_lua_string(&field.value))
+                }
+            }
+            "left_panel_font_size" => {
+                if field.value.is_empty() || field.value == DEFAULT_OPTION {
+                    "nil".into()
+                } else {
+                    field.value.clone()
+                }
+            }
+            "left_panel_line_height" => field.value.clone(),
+            "markdown_theme" => format!("'{}'", escape_lua_string(&field.value)),
             "font_size"
             | "line_height"
             | "window_background_opacity"
@@ -1655,9 +1861,17 @@ impl App {
             lua_key,
             "font_size"
                 | "line_height"
+                | "left_panel_font_size"
+                | "left_panel_line_height"
                 | "window_background_opacity"
                 | "macos_window_background_blur"
         )
+    }
+
+    /// What the user typed to jump through a long list, shown in its title.
+    fn select_query_view(&self) -> Option<&str> {
+        (self.mode == Mode::Selecting && self.select_is_searchable())
+            .then_some(self.select_query.as_str())
     }
 
     fn selecting_view(&self) -> Option<(&ConfigField, usize)> {
@@ -2340,20 +2554,81 @@ return config
     }
 
     #[test]
+    fn panel_font_rows_write_fonts_numbers_and_nil_for_default() {
+        let mut app = test_app();
+        let idx = |app: &App, key: &str| app.fields.iter().position(|f| f.lua_key == key).unwrap();
+        let font = idx(&app, "left_panel_font");
+        assert_eq!(app.to_lua_value(&app.fields[font]), "nil");
+        app.fields[font].value = "Menlo".into();
+        assert_eq!(app.to_lua_value(&app.fields[font]), "wezterm.font('Menlo')");
+        app.fields[font].value = "It's".into();
+        assert_eq!(
+            app.to_lua_value(&app.fields[font]),
+            "wezterm.font('It\\'s')"
+        );
+        let size = idx(&app, "left_panel_font_size");
+        app.fields[size].value = super::DEFAULT_OPTION.into();
+        assert_eq!(app.to_lua_value(&app.fields[size]), "nil");
+        app.fields[size].value = "13".into();
+        assert_eq!(app.to_lua_value(&app.fields[size]), "13");
+        assert_eq!(
+            App::normalize_value("left_panel_font", "nil").as_deref(),
+            Some(super::DEFAULT_OPTION)
+        );
+        assert_eq!(
+            App::normalize_value("left_panel_line_height", "1.3").as_deref(),
+            Some("1.3")
+        );
+        assert_eq!(App::normalize_value("left_panel_line_height", "true"), None);
+    }
+
+    #[test]
+    fn font_rows_open_a_list_of_installed_fonts_with_typeahead() {
+        let mut app = test_app();
+        let idx = app.fields.iter().position(|f| f.lua_key == "font").unwrap();
+        app.selected = idx;
+        app.start_edit();
+        assert!(matches!(app.mode, Mode::Selecting));
+        let options = &app.fields[idx].options;
+        assert_eq!(options.first().map(String::as_str), Some("JetBrains Mono"));
+        assert_eq!(
+            options.last().map(String::as_str),
+            Some(super::LINE_HEIGHT_CUSTOM)
+        );
+        assert!(app.select_is_searchable());
+        for c in "menl".chars() {
+            app.select_type(Some(c));
+        }
+        assert_eq!(app.fields[idx].options[app.select_index], "Menlo");
+        app.confirm_select();
+        assert_eq!(app.fields[idx].value, "Menlo");
+
+        let panel = app
+            .fields
+            .iter()
+            .position(|f| f.lua_key == "left_panel_font")
+            .unwrap();
+        app.selected = panel;
+        app.start_edit();
+        assert_eq!(app.fields[panel].options[0], super::DEFAULT_OPTION);
+        assert!(app.fields[panel].options.iter().any(|f| f == "Helvetica"));
+    }
+
+    #[test]
     fn finalize_active_input_commits_edit_buffer() {
         let mut app = test_app();
         let idx = app
             .fields
             .iter()
-            .position(|f| f.lua_key == "font")
-            .expect("font field to exist");
+            .position(|f| f.lua_key == "font_size")
+            .expect("font_size field to exist");
         app.selected = idx;
 
         app.start_edit();
-        app.edit_insert('X');
+        app.edit_insert('5');
         app.finalize_active_input();
 
-        assert_eq!(app.fields[idx].value, "JetBrains MonoX");
+        assert_eq!(app.fields[idx].value, "175");
         assert!(app.dirty);
     }
 

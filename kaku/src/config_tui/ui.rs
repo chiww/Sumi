@@ -459,6 +459,14 @@ fn render_selector(frame: &mut ratatui::Frame, area: Rect, app: &App) {
             ),
             Span::styled(translate_label(field.key), Style::default().fg(text_fg())),
             Span::styled(" ", Style::default()),
+            Span::styled(
+                match app.select_query_view() {
+                    Some("") => format!("{} ", translate_label("Type to search")),
+                    Some(query) => format!("› {query} "),
+                    None => String::new(),
+                },
+                Style::default().fg(muted()),
+            ),
         ]))
         .borders(Borders::ALL)
         .border_style(Style::default().fg(primary()))

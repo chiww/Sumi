@@ -572,6 +572,28 @@ pub struct Config {
     #[dynamic(default = "default_left_panel_width")]
     pub left_panel_width: f32,
 
+    /// Font for the left panel, as `wezterm.font('Name')`. Unset, it uses
+    /// the window title font.
+    #[dynamic(default)]
+    pub left_panel_font: Option<TextStyle>,
+
+    /// Font size of the left panel in points. Unset, it follows
+    /// `window_frame.font_size` (12 by default).
+    #[dynamic(default)]
+    pub left_panel_font_size: Option<f64>,
+
+    /// Row height of the left panel as a multiple of its font's line
+    /// height, like `line_height` for the terminal.
+    #[dynamic(default = "default_left_panel_line_height")]
+    pub left_panel_line_height: f64,
+
+    /// Color theme of the file viewer the left panel opens files in:
+    /// 'Auto' (the terminal's colors), 'GitHub Light', 'GitHub Dark',
+    /// 'Solarized Light', 'Solarized Dark', 'Nord' or 'Dracula'. Ctrl+T in
+    /// the viewer cycles through them.
+    #[dynamic(default = "default_markdown_theme")]
+    pub markdown_theme: String,
+
     /// If true, auto-generated tab titles use only the current folder name
     /// instead of the default parent/current path pair.
     #[dynamic(default)]
@@ -4046,6 +4068,17 @@ pub const LEFT_PANEL_MAX_WIDTH: f32 = 560.0;
 fn default_left_panel_width() -> f32 {
     260.0
 }
+
+fn default_left_panel_line_height() -> f64 {
+    1.0
+}
+
+fn default_markdown_theme() -> String {
+    "Auto".to_string()
+}
+
+/// The bounds `left_panel_line_height` is held to.
+pub const LEFT_PANEL_LINE_HEIGHT_RANGE: (f64, f64) = (0.8, 2.5);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, FromDynamic, ToDynamic)]
 pub enum MacosGlobalHotkeyMode {

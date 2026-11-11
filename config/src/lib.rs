@@ -864,6 +864,7 @@ config.color_scheme = 'Sumi Dark'
 -- config.tab_title_show_basename_only = true
 -- config.tab_title_show_foreground_process = true    -- show "dirname·codex" while commands run
 -- config.left_panel = true                         -- file tree, search, snippets, AI chats (Cmd+\)
+-- config.markdown_theme = 'GitHub Dark'            -- file viewer colors; Ctrl+T cycles them
 --
 -- 9) Tab key completion (default 'suggestion_first': Tab accepts the inline suggestion)
 -- config.smart_tab_mode = 'completion_first'
