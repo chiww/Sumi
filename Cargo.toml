@@ -224,7 +224,7 @@ reqwest = "0.12"
 rustyline = "14"
 resize = "0.5"
 rstest = "0.21"
-rusqlite = "0.32"
+rusqlite = "0.41"
 rust-i18n = "3"
 serde = {version="1.0", default-features=false, features = ["derive"]}
 serde-funcs = { path = "lua-api-crates/serde-funcs" }

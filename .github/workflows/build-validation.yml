@@ -118,12 +118,12 @@ jobs:
         if: matrix.bundle
         run: |
           set -euo pipefail
-          for bin in kaku k; do
+          for bin in sumi k; do
             test "$(readlink "dist/Sumi.app/Contents/MacOS/$bin")" = kaku-gui
           done
           test ! -e dist/Sumi.app/Contents/Frameworks
           version="$(dist/Sumi.app/Contents/MacOS/sumi --version)"
-          [[ "$version" == "kaku "* ]]
+          [[ "$version" == "sumi "* ]]
           chat_help="$(dist/Sumi.app/Contents/MacOS/k --help)"
           [[ "$chat_help" == *"Usage: k "* ]]
 
