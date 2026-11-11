@@ -167,7 +167,7 @@ config_tui:
   theme: "主题"
   font: "字体"
   font_size: "字号"
-  line_height: "行高"
+  line_height: "行间距"
   global_hotkey: "全局快捷键"
   tab_bar_position: "标签栏位置"
   scrollbar: "滚动条"

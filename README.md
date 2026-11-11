@@ -18,7 +18,7 @@
 ## 和 Kaku 的不同
 
 - **简体中文界面**：菜单、命令面板、确认对话框、`sumi config` 设置界面、AI 浮层都有中文。设置 `config.language = "zh-CN"`，或保持 `"auto"` 跟随系统。
-- **行高预设**：`sumi config` 的 Line Height 提供 1.0–1.6 的常用档位，以及自定义输入。
+- **行间距预设**：`sumi config` 的「行间距」（Line Height）提供 1.0–1.6 的常用档位，以及自定义输入。
 - **独立身份**：独立的应用名、图标、Bundle ID（`com.github.chiww.sumi`）、命令（`sumi`）和配置目录（`~/.config/sumi`），可以和原版 Kaku 同时安装，互不干扰。
 - **更新来源**：应用内检查更新指向本仓库的 Releases。
 
@@ -39,7 +39,7 @@ xattr -cr /Applications/Sumi.app
 | 命令 | 作用 |
 | --- | --- |
 | `sumi` | 打开主菜单 |
-| `sumi config` | 设置界面：主题、字体、字号、行高等 |
+| `sumi config` | 设置界面：主题、字体、字号、行间距等 |
 | `sumi ai` | 配置 AI 助手（使用你自己的 API Key 或 Codex 登录） |
 | `sumi init` | 安装或更新 shell 集成 |
 | `sumi doctor` | 诊断并生成诊断包 |
