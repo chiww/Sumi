@@ -82,6 +82,7 @@ pub mod box_model;
 pub mod charselect;
 pub mod clipboard;
 pub mod keyevent;
+pub(crate) mod left_panel;
 pub mod modal;
 mod mouseevent;
 pub mod palette;
@@ -90,7 +91,6 @@ mod prevcursor;
 pub mod render;
 pub mod resize;
 mod selection;
-mod sidebar;
 pub mod spawn;
 pub mod tab_rename;
 mod touch;
@@ -764,7 +764,7 @@ pub enum UIItemType {
     ScrollThumb,
     BelowScrollThumb,
     Split(PositionedSplit),
-    Sidebar(sidebar::SidebarItem),
+    LeftPanel(left_panel::PanelItem),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -1091,7 +1091,7 @@ pub struct TermWindow {
     keyboard: KeyboardInputState,
     show_tab_bar: bool,
     touch_mode: bool,
-    sidebar: sidebar::SidebarState,
+    left_panel: left_panel::LeftPanelState,
     show_scroll_bar: bool,
     tab_bar: TabBarState,
     fancy_tab_bar: Option<box_model::ComputedElement>,
@@ -1680,15 +1680,13 @@ impl TermWindow {
         log::trace!("using render_metrics {:#?}", render_metrics);
 
         // Initially we have only a single tab, so take that into account
-        // for the tab bar state. The tab sidebar replaces the bar.
-        let mut initial_sidebar = sidebar::SidebarState::new(&config);
+        // for the tab bar state.
+        let mut initial_left_panel = left_panel::LeftPanelState::new(&config);
         // The global-hotkey drawer keeps its horizontal tab bar.
         if initial_window_state.contains(WindowState::HOTKEY_WINDOW) {
-            initial_sidebar.visible = false;
+            initial_left_panel.visible = false;
         }
-        let show_tab_bar = config.enable_tab_bar
-            && !config.hide_tab_bar_if_only_one_tab
-            && !initial_sidebar.visible;
+        let show_tab_bar = config.enable_tab_bar && !config.hide_tab_bar_if_only_one_tab;
         crate::startup_trace::mark("    tab_bar_pixel_height start");
         // Use a cheap estimate based on terminal cell metrics to avoid paying
         // the title-font resolution cost (~485ms on macOS cold start) during
@@ -1771,9 +1769,9 @@ impl TermWindow {
         if integrated_top_inset > 0 {
             border.top += ULength::new(integrated_top_inset);
         }
-        border.left += ULength::new(sidebar::sidebar_pixel_width(
-            initial_sidebar.visible,
-            initial_sidebar.width_pt,
+        border.left += ULength::new(left_panel::panel_pixel_width(
+            initial_left_panel.visible,
+            initial_left_panel.width_pt,
             dpi as f32,
         ));
 
@@ -1845,7 +1843,7 @@ impl TermWindow {
             show_scroll_bar: config.enable_scroll_bar,
             tab_bar: TabBarState::default(),
             touch_mode: false,
-            sidebar: initial_sidebar,
+            left_panel: initial_left_panel,
             fancy_tab_bar: None,
             right_status: String::new(),
             left_status: String::new(),
@@ -3315,9 +3313,6 @@ impl TermWindow {
     /// Decide whether the tab bar should be visible based on tab count,
     /// fullscreen state, and config.
     fn should_show_tab_bar(&self, num_tabs: usize) -> bool {
-        if self.sidebar.visible {
-            return false;
-        }
         if self.touch_mode {
             return true;
         }
@@ -3405,7 +3400,7 @@ impl TermWindow {
         let reset_hotkey_font_scale = self.window_state.contains(WindowState::HOTKEY_WINDOW)
             && self.config.font_size != config.font_size;
         let previous_config = std::mem::replace(&mut self.config, config.clone());
-        self.sidebar.config_reloaded(
+        self.left_panel.config_reloaded(
             &previous_config,
             &config,
             self.window_state.contains(WindowState::HOTKEY_WINDOW),
@@ -3917,8 +3912,6 @@ impl TermWindow {
                 }
             }
         }
-
-        self.refresh_sidebar_rows(&tabs);
 
         let agent_title = self.active_agent_title();
         if agent_title != self.agent_title {
@@ -4899,6 +4892,13 @@ impl TermWindow {
             }
         }
 
+        if let Some(bytes) = left_panel::viewer_assignment_key(assignment) {
+            if left_panel::is_viewer_pane(pane) {
+                pane.writer().write_all(bytes.as_bytes())?;
+                return Ok(PerformAssignmentResult::Handled);
+            }
+        }
+
         match pane.perform_assignment(assignment) {
             PerformAssignmentResult::Unhandled => {}
             result => return Ok(result),
@@ -5126,7 +5126,9 @@ impl TermWindow {
             ScrollToTop => self.scroll_to_top(pane),
             ScrollToBottom => self.scroll_to_bottom(pane),
             ToggleTouchMode => self.toggle_touch_mode(),
-            ToggleVerticalTabs => self.toggle_vertical_tabs(),
+            ToggleLeftPanel => self.toggle_left_panel(),
+            ShowLeftPanelTool(tool) => self.show_left_panel_tool(*tool),
+            LeftPanelCommand(command) => self.run_left_panel_command(command.clone()),
             ShowTabNavigator => self.show_tab_navigator(),
             RenameCurrentTab => self.begin_active_tab_rename()?,
             ShowDebugOverlay => {

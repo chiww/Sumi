@@ -321,17 +321,6 @@ fn choices(values: &[&str]) -> Vec<String> {
     values.iter().map(|value| value.to_string()).collect()
 }
 
-/// Theme labels for the Appearance row: Kaku's fixed entries followed by every
-/// user-provided scheme discovered on disk or in the user's Lua config.
-/// Sidebar Subtitle labels and the `VerticalTabsSubtitle` variant each writes.
-const VERTICAL_TABS_SUBTITLES: &[(&str, &str)] = &[
-    ("Directory & Branch", "DirectoryBranch"),
-    ("Directory", "Directory"),
-    ("Branch", "Branch"),
-    ("Command", "Command"),
-    ("None", "None"),
-];
-
 /// Selector entry that switches the Line Height row to free-form input.
 const LINE_HEIGHT_CUSTOM: &str = "Custom...";
 
@@ -484,26 +473,11 @@ impl App {
             },
             ConfigField {
                 section: "Window",
-                key: "Vertical Tabs",
-                lua_key: "vertical_tabs",
+                key: "Left Panel",
+                lua_key: "left_panel",
                 value: String::new(),
                 default: "Off".into(),
                 options: choices(&["On", "Off"]),
-                skip_write: false,
-            },
-            ConfigField {
-                section: "Window",
-                key: "Sidebar Subtitle",
-                lua_key: "vertical_tabs_subtitle",
-                value: String::new(),
-                default: "Directory & Branch".into(),
-                options: choices(&[
-                    "Directory & Branch",
-                    "Directory",
-                    "Branch",
-                    "Command",
-                    "None",
-                ]),
                 skip_write: false,
             },
             ConfigField {
@@ -1092,7 +1066,7 @@ impl App {
             | "tab_title_show_basename_only"
             | "tab_title_show_foreground_process"
             | "show_tab_index_in_tab_bar"
-            | "vertical_tabs"
+            | "left_panel"
             | "restore_previous_session" => {
                 if raw == "true" {
                     Some("On".into())
@@ -1119,13 +1093,6 @@ impl App {
                 } else {
                     None
                 }
-            }
-            "vertical_tabs_subtitle" => {
-                let value = raw.trim().trim_matches('\'').trim_matches('"');
-                VERTICAL_TABS_SUBTITLES
-                    .iter()
-                    .find(|(_, lua)| *lua == value)
-                    .map(|(label, _)| label.to_string())
             }
             "smart_tab_mode" => {
                 let value = raw.trim().trim_matches('\'').trim_matches('"');
@@ -1627,7 +1594,7 @@ impl App {
             | "tab_title_show_basename_only"
             | "tab_title_show_foreground_process"
             | "show_tab_index_in_tab_bar"
-            | "vertical_tabs"
+            | "left_panel"
             | "restore_previous_session" => {
                 if field.value == "On" {
                     "true".into()
@@ -1658,18 +1625,6 @@ impl App {
                 } else {
                     "false".into()
                 }
-            }
-            "vertical_tabs_subtitle" => {
-                let effective = if field.value.is_empty() {
-                    &field.default
-                } else {
-                    &field.value
-                };
-                let lua = VERTICAL_TABS_SUBTITLES
-                    .iter()
-                    .find(|(label, _)| label == effective)
-                    .map_or("DirectoryBranch", |(_, lua)| lua);
-                format!("'{lua}'")
             }
             "smart_tab_mode" => {
                 let effective = if field.value.is_empty() {
@@ -1774,20 +1729,14 @@ mod tests {
     }
 
     #[test]
-    fn vertical_tabs_subtitle_round_trips_through_lua() {
-        for (label, lua) in super::VERTICAL_TABS_SUBTITLES {
-            assert_eq!(
-                App::normalize_value("vertical_tabs_subtitle", &format!("'{lua}'")).as_deref(),
-                Some(*label)
-            );
-        }
+    fn left_panel_reads_as_on_off() {
         assert_eq!(
-            App::normalize_value("vertical_tabs_subtitle", "'Bogus'"),
-            None
+            App::normalize_value("left_panel", "true").as_deref(),
+            Some("On")
         );
         assert_eq!(
-            App::normalize_value("vertical_tabs", "true").as_deref(),
-            Some("On")
+            App::normalize_value("left_panel", "false").as_deref(),
+            Some("Off")
         );
     }
 

@@ -315,6 +315,27 @@ pub fn switch_active(target_id: &str) -> Result<Vec<PersistedMessage>> {
     Ok(messages)
 }
 
+/// The active conversation's id, if one is recorded.
+pub fn active_id() -> Option<String> {
+    let dir = conversations_dir().ok()?;
+    load_index_from(&dir).active_id
+}
+
+/// Delete a conversation and its attachments. Deleting the active one
+/// clears the active id, so the next chat starts a fresh conversation.
+pub fn delete_conversation(id: &str) -> Result<()> {
+    let dir = conversations_dir()?;
+    let mut idx = load_index_from(&dir);
+    idx.conversations.retain(|meta| meta.id != id);
+    if idx.active_id.as_deref() == Some(id) {
+        idx.active_id = None;
+    }
+    save_index_to(&idx, &dir)?;
+    let _ = std::fs::remove_file(conversation_path(&dir, id));
+    let _ = std::fs::remove_dir_all(dir.join(id));
+    Ok(())
+}
+
 /// Update the summary for a conversation (called from the async summary thread).
 pub fn update_summary(id: &str, summary: &str) -> Result<()> {
     let dir = conversations_dir()?;

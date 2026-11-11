@@ -421,16 +421,15 @@ impl crate::TermWindow {
             .colors(bar_colors);
 
         let border = self.get_os_border();
+        // The left panel sits below the tab bar, so the bar keeps the full
+        // width rather than starting right of the panel.
+        let border_left = border.left.get() as f32 - self.left_panel_pixel_width() as f32;
         // In fullscreen, start from 0 since left_padding already handles alignment
-        let bounds_left = if is_fullscreen {
-            0.0
-        } else {
-            border.left.get() as f32
-        };
+        let bounds_left = if is_fullscreen { 0.0 } else { border_left };
         let bounds_width = if is_fullscreen {
             self.dimensions.pixel_width as f32
         } else {
-            self.dimensions.pixel_width as f32 - (border.left + border.right).get() as f32
+            self.dimensions.pixel_width as f32 - border_left - border.right.get() as f32
         };
 
         let mut computed = self.compute_element(

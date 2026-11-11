@@ -4,10 +4,10 @@
 //! change sequences, communicating with the LLM via a background thread and
 //! std::sync::mpsc for streaming tokens.
 
-mod markdown;
+pub(crate) mod markdown;
 mod prompt_context;
 mod strings;
-mod syntax;
+pub(crate) mod syntax;
 mod waza;
 
 mod input;

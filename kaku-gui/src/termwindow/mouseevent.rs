@@ -142,7 +142,11 @@ fn tab_context_menu_actions() -> [(&'static str, KeyAssignment); 3] {
 /// Context-menu items deliberately have no AppKit keyEquivalent. Kaku's
 /// configurable InputMap remains the shortcut source of truth.
 #[cfg(target_os = "macos")]
-fn pane_action_menu_item(title: &str, action: KeyAssignment, pane_id: usize) -> MenuItem {
+pub(crate) fn pane_action_menu_item(
+    title: &str,
+    action: KeyAssignment,
+    pane_id: usize,
+) -> MenuItem {
     let item = MenuItem::new_with(title, Some(sel!(kakuPerformKeyAssignment:)), "");
     item.set_represented_item(RepresentedItem::KeyAssignmentForPane { action, pane_id });
     item
@@ -636,19 +640,6 @@ impl super::TermWindow {
                 UIItemType::TabBar(TabBarItem::Tab { active: true, .. })
             )
         });
-        // With the tab sidebar the editor opens over the active row.
-        let painted_active = painted_active.or_else(|| {
-            self.ui_items
-                .iter()
-                .find(|item| {
-                    item.item_type
-                        == UIItemType::Sidebar(super::sidebar::SidebarItem::Tab {
-                            tab_idx,
-                            active: true,
-                        })
-                })
-                .cloned()
-        });
         let item = match painted_active {
             Some(item) => item,
             None => {
@@ -859,7 +850,7 @@ impl super::TermWindow {
             | UIItemType::BelowScrollThumb
             | UIItemType::ScrollThumb
             | UIItemType::Split(_)
-            | UIItemType::Sidebar(_) => {}
+            | UIItemType::LeftPanel(_) => {}
         }
     }
 
@@ -871,7 +862,7 @@ impl super::TermWindow {
             | UIItemType::BelowScrollThumb
             | UIItemType::ScrollThumb
             | UIItemType::Split(_)
-            | UIItemType::Sidebar(_) => {}
+            | UIItemType::LeftPanel(_) => {}
         }
     }
 
@@ -1035,11 +1026,11 @@ impl super::TermWindow {
                         &self.dragging,
                         Some((item, _))
                             if item.item_type
-                                == UIItemType::Sidebar(super::sidebar::SidebarItem::Resize)
+                                == UIItemType::LeftPanel(super::left_panel::PanelItem::Resize)
                     )
                 {
                     self.dragging.take();
-                    self.finish_sidebar_resize();
+                    self.finish_left_panel_resize();
                     self.finish_mouse_release(*press);
                     return;
                 }
@@ -1512,8 +1503,8 @@ impl super::TermWindow {
             UIItemType::ScrollThumb => {
                 self.drag_scroll_thumb(item, start_event, event, context);
             }
-            UIItemType::Sidebar(super::sidebar::SidebarItem::Resize) => {
-                self.drag_sidebar_resize(item, start_event, event);
+            UIItemType::LeftPanel(super::left_panel::PanelItem::Resize) => {
+                self.drag_left_panel_resize(item, start_event, event);
             }
             _ => {
                 log::error!("drag not implemented for {:?}", item);
@@ -1549,8 +1540,8 @@ impl super::TermWindow {
             UIItemType::CloseTab(idx) => {
                 self.mouse_event_close_tab(idx, event, context);
             }
-            UIItemType::Sidebar(sidebar_item) => {
-                self.mouse_event_sidebar(sidebar_item, item, event, context);
+            UIItemType::LeftPanel(panel_item) => {
+                self.mouse_event_left_panel(panel_item, item, event, context);
             }
         }
     }

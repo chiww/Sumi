@@ -400,6 +400,21 @@ impl super::TermWindow {
             }
         }
 
+        if is_down && !leader_active {
+            if let KeyCode::Char(c) = keycode {
+                let mods = raw_modifiers.remove_positional_mods();
+                let shift = mods.contains(Modifiers::SHIFT);
+                if (mods - Modifiers::SHIFT) == Modifiers::SUPER
+                    && crate::termwindow::left_panel::is_viewer_pane(pane)
+                {
+                    if let Some(bytes) = crate::termwindow::left_panel::viewer_cmd_key(*c, shift) {
+                        let _ = pane.writer().write_all(bytes.as_bytes());
+                        return true;
+                    }
+                }
+            }
+        }
+
         if is_down {
             if let Some((entry, table_name)) = self.lookup_key(
                 pane,

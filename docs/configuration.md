@@ -294,19 +294,23 @@ The trailing cell stays blank until a pane wants your attention, then shows an a
 config.bell_tab_indicator = false
 ```
 
-**Tab sidebar**
+**Left panel**
 
-Sumi can list tabs in a sidebar at the window's left edge instead of the horizontal tab bar. Turn it on with View > Tab Sidebar (`Ctrl + Cmd + S`), in `sumi config` (Vertical Tabs), or in Lua:
+Sumi has a tool panel at the window's left edge, in the spirit of Warp's: a project file tree, search in files, saved command snippets and the list of AI chats. Tabs stay in the top tab bar. Toggle it with View > Left Panel (`Cmd + \`), jump to a tool with `Ctrl + Cmd + 1` to `4` (pressing a tool's shortcut again hides the panel), or turn it on in `sumi config` or Lua:
 
 ```lua
-config.vertical_tabs = true
-config.vertical_tabs_width = 220                    -- points, 140 to 480
-config.vertical_tabs_subtitle = 'DirectoryBranch'   -- or 'Directory', 'Branch', 'Command', 'None'
+config.left_panel = true
+config.left_panel_width = 260   -- points, 180 to 560
 ```
 
-Each row shows the tab's title (an agent's session topic while Claude Code, Codex, Kimi or pi runs in it), a second line with the working directory and Git branch, and the `Cmd + digit` that selects it. The dot before the title tells you what the tab is doing: blue while a program reports it is working (OSC 7501, OSC 9;4 progress, or an agent's spinner title), amber when it waits on you or rang the bell, green when a program finished while you were elsewhere, red when it failed.
+- **Files** follows the active pane's directory up to its Git root and hides `.gitignore`d entries. Click a folder to expand it and a file to open it beside the terminal; right-click for open in a new tab or the default app, reveal in Finder, `cd` here, new tab here, new file or folder, rename, move to Trash, copy path and set as root.
+- **Search** looks through the project's text files as you type (match case and regex toggles), honouring `.gitignore`. Click a match to open the file at that line.
+- **Snippets** live in `~/.config/sumi/snippets.toml`. Click one to type it into the active pane; right-click to run it. Text in `{{double braces}}` marks a placeholder, so such a snippet is typed without Enter.
+- **AI chats** lists saved Sumi Assistant conversations with a filter; click one to reopen it in the chat overlay.
 
-Click a row to switch to it, double-click to rename, middle-click to close and right-click for the tab menu. Drag the sidebar's right edge to resize it and scroll when the list is longer than the window. The toggle and the width are remembered across restarts until you change `vertical_tabs` or `vertical_tabs_width` in the config. The sidebar computes its own titles, so a `format-tab-title` handler only affects the horizontal bar.
+Files open in Sumi's viewer pane, split to the right; later files reuse it. Markdown opens rendered, `Cmd + P` switches to the editable source, and other text files open in the editor with syntax highlighting. `Cmd + S` saves, `Cmd + Z` / `Cmd + Shift + Z` undo and redo, `Cmd + F` finds, and `Ctrl + Q` closes the viewer (it asks again when there are unsaved edits). A file changed on disk reloads when there are no unsaved edits. Binary files such as images and PDFs open in their default app. You can also run the viewer yourself with `Sumi.app/Contents/MacOS/kaku-gui --sumi-view <file>`.
+
+The panel's visibility, tool and width are remembered across restarts until you change `left_panel` or `left_panel_width` in the config.
 
 **Scrollbar**
 

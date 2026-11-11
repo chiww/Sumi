@@ -1,7 +1,10 @@
 use crate::customglyph::{BlockAlpha, BlockCoord, Poly, PolyCommand, PolyStyle};
 use crate::termwindow::box_model::*;
 use crate::termwindow::modal::Modal;
-use crate::termwindow::render::corners::{TOP_LEFT_ROUNDED_CORNER, TOP_RIGHT_ROUNDED_CORNER};
+use crate::termwindow::render::corners::{
+    BOTTOM_LEFT_ROUNDED_CORNER, BOTTOM_RIGHT_ROUNDED_CORNER, TOP_LEFT_ROUNDED_CORNER,
+    TOP_RIGHT_ROUNDED_CORNER,
+};
 use crate::termwindow::{TermWindow, TermWindowNotif, UIItem};
 use crate::utilsprites::RenderMetrics;
 use anyhow::Context;
@@ -27,9 +30,18 @@ const INLINE_CURSOR: &[Poly] = &[Poly {
     style: PolyStyle::Outline,
 }];
 
+/// What the inline editor edits: a tab's title, or a prompt of the left
+/// panel (search query, file name, snippet), which reuses the same line
+/// editor, IME handling and clipboard paths.
+#[derive(Clone, Debug, PartialEq)]
+pub enum EditTarget {
+    Tab(TabId),
+    Panel(crate::termwindow::left_panel::PanelPrompt),
+}
+
 pub struct TabRenameModal {
     element: RefCell<Option<Vec<ComputedElement>>>,
-    tab_id: TabId,
+    target: EditTarget,
     anchor: UIItem,
     value: RefCell<String>,
     /// The value the editor opened with. The editor is prefilled with the
@@ -78,7 +90,7 @@ impl TabRenameModal {
 
         let modal = Self {
             element: RefCell::new(None),
-            tab_id,
+            target: EditTarget::Tab(tab_id),
             anchor,
             initial: value.clone(),
             value: RefCell::new(value),
@@ -88,6 +100,52 @@ impl TabRenameModal {
         };
         modal.reconfigure(term_window);
         Ok(modal)
+    }
+
+    /// An editor for a left panel prompt, filling `anchor` and starting
+    /// from `initial` with the cursor at its end.
+    pub fn new_panel_prompt(
+        term_window: &mut TermWindow,
+        prompt: crate::termwindow::left_panel::PanelPrompt,
+        anchor: UIItem,
+        initial: String,
+    ) -> Self {
+        let cursor = initial.chars().count();
+        let modal = Self {
+            element: RefCell::new(None),
+            target: EditTarget::Panel(prompt),
+            anchor,
+            initial: initial.clone(),
+            value: RefCell::new(initial),
+            cursor: RefCell::new(cursor),
+            selection: RefCell::new(None),
+            last_movement: RefCell::new(Instant::now()),
+        };
+        modal.reconfigure(term_window);
+        modal
+    }
+
+    fn tab_id(&self) -> Option<TabId> {
+        match &self.target {
+            EditTarget::Tab(tab_id) => Some(*tab_id),
+            EditTarget::Panel(_) => None,
+        }
+    }
+
+    fn panel_prompt(&self) -> Option<&crate::termwindow::left_panel::PanelPrompt> {
+        match &self.target {
+            EditTarget::Tab(_) => None,
+            EditTarget::Panel(prompt) => Some(prompt),
+        }
+    }
+
+    /// Tells the panel about the current value, so a search runs and a
+    /// filter narrows while the user types.
+    fn notify_panel_changed(&self, term_window: &mut TermWindow) {
+        if let Some(prompt) = self.panel_prompt() {
+            let value = self.value.borrow().clone();
+            term_window.left_panel_prompt_changed(prompt, &value);
+        }
     }
 
     fn editor_width(
@@ -276,7 +334,7 @@ impl TabRenameModal {
             ClipboardPasteSource::Clipboard => Clipboard::Clipboard,
             ClipboardPasteSource::PrimarySelection => Clipboard::PrimarySelection,
         };
-        let tab_id = self.tab_id;
+        let target = self.target.clone();
         let future = window.get_clipboard(clipboard);
         promise::spawn::spawn(async move {
             match future.await {
@@ -286,7 +344,10 @@ impl TabRenameModal {
                             return;
                         };
                         match modal.downcast_ref::<TabRenameModal>() {
-                            Some(rename) if rename.tab_id == tab_id => rename.insert_str(&text),
+                            Some(rename) if rename.target == target => {
+                                rename.insert_str(&text);
+                                rename.notify_panel_changed(term_window);
+                            }
                             _ => return,
                         }
                         term_window.invalidate_modal();
@@ -422,11 +483,20 @@ impl TabRenameModal {
 
     fn commit(&self, term_window: &mut TermWindow) {
         let value = self.value.borrow().clone();
+        if let Some(prompt) = self.panel_prompt().cloned() {
+            term_window.cancel_modal();
+            term_window.left_panel_prompt_commit(prompt, value);
+            return;
+        }
+        let Some(tab_id) = self.tab_id() else {
+            term_window.cancel_modal();
+            return;
+        };
         if !Self::should_apply(&self.initial, &value) {
             term_window.cancel_modal();
             return;
         }
-        if let Some(tab) = Mux::get().get_tab(self.tab_id) {
+        if let Some(tab) = Mux::get().get_tab(tab_id) {
             tab.set_title(&value);
         }
         // Sync rebuild so hit-test regions match the new width before paint (#443).
@@ -458,9 +528,12 @@ impl TabRenameModal {
     }
 
     fn is_active_in_window(&self, term_window: &TermWindow) -> bool {
+        let Some(tab_id) = self.tab_id() else {
+            return true;
+        };
         let mux = Mux::get();
         mux.get_window(term_window.mux_window_id)
-            .and_then(|window| window.get_active().map(|tab| tab.tab_id() == self.tab_id))
+            .and_then(|window| window.get_active().map(|tab| tab.tab_id() == tab_id))
             .unwrap_or(true)
     }
 
@@ -469,6 +542,9 @@ impl TabRenameModal {
         term_window: &TermWindow,
         palette: &ColorPalette,
     ) -> (Option<LinearRgba>, Option<LinearRgba>) {
+        let Some(tab_id) = self.tab_id() else {
+            return (None, None);
+        };
         let mux = Mux::get();
         let Some(window) = mux.get_window(term_window.mux_window_id) else {
             return (None, None);
@@ -481,7 +557,7 @@ impl TabRenameModal {
             .find_map(|item| match item.item {
                 crate::tabbar::TabBarItem::Tab { tab_idx, .. } => window
                     .get_by_idx(tab_idx)
-                    .filter(|tab| tab.tab_id() == self.tab_id)
+                    .filter(|tab| tab.tab_id() == tab_id)
                     .and_then(|_| item.title.get_cell(0))
                     .map(|cell| {
                         let bg = match cell.attrs().background() {
@@ -502,6 +578,9 @@ impl TabRenameModal {
     }
 
     fn title_text_attrs(&self, term_window: &TermWindow) -> CellAttributes {
+        let Some(tab_id) = self.tab_id() else {
+            return CellAttributes::default();
+        };
         let mux = Mux::get();
         if let Some(window) = mux.get_window(term_window.mux_window_id) {
             if let Some(attrs) =
@@ -512,7 +591,7 @@ impl TabRenameModal {
                     .find_map(|item| match item.item {
                         crate::tabbar::TabBarItem::Tab { tab_idx, .. } => window
                             .get_by_idx(tab_idx)
-                            .filter(|tab| tab.tab_id() == self.tab_id)
+                            .filter(|tab| tab.tab_id() == tab_id)
                             .and_then(|_| item.title.get_cell(0))
                             .map(|cell| cell.attrs().clone()),
                         _ => None,
@@ -541,6 +620,9 @@ impl TabRenameModal {
         term_window: &mut TermWindow,
         palette: &ColorPalette,
     ) -> (ElementColors, Option<Corners>) {
+        if self.panel_prompt().is_some() {
+            return Self::panel_colors(palette);
+        }
         let tab_bar_colors = term_window
             .config
             .resolved_palette
@@ -599,6 +681,55 @@ impl TabRenameModal {
         };
 
         (visuals, corners)
+    }
+
+    /// A field set into the panel: a slightly raised fill, a hairline in
+    /// the foreground tint and rounded corners all around.
+    fn panel_colors(palette: &ColorPalette) -> (ElementColors, Option<Corners>) {
+        let bg = palette.background;
+        let fg = palette.foreground;
+        let mix = |t: f32| {
+            wezterm_term::color::SrgbaTuple(
+                bg.0 + (fg.0 - bg.0) * t,
+                bg.1 + (fg.1 - bg.1) * t,
+                bg.2 + (fg.2 - bg.2) * t,
+                1.0,
+            )
+            .to_linear()
+        };
+        let fill = mix(0.10);
+        let edge = mix(0.35);
+        let r = Dimension::Pixels(6.0);
+        let corners = Some(Corners {
+            top_left: SizedPoly {
+                width: r,
+                height: r,
+                poly: TOP_LEFT_ROUNDED_CORNER,
+            },
+            top_right: SizedPoly {
+                width: r,
+                height: r,
+                poly: TOP_RIGHT_ROUNDED_CORNER,
+            },
+            bottom_left: SizedPoly {
+                width: r,
+                height: r,
+                poly: BOTTOM_LEFT_ROUNDED_CORNER,
+            },
+            bottom_right: SizedPoly {
+                width: r,
+                height: r,
+                poly: BOTTOM_RIGHT_ROUNDED_CORNER,
+            },
+        });
+        (
+            ElementColors {
+                border: BorderColor::new(edge),
+                bg: fill.into(),
+                text: fg.to_linear().into(),
+            },
+            corners,
+        )
     }
 
     fn cursor_color_for_background(
@@ -853,7 +984,11 @@ impl TabRenameModal {
             top: Dimension::Pixels(0.0),
             bottom: Dimension::Pixels(0.0),
         };
-        let border = BoxDimension::new(Dimension::Pixels(0.0));
+        let border = BoxDimension::new(Dimension::Pixels(if self.panel_prompt().is_some() {
+            1.0
+        } else {
+            0.0
+        }));
 
         let mut row = vec![];
         let cursor_element_idx;
@@ -952,14 +1087,21 @@ impl TabRenameModal {
             value.clone()
         };
         let window_width = term_window.dimensions.pixel_width as f32;
-        let (min_width, desired_width) =
-            self.editor_width(&metrics, &padding, &border, &composed_text, window_width);
-        let anchor_left = self.anchor.x as f32;
-        let anchor_right = anchor_left + self.anchor.width as f32;
-        let desired_x = anchor_left + (self.anchor.width as f32 - desired_width) / 2.0;
-        let max_x = (window_width - desired_width).max(0.0);
-        let x = desired_x.clamp(0.0, max_x);
-        let x = x.min(anchor_right - min_width).min(max_x).max(0.0);
+        let (min_width, desired_width, x) = if self.panel_prompt().is_some() {
+            // Panel fields keep the slot the panel drew for them.
+            let width = self.anchor.width.max(1) as f32;
+            (width, width, self.anchor.x as f32)
+        } else {
+            let (min_width, desired_width) =
+                self.editor_width(&metrics, &padding, &border, &composed_text, window_width);
+            let anchor_left = self.anchor.x as f32;
+            let anchor_right = anchor_left + self.anchor.width as f32;
+            let desired_x = anchor_left + (self.anchor.width as f32 - desired_width) / 2.0;
+            let max_x = (window_width - desired_width).max(0.0);
+            let x = desired_x.clamp(0.0, max_x);
+            let x = x.min(anchor_right - min_width).min(max_x).max(0.0);
+            (min_width, desired_width, x)
+        };
 
         let row = Element::new(&font, ElementContent::Children(row))
             .vertical_align(VerticalAlign::Middle)
@@ -1099,6 +1241,7 @@ impl Modal for TabRenameModal {
         };
 
         if handled {
+            self.notify_panel_changed(term_window);
             term_window.invalidate_modal();
         } else if matches!(
             term_window.composition_status(),

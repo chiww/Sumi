@@ -257,7 +257,11 @@ impl CommandDef {
             ShowTabNavigator,
             RenameCurrentTab,
             ToggleTouchMode,
-            ToggleVerticalTabs,
+            ToggleLeftPanel,
+            ShowLeftPanelTool(LeftPanelTool::Files),
+            ShowLeftPanelTool(LeftPanelTool::Search),
+            ShowLeftPanelTool(LeftPanelTool::Snippets),
+            ShowLeftPanelTool(LeftPanelTool::Conversations),
             // Help menu
             ShowDebugOverlay,
             OpenUri("https://github.com/chiww/Sumi".to_string()),
@@ -2281,14 +2285,32 @@ pub fn derive_command_from_key_assignment(action: &KeyAssignment) -> Option<Comm
             menubar: &[],
             icon: None,
         },
-        ToggleVerticalTabs => CommandDef {
-            brief: "Tab Sidebar".into(),
-            doc: "Show or hide the tab list at the left edge of the window".into(),
-            keys: vec![(Modifiers::SUPER.union(Modifiers::CTRL), "s".into())],
+        ToggleLeftPanel => CommandDef {
+            brief: "Left Panel".into(),
+            doc: "Show or hide the left panel with files, search, snippets and AI chats".into(),
+            keys: vec![(Modifiers::SUPER, "\\".into())],
             args: &[ArgType::ActiveWindow],
             menubar: &["View"],
             icon: None,
         },
+        ShowLeftPanelTool(tool) => {
+            let (brief, digit) = match tool {
+                LeftPanelTool::Files => ("Files Panel", "1"),
+                LeftPanelTool::Search => ("Search in Files", "2"),
+                LeftPanelTool::Snippets => ("Snippets Panel", "3"),
+                LeftPanelTool::Conversations => ("AI Chats Panel", "4"),
+            };
+            CommandDef {
+                brief: brief.into(),
+                doc: "Show this tool in the left panel, or hide the panel when it already shows"
+                    .into(),
+                keys: vec![(Modifiers::SUPER.union(Modifiers::CTRL), digit.into())],
+                args: &[ArgType::ActiveWindow],
+                menubar: &["View"],
+                icon: None,
+            }
+        }
+        LeftPanelCommand(_) => return None,
         ToggleTouchMode => CommandDef {
             brief: "Touch Mode".into(),
             doc: "Show a close button on every tab for remote touch input in this window".into(),
@@ -2771,7 +2793,11 @@ fn compute_default_actions() -> Vec<KeyAssignment> {
         ScrollByPage(NotNan::new(1.0).unwrap()),
         ScrollToTop,
         ScrollToBottom,
-        ToggleVerticalTabs,
+        ToggleLeftPanel,
+        ShowLeftPanelTool(LeftPanelTool::Files),
+        ShowLeftPanelTool(LeftPanelTool::Search),
+        ShowLeftPanelTool(LeftPanelTool::Snippets),
+        ShowLeftPanelTool(LeftPanelTool::Conversations),
         // ----------------- Window
         ToggleFullScreen,
         CenterWindow,
@@ -3105,20 +3131,41 @@ mod tests {
     }
 
     #[test]
-    fn tab_sidebar_has_default_shortcut_and_view_menu_entry() {
-        // The sidebar shipped once with ToggleVerticalTabs only in the
-        // palette list: Ctrl+Cmd+S was never bound and View had no item.
+    fn left_panel_has_default_shortcuts_and_view_menu_entries() {
+        // The first sidebar shipped with its toggle only in the palette
+        // list: the shortcut was never bound and View had no item.
         let config = ConfigHandle::default_config();
         let map = crate::inputmap::InputMap::new(&config);
+        let bound = |mods: Modifiers, key: char, action: KeyAssignment| {
+            map.keys.default.iter().any(|((code, m), entry)| {
+                *m == mods && *code == KeyCode::Char(key) && entry.action == action
+            })
+        };
+        assert!(bound(
+            Modifiers::SUPER,
+            '\\',
+            KeyAssignment::ToggleLeftPanel
+        ));
         let ctrl_cmd = Modifiers::SUPER.union(Modifiers::CTRL);
-        assert!(map.keys.default.iter().any(|((key, mods), entry)| {
-            *mods == ctrl_cmd
-                && matches!(key, KeyCode::Char('s' | 'S'))
-                && entry.action == KeyAssignment::ToggleVerticalTabs
-        }));
-        assert!(CommandDef::actions_for_palette_and_menubar(&config)
-            .iter()
-            .any(|cmd| cmd.action == KeyAssignment::ToggleVerticalTabs && cmd.menubar == ["View"]));
+        assert!(bound(
+            ctrl_cmd,
+            '1',
+            KeyAssignment::ShowLeftPanelTool(config::keyassignment::LeftPanelTool::Files)
+        ));
+        assert!(bound(
+            ctrl_cmd,
+            '4',
+            KeyAssignment::ShowLeftPanelTool(config::keyassignment::LeftPanelTool::Conversations)
+        ));
+        let menu = CommandDef::actions_for_palette_and_menubar(&config);
+        for action in [
+            KeyAssignment::ToggleLeftPanel,
+            KeyAssignment::ShowLeftPanelTool(config::keyassignment::LeftPanelTool::Search),
+        ] {
+            assert!(menu
+                .iter()
+                .any(|cmd| cmd.action == action && cmd.menubar == ["View"]));
+        }
     }
 
     #[test]

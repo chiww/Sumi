@@ -427,6 +427,50 @@ impl Default for ScrollbackEraseMode {
     }
 }
 
+/// A tool in the left panel.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, FromDynamic, ToDynamic)]
+pub enum LeftPanelTool {
+    Files,
+    Search,
+    Snippets,
+    Conversations,
+}
+impl_lua_conversion_dynamic!(LeftPanelTool);
+
+/// Actions the left panel's context menus dispatch. They carry the target
+/// so a menu stays correct after the panel's rows change underneath it.
+#[derive(Debug, Clone, PartialEq, Eq, FromDynamic, ToDynamic)]
+pub enum LeftPanelCommand {
+    /// Open a file in Sumi's viewer, in a pane split to the right.
+    OpenFile {
+        path: String,
+        line: Option<usize>,
+        new_tab: bool,
+    },
+    OpenWithDefaultApp(String),
+    RevealInFinder(String),
+    /// Type `cd <dir>` into the active pane.
+    ChangeDirectory(String),
+    /// Open a new tab whose shell starts in the directory.
+    NewTabInDirectory(String),
+    NewFile(String),
+    NewFolder(String),
+    Rename(String),
+    Delete(String),
+    /// Make the directory the file tree's root.
+    SetRoot(String),
+    RefreshFiles,
+    RunSnippet(usize),
+    InsertSnippet(usize),
+    CopySnippet(usize),
+    DeleteSnippet(usize),
+    NewSnippet,
+    EditSnippets,
+    OpenConversation(String),
+    DeleteConversation(String),
+}
+impl_lua_conversion_dynamic!(LeftPanelCommand);
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, FromDynamic, ToDynamic)]
 pub enum ClipboardCopyDestination {
     Clipboard,
@@ -712,7 +756,9 @@ pub enum KeyAssignment {
     ShowTabNavigator,
     RenameCurrentTab,
     ToggleTouchMode,
-    ToggleVerticalTabs,
+    ToggleLeftPanel,
+    ShowLeftPanelTool(LeftPanelTool),
+    LeftPanelCommand(LeftPanelCommand),
     ShowDebugOverlay,
     HideApplication,
     QuitApplication,
