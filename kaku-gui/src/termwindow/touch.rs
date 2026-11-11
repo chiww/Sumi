@@ -248,7 +248,7 @@ impl TermWindow {
                 text: style.fg_color.to_linear().into(),
             });
             let rect = euclid::rect(
-                cell as f32 * cell_width,
+                self.tab_bar_left_offset() + cell as f32 * cell_width,
                 y,
                 cells as f32 * cell_width,
                 height,

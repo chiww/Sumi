@@ -3887,8 +3887,12 @@ impl TermWindow {
             None => false,
         };
 
+        // Beside the left panel the bar starts at the panel's edge, and the
+        // traffic lights sit on the panel, so the bar keeps no room for them.
+        let tab_bar_offset = self.tab_bar_left_offset();
         let new_tab_bar = TabBarState::new(
-            self.dimensions.pixel_width / self.render_metrics.cell_size.width.max(1) as usize,
+            (self.dimensions.pixel_width as f32 - tab_bar_offset).max(0.0) as usize
+                / self.render_metrics.cell_size.width.max(1) as usize,
             if hovering_in_tab_bar {
                 Some(self.mouse.last_mouse_coords.0)
             } else {
@@ -3896,7 +3900,7 @@ impl TermWindow {
             },
             &tabs,
             &panes,
-            self.layout_is_effective_fullscreen(),
+            self.layout_is_effective_fullscreen() || tab_bar_offset > 0.0,
             self.config.resolved_palette.tab_bar.as_ref(),
             &self.config,
             &self.left_status,

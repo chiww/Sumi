@@ -528,6 +528,12 @@ impl crate::TermWindow {
         )
     }
 
+    /// Where the top or bottom tab bar starts: the left panel's right
+    /// edge, so the tabs line up with the terminal beside it.
+    pub(crate) fn tab_bar_left_offset(&self) -> f32 {
+        self.left_panel_pixel_width() as f32
+    }
+
     /// The hotkey drawer and utility windows (Settings) never show the panel.
     fn hotkey_window(&self) -> bool {
         self.left_panel.utility

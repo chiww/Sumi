@@ -19,7 +19,8 @@ previous_tag=$(
     git tag --sort=-version:refname \
         | grep -E "$TAG_PATTERN" \
         | grep -Eiv "^v${current_release_version}$" \
-        | head -n 1
+        | head -n 1 \
+        || true # a fork or a shallow clone may carry no release tags
 )
 
 if [[ -z "$previous_tag" ]]; then

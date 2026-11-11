@@ -76,11 +76,16 @@ impl crate::TermWindow {
         // titlebar mask. The rename field sizes itself from this row (#382).
         let tab_metrics = self.render_metrics;
 
-        self.ui_items.append(&mut self.tab_bar.compute_ui_items(
+        let left_offset = self.tab_bar_left_offset();
+        let mut tab_items = self.tab_bar.compute_ui_items(
             tab_bar_y as usize,
             tab_metrics.cell_size.height as usize,
             tab_metrics.cell_size.width as usize,
-        ));
+        );
+        for item in tab_items.iter_mut() {
+            item.x += left_offset as usize;
+        }
+        self.ui_items.append(&mut tab_items);
 
         let window_is_transparent =
             !self.window_background.is_empty() || self.config.window_background_opacity != 1.0;
@@ -127,15 +132,16 @@ impl crate::TermWindow {
         self.render_screen_line(
             RenderScreenLineParams {
                 top_pixel_y: tab_bar_y,
-                left_pixel_x: 0.,
-                pixel_width: self.dimensions.pixel_width as f32,
+                left_pixel_x: left_offset,
+                pixel_width: (self.dimensions.pixel_width as f32 - left_offset).max(0.),
                 stable_line_idx: None,
                 line: self.tab_bar.line(),
                 selection: 0..0,
                 cursor: &Default::default(),
                 palette: &palette,
                 dims: &RenderableDimensions {
-                    cols: self.dimensions.pixel_width / tab_metrics.cell_size.width as usize,
+                    cols: (self.dimensions.pixel_width as f32 - left_offset).max(0.) as usize
+                        / tab_metrics.cell_size.width as usize,
                     physical_top: 0,
                     scrollback_rows: 0,
                     scrollback_top: 0,

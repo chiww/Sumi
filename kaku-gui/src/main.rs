@@ -994,11 +994,7 @@ fn multicall_entry(argv0: &std::ffi::OsStr) -> Option<MulticallEntry> {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.get(1).map(String::as_str) == Some(file_view::VIEW_FLAG) {
-        if let Err(err) = file_view::main(&args[2..]) {
-            eprintln!("{err:#}");
-            std::process::exit(1);
-        }
-        return;
+        return file_view::run(&args[2..]);
     }
     match std::env::args_os()
         .next()

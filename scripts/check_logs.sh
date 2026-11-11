@@ -46,6 +46,7 @@ ALLOW_FILES=(
   'kaku/src/tui_splash\.rs'
   'kaku-gui/src/bin/'
   'kaku-gui/src/cli_chat/'
+  'kaku-gui/src/file_view/'        # terminal viewer reports usage errors on stderr
   'kaku-gui/src/startup_trace\.rs'
   'kaku-gui/src/stats\.rs'
   'kaku-gui/src/update\.rs'

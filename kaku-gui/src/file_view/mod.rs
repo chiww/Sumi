@@ -1141,6 +1141,14 @@ fn set_user_var(name: &str, value: &str) -> Change {
     Change::Text(format!("\x1b]1337;SetUserVar={name}={encoded}\x07"))
 }
 
+/// Runs the viewer and exits non-zero with the error on stderr.
+pub fn run(args: &[String]) {
+    if let Err(err) = main(args) {
+        eprintln!("{err:#}");
+        std::process::exit(1);
+    }
+}
+
 /// Entry point for `kaku-gui --sumi-view <path> [--line=N] [--light]`.
 pub fn main(args: &[String]) -> anyhow::Result<()> {
     rust_i18n::set_locale(&config::i18n::resolve_locale(config::i18n::LANGUAGE_AUTO));
