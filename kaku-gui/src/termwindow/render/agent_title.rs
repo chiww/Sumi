@@ -41,7 +41,7 @@ pub(crate) struct AgentTitle {
     pub topic_on_screen: bool,
 }
 
-fn agent_label(program: &str) -> &'static str {
+pub(crate) fn agent_label(program: &str) -> &'static str {
     match program {
         "claude" => "Claude Code",
         "codex" => "Codex",

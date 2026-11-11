@@ -46,3 +46,6 @@ overlay:
   launcher:
     pane_encoding: "Pane Encoding"
     pane_encoding_help: "Select encoding  |  Enter = set  |  Esc = back  |  / = filter"
+
+sidebar:
+  new_tab: "New Tab"

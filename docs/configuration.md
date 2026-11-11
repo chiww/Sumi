@@ -294,6 +294,20 @@ The trailing cell stays blank until a pane wants your attention, then shows an a
 config.bell_tab_indicator = false
 ```
 
+**Tab sidebar**
+
+Sumi can list tabs in a sidebar at the window's left edge instead of the horizontal tab bar. Turn it on with View > Tab Sidebar (`Ctrl + Cmd + S`), in `sumi config` (Vertical Tabs), or in Lua:
+
+```lua
+config.vertical_tabs = true
+config.vertical_tabs_width = 220                    -- points, 140 to 480
+config.vertical_tabs_subtitle = 'DirectoryBranch'   -- or 'Directory', 'Branch', 'Command', 'None'
+```
+
+Each row shows the tab's title (an agent's session topic while Claude Code, Codex, Kimi or pi runs in it), a second line with the working directory and Git branch, and the `Cmd + digit` that selects it. The dot before the title tells you what the tab is doing: blue while a program reports it is working (OSC 7501, OSC 9;4 progress, or an agent's spinner title), amber when it waits on you or rang the bell, green when a program finished while you were elsewhere, red when it failed.
+
+Click a row to switch to it, double-click to rename, middle-click to close and right-click for the tab menu. Drag the sidebar's right edge to resize it and scroll when the list is longer than the window. The toggle and the width are remembered across restarts until you change `vertical_tabs` or `vertical_tabs_width` in the config. The sidebar computes its own titles, so a `format-tab-title` handler only affects the horizontal bar.
+
 **Scrollbar**
 
 Disabled by default. Enable via `sumi config` (toggle the scrollbar style option) or in Lua:

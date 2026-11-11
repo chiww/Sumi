@@ -560,6 +560,22 @@ pub struct Config {
     #[dynamic(default)]
     pub tab_bar_at_bottom: bool,
 
+    /// Show tabs as a list in a sidebar at the window's left edge instead
+    /// of the horizontal tab bar. Toggling the sidebar from the View menu
+    /// (Ctrl+Cmd+S) is remembered across restarts; changing this value
+    /// applies again over that remembered state.
+    #[dynamic(default)]
+    pub vertical_tabs: bool,
+
+    /// Default width of the tab sidebar in points. Dragging its edge
+    /// overrides this until the value here changes.
+    #[dynamic(default = "default_vertical_tabs_width")]
+    pub vertical_tabs_width: f32,
+
+    /// The second line of each sidebar row.
+    #[dynamic(default)]
+    pub vertical_tabs_subtitle: VerticalTabsSubtitle,
+
     /// If true, auto-generated tab titles use only the current folder name
     /// instead of the default parent/current path pair.
     #[dynamic(default)]
@@ -4026,6 +4042,27 @@ impl From<Option<MacosGlobalHotkeyAppearance>> for MacosGlobalHotkeyAppearance {
     fn from(appearance: Option<Self>) -> Self {
         appearance.unwrap_or_default()
     }
+}
+
+/// What the second line of a tab sidebar row shows.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, FromDynamic, ToDynamic)]
+pub enum VerticalTabsSubtitle {
+    /// The working directory and, inside a Git repository, its branch.
+    #[default]
+    DirectoryBranch,
+    Directory,
+    Branch,
+    /// The foreground command.
+    Command,
+    /// A single line per tab.
+    None,
+}
+
+pub const VERTICAL_TABS_MIN_WIDTH: f32 = 140.0;
+pub const VERTICAL_TABS_MAX_WIDTH: f32 = 480.0;
+
+fn default_vertical_tabs_width() -> f32 {
+    220.0
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, FromDynamic, ToDynamic)]

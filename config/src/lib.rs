@@ -863,6 +863,7 @@ config.color_scheme = 'Sumi Dark'
 -- config.hide_tab_bar_if_only_one_tab = false        -- default true
 -- config.tab_title_show_basename_only = true
 -- config.tab_title_show_foreground_process = true    -- show "dirname·codex" while commands run
+-- config.vertical_tabs = true                       -- tabs as a list on the left (Ctrl+Cmd+S)
 --
 -- 9) Tab key completion (default 'suggestion_first': Tab accepts the inline suggestion)
 -- config.smart_tab_mode = 'completion_first'

@@ -135,7 +135,9 @@ impl crate::TermWindow {
                 }
             }
 
-            let border_left = border_dimensions.left.get() as f32;
+            // The sidebar paints its own part of the left border.
+            let sidebar_width = self.sidebar_pixel_width() as f32;
+            let border_left = border_dimensions.left.get() as f32 - sidebar_width;
             if border_left > 0.0 {
                 let color = border_color(
                     self.config
@@ -147,7 +149,7 @@ impl crate::TermWindow {
                 self.filled_rectangle(
                     layers,
                     1,
-                    euclid::rect(0.0, 0.0, border_left, height),
+                    euclid::rect(sidebar_width, 0.0, border_left, height),
                     color,
                 )?;
             }
@@ -311,6 +313,10 @@ impl crate::TermWindow {
         if extra_top > 0 {
             border.top += ULength::new(extra_top);
         }
+        // The tab sidebar is laid out as part of the left border, so every
+        // consumer of the border (sizing, panes, mouse, overlays) starts
+        // right of it.
+        border.left += ULength::new(self.sidebar_pixel_width());
 
         border
     }

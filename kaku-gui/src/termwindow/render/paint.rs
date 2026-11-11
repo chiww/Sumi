@@ -453,12 +453,21 @@ impl crate::TermWindow {
                         .context("filled_rectangle for transparent right strip")?;
                     }
 
+                    // The tab sidebar draws its own translucent background;
+                    // a strip under it would stack a second layer of alpha.
+                    let sidebar_width = self.sidebar_pixel_width() as f32;
+                    let left_fill_width = (left_fill_width - sidebar_width).max(0.0);
                     if left_fill_width > 0.0 {
                         let clamped_width = left_fill_width.min(window_width);
                         self.filled_rectangle(
                             &mut layers,
                             0,
-                            euclid::rect(0.0, side_fill_y, clamped_width, side_fill_height),
+                            euclid::rect(
+                                sidebar_width,
+                                side_fill_y,
+                                clamped_width,
+                                side_fill_height,
+                            ),
                             strip_background,
                         )
                         .context("filled_rectangle for transparent left strip")?;
@@ -617,6 +626,7 @@ impl crate::TermWindow {
 
         self.paint_window_borders(&mut layers)
             .context("paint_window_borders")?;
+        self.paint_sidebar(&mut layers).context("paint_sidebar")?;
         drop(layers);
         self.paint_agent_title().context("paint_agent_title")?;
         self.paint_modal().context("paint_modal")?;

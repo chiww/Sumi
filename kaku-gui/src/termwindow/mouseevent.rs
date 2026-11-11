@@ -603,7 +603,7 @@ impl super::TermWindow {
         None
     }
 
-    fn begin_tab_rename(&mut self, tab_idx: usize, item: UIItem) -> anyhow::Result<()> {
+    pub(super) fn begin_tab_rename(&mut self, tab_idx: usize, item: UIItem) -> anyhow::Result<()> {
         let mux = Mux::get();
         let window = mux
             .get_window(self.mux_window_id)
@@ -635,6 +635,19 @@ impl super::TermWindow {
                 item.item_type,
                 UIItemType::TabBar(TabBarItem::Tab { active: true, .. })
             )
+        });
+        // With the tab sidebar the editor opens over the active row.
+        let painted_active = painted_active.or_else(|| {
+            self.ui_items
+                .iter()
+                .find(|item| {
+                    item.item_type
+                        == UIItemType::Sidebar(super::sidebar::SidebarItem::Tab {
+                            tab_idx,
+                            active: true,
+                        })
+                })
+                .cloned()
         });
         let item = match painted_active {
             Some(item) => item,
@@ -845,7 +858,8 @@ impl super::TermWindow {
             | UIItemType::AboveScrollThumb
             | UIItemType::BelowScrollThumb
             | UIItemType::ScrollThumb
-            | UIItemType::Split(_) => {}
+            | UIItemType::Split(_)
+            | UIItemType::Sidebar(_) => {}
         }
     }
 
@@ -856,7 +870,8 @@ impl super::TermWindow {
             | UIItemType::AboveScrollThumb
             | UIItemType::BelowScrollThumb
             | UIItemType::ScrollThumb
-            | UIItemType::Split(_) => {}
+            | UIItemType::Split(_)
+            | UIItemType::Sidebar(_) => {}
         }
     }
 
@@ -1014,6 +1029,19 @@ impl super::TermWindow {
                         self.finish_mouse_release(*press);
                         return;
                     }
+                }
+                if press == &MousePress::Left
+                    && matches!(
+                        &self.dragging,
+                        Some((item, _))
+                            if item.item_type
+                                == UIItemType::Sidebar(super::sidebar::SidebarItem::Resize)
+                    )
+                {
+                    self.dragging.take();
+                    self.finish_sidebar_resize();
+                    self.finish_mouse_release(*press);
+                    return;
                 }
                 if press == &MousePress::Left && self.dragging.take().is_some() {
                     // Completed a split drag: notify PTY of final sizes
@@ -1484,6 +1512,9 @@ impl super::TermWindow {
             UIItemType::ScrollThumb => {
                 self.drag_scroll_thumb(item, start_event, event, context);
             }
+            UIItemType::Sidebar(super::sidebar::SidebarItem::Resize) => {
+                self.drag_sidebar_resize(item, start_event, event);
+            }
             _ => {
                 log::error!("drag not implemented for {:?}", item);
             }
@@ -1518,6 +1549,9 @@ impl super::TermWindow {
             UIItemType::CloseTab(idx) => {
                 self.mouse_event_close_tab(idx, event, context);
             }
+            UIItemType::Sidebar(sidebar_item) => {
+                self.mouse_event_sidebar(sidebar_item, item, event, context);
+            }
         }
     }
 
@@ -1540,7 +1574,7 @@ impl super::TermWindow {
     /// Opens the tab menu for the clicked tab. Its actions target that tab's
     /// active pane, so they apply to the tab under the pointer even when it is
     /// not the active one.
-    fn show_tab_context_menu(
+    pub(super) fn show_tab_context_menu(
         &mut self,
         tab_idx: usize,
         event: &MouseEvent,
@@ -1570,7 +1604,7 @@ impl super::TermWindow {
         self.show_tab_navigator();
     }
 
-    fn do_new_tab_button_click(&mut self, button: MousePress) {
+    pub(super) fn do_new_tab_button_click(&mut self, button: MousePress) {
         let pane = match self.get_active_pane_or_overlay() {
             Some(pane) => pane,
             None => return,

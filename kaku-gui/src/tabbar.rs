@@ -762,7 +762,7 @@ fn process_title_from_user_var(command: &str) -> Option<String> {
 /// one runs, an empty string at an idle prompt. Prefer it over process
 /// inspection; it costs no syscalls and names wrapper scripts ("npm run dev")
 /// rather than their interpreter ("node").
-fn foreground_process_title(pane: &dyn mux::pane::Pane) -> Option<String> {
+pub(crate) fn foreground_process_title(pane: &dyn mux::pane::Pane) -> Option<String> {
     if let Some(prog) = pane.copy_user_vars().get("WEZTERM_PROG") {
         return if prog.is_empty() {
             None

@@ -125,6 +125,7 @@ commands:
     swap_a_pane_with_the_active_pane: "与活动窗格交换位置"
     swap_a_pane_with_the_active_pane_keeping_focus: "与活动窗格交换位置（保留焦点）"
     tab_navigator: "标签页导航"
+    tab_sidebar: "标签侧栏"
     toggle_full_screen: "切换全屏"
     touch_mode: "触控模式"
     toggle_split_direction: "切换分割方向"
@@ -142,6 +143,10 @@ commands:
     zoom_the_window_to_fill_the_active_display_appkit_zoom: "将窗口缩放到铺满当前显示器（AppKit zoom）"
     keep_window_above_others: "让窗口保持在其它窗口之上"
     keep_window_behind_others: "让窗口保持在其它窗口之下"
+    show_or_hide_the_tab_list_at_the_left_edge_of_the_window: "显示或隐藏窗口左侧的标签列表"
+
+sidebar:
+  new_tab: "新标签页"
 
 config_tui:
   settings: "设置"
@@ -182,6 +187,8 @@ config_tui:
   compact_tab_titles: "精简标签标题"
   command_tab_titles: "标签显示命令"
   tab_numbers: "标签编号"
+  vertical_tabs: "垂直标签栏"
+  sidebar_subtitle: "侧栏副标题"
   new_tab_button: "新建标签按钮"
   agent_title: "Agent 标题"
   window_shadow: "窗口阴影"
@@ -204,6 +211,11 @@ config_tui:
   sumi_light: "Sumi 浅色"
   bottom: "下方"
   top: "上方"
+  directory_branch: "目录与分支"
+  directory: "目录"
+  branch: "分支"
+  command: "命令"
+  none: "无"
 init:
   k_wrapper_conflict: "k: %{path} 已存在且不像是由 Sumi 创建的包装脚本，跳过安装。"
 overlay:

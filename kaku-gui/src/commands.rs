@@ -257,6 +257,7 @@ impl CommandDef {
             ShowTabNavigator,
             RenameCurrentTab,
             ToggleTouchMode,
+            ToggleVerticalTabs,
             // Help menu
             ShowDebugOverlay,
             OpenUri("https://github.com/chiww/Sumi".to_string()),
@@ -2278,6 +2279,14 @@ pub fn derive_command_from_key_assignment(action: &KeyAssignment) -> Option<Comm
             keys: vec![],
             args: &[ArgType::ActiveWindow],
             menubar: &[],
+            icon: None,
+        },
+        ToggleVerticalTabs => CommandDef {
+            brief: "Tab Sidebar".into(),
+            doc: "Show or hide the tab list at the left edge of the window".into(),
+            keys: vec![(Modifiers::SUPER.union(Modifiers::CTRL), "s".into())],
+            args: &[ArgType::ActiveWindow],
+            menubar: &["View"],
             icon: None,
         },
         ToggleTouchMode => CommandDef {
