@@ -1686,7 +1686,7 @@ impl TermWindow {
         if initial_window_state.contains(WindowState::HOTKEY_WINDOW) {
             initial_left_panel.visible = false;
         }
-        if left_panel::NEXT_WINDOW_IS_UTILITY.swap(false, std::sync::atomic::Ordering::SeqCst) {
+        if left_panel::take_utility_window(mux_window_id) {
             initial_left_panel.visible = false;
             initial_left_panel.utility = true;
         }

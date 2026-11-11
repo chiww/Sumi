@@ -235,6 +235,33 @@ fn save(saved: &SavedPanel) {
 pub(crate) static NEXT_WINDOW_IS_UTILITY: std::sync::atomic::AtomicBool =
     std::sync::atomic::AtomicBool::new(false);
 
+/// Mux windows Settings spawned. The GUI window for a mux window is built
+/// from its creation notification, which can run after the spawn returned
+/// and the flag above was cleared, so the window id is recorded as well.
+static UTILITY_WINDOWS: std::sync::Mutex<Vec<mux::window::WindowId>> =
+    std::sync::Mutex::new(Vec::new());
+
+/// Marks `id` as a utility window. Call it before clearing
+/// `NEXT_WINDOW_IS_UTILITY`, with no await in between.
+pub(crate) fn mark_utility_window(id: mux::window::WindowId) {
+    if let Ok(mut ids) = UTILITY_WINDOWS.lock() {
+        if !ids.contains(&id) {
+            ids.push(id);
+        }
+    }
+}
+
+/// True for the window Settings is opening: either it takes the pending
+/// flag, or its id was already recorded.
+pub(crate) fn take_utility_window(id: mux::window::WindowId) -> bool {
+    let flagged = NEXT_WINDOW_IS_UTILITY.swap(false, std::sync::atomic::Ordering::SeqCst);
+    let recorded = UTILITY_WINDOWS
+        .lock()
+        .map(|ids| ids.contains(&id))
+        .unwrap_or(false);
+    flagged || recorded
+}
+
 pub(crate) struct LeftPanelState {
     pub visible: bool,
     /// Set for utility windows such as Settings, which never show the panel.
@@ -2132,6 +2159,32 @@ impl crate::TermWindow {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Settings' GUI window can be built after the spawn returned and the
+    /// flag was cleared; the recorded id must still hide the panel there.
+    #[test]
+    fn settings_window_built_after_the_spawn_still_hides_the_panel() {
+        let id = 9_000_001;
+        mark_utility_window(id);
+        NEXT_WINDOW_IS_UTILITY.store(false, std::sync::atomic::Ordering::SeqCst);
+        assert!(take_utility_window(id));
+        assert!(!take_utility_window(id + 1));
+
+        let frontend = include_str!("../../frontend.rs");
+        let open = frontend
+            .split("pub fn open_kaku_config()")
+            .nth(1)
+            .unwrap()
+            .split("\n}\n")
+            .next()
+            .unwrap();
+        let mark = open.find("mark_utility_window(").unwrap();
+        let clear = open.rfind(".store(false").unwrap();
+        assert!(mark < clear, "record the id before clearing the flag");
+        assert!(
+            include_str!("../mod.rs").contains("left_panel::take_utility_window(mux_window_id)")
+        );
+    }
 
     /// The panel caches glyph texture coordinates; an atlas rebuild (CJK
     /// text in the viewer can trigger one) must drop that cache too, or the

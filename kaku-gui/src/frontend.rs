@@ -320,6 +320,11 @@ pub fn open_kaku_config() {
             term_config,
         )
         .await;
+        // The GUI window may not exist yet: record the id before clearing
+        // the flag so whichever runs first still hides the panel.
+        if let Ok(id) = &result {
+            crate::termwindow::left_panel::mark_utility_window(*id);
+        }
         crate::termwindow::left_panel::NEXT_WINDOW_IS_UTILITY
             .store(false, std::sync::atomic::Ordering::SeqCst);
         result

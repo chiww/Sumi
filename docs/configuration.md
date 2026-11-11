@@ -301,7 +301,7 @@ Sumi has a tool panel at the window's left edge, in the spirit of Warp's: a proj
 ```lua
 config.left_panel = true
 config.left_panel_width = 260                    -- points, 180 to 560
-config.left_panel_font = wezterm.font('Menlo')   -- unset: the window title font
+config.left_panel_font = wezterm.font('Menlo')   -- unset: the system font (SF), same as wezterm.font('system-ui')
 config.left_panel_font_size = 13                 -- unset: window_frame.font_size, else 12
 config.left_panel_line_height = 1.2              -- row spacing, 0.8 to 2.5
 ```

@@ -9,6 +9,10 @@ use std::sync::Arc;
 
 pub mod core_text;
 
+/// A font family naming the system UI font (San Francisco on macOS), as in
+/// CSS. It is the left panel's default font.
+pub const SYSTEM_UI_FAMILY: &str = "system-ui";
+
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub enum FontOrigin {
     CoreText,

@@ -504,6 +504,20 @@ enum Entity {
     LeftPanel,
 }
 
+/// The left panel's font when `left_panel_font` is unset: the system UI
+/// font, then the terminal fonts for glyphs it lacks.
+fn left_panel_default_font(config: &ConfigHandle) -> TextStyle {
+    let mut font = vec![FontAttributes::new(locator::SYSTEM_UI_FAMILY)];
+    font.extend(config.font.font.iter().cloned().map(|mut attr| {
+        attr.is_fallback = true;
+        attr
+    }));
+    TextStyle {
+        foreground: None,
+        font,
+    }
+}
+
 struct FontConfigInner {
     fonts: RefCell<HashMap<TextStyle, Rc<LoadedFont>>>,
     /// Fonts from before the last `change_scaling`, reused by `resolve_font`
@@ -655,6 +669,8 @@ impl FontConfigInner {
         let config = self.config.borrow();
         let make_bold = !matches!(entity, Entity::CommandPalette | Entity::Caption);
         let (sys_font, sys_size) = self.compute_title_font(&config, make_bold);
+        let panel_default =
+            matches!(entity, Entity::LeftPanel).then(|| left_panel_default_font(&config));
 
         let (font_size, text_style) = match entity {
             Entity::Title => (config.window_frame.font_size.unwrap_or(sys_size), None),
@@ -679,7 +695,7 @@ impl FontConfigInner {
                     .left_panel_font_size
                     .filter(|size| *size > 0.0)
                     .unwrap_or_else(|| config.window_frame.font_size.unwrap_or(sys_size)),
-                config.left_panel_font.as_ref(),
+                config.left_panel_font.as_ref().or(panel_default.as_ref()),
             ),
         };
 

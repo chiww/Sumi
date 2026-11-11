@@ -87,6 +87,32 @@ fn handles_from_descriptor(descriptor: &CTFontDescriptor) -> Vec<ParsedFont> {
     result
 }
 
+impl CoreTextFontLocator {
+    /// The macOS UI font (San Francisco). Its family is hidden from name
+    /// lookups, so `system-ui` resolves through CoreText's UI font instead.
+    fn system_ui_font(&self, attr: &FontAttributes, pixel_size: u16) -> Option<ParsedFont> {
+        let ui = new_ui_font_for_language(kCTFontSystemFontType, 0.0, None);
+        let path = ui.copy_descriptor().font_path()?;
+        let handles = {
+            let mut cache = self.parsed_cache.lock().unwrap();
+            cache
+                .entry(path.clone())
+                .or_insert_with(|| {
+                    let mut result = vec![];
+                    let source = FontDataSource::OnDisk(path);
+                    let _ = crate::parser::parse_and_collect_font_info(
+                        &source,
+                        &mut result,
+                        FontOrigin::CoreText,
+                    );
+                    result
+                })
+                .clone()
+        };
+        ParsedFont::best_match(attr, pixel_size, handles)
+    }
+}
+
 impl FontLocator for CoreTextFontLocator {
     fn load_fonts(
         &self,
@@ -97,6 +123,16 @@ impl FontLocator for CoreTextFontLocator {
         let mut fonts = vec![];
 
         for attr in fonts_selection {
+            if attr
+                .family
+                .eq_ignore_ascii_case(crate::locator::SYSTEM_UI_FAMILY)
+            {
+                if let Some(parsed) = self.system_ui_font(attr, pixel_size) {
+                    fonts.push(parsed);
+                    loaded.insert(attr.clone());
+                }
+                continue;
+            }
             match descriptor_from_attr(attr) {
                 Ok(descriptors) => {
                     let mut handles = vec![];
@@ -359,6 +395,23 @@ fn build_fallback_list_impl() -> anyhow::Result<Vec<ParsedFont>> {
 mod tests {
     use super::*;
     use objc::rc::{autoreleasepool, StrongPtr};
+
+    #[test]
+    fn system_ui_resolves_to_the_macos_ui_font_at_the_asked_weight() {
+        let locator = CoreTextFontLocator {
+            parsed_cache: Default::default(),
+        };
+        let mut loaded = HashSet::new();
+        let regular = FontAttributes::new("system-ui");
+        let mut bold = FontAttributes::new("System-UI");
+        bold.weight = FontWeight::BOLD;
+        let fonts = locator
+            .load_fonts(&[regular.clone(), bold.clone()], &mut loaded, 24)
+            .unwrap();
+        assert_eq!(fonts.len(), 2);
+        assert!(loaded.contains(&regular) && loaded.contains(&bold));
+        assert!(fonts[0].weight() < fonts[1].weight(), "{fonts:?}");
+    }
 
     #[test]
     fn matching_descriptors_use_create_rule_ownership() {

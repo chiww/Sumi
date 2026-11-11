@@ -573,7 +573,7 @@ pub struct Config {
     pub left_panel_width: f32,
 
     /// Font for the left panel, as `wezterm.font('Name')`. Unset, it uses
-    /// the window title font.
+    /// the system UI font (`wezterm.font('system-ui')`).
     #[dynamic(default)]
     pub left_panel_font: Option<TextStyle>,
 
