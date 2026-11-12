@@ -150,10 +150,6 @@ commands:
     show_or_hide_the_left_panel_with_files_search_snippets_and_ai_chats: "显示或隐藏左侧边栏：文件树、搜索、命令片段与 AI 对话"
 
 left_panel:
-  files: "文件"
-  search: "搜索"
-  snippets: "命令片段"
-  conversations: "AI 对话"
   no_folder: "当前标签没有可显示的目录"
   empty_folder: "空文件夹"
   search_placeholder: "在文件中搜索"

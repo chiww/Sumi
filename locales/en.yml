@@ -48,10 +48,6 @@ overlay:
     pane_encoding_help: "Select encoding  |  Enter = set  |  Esc = back  |  / = filter"
 
 left_panel:
-  files: "Files"
-  search: "Search"
-  snippets: "Snippets"
-  conversations: "AI Chats"
   no_folder: "This tab has no folder to show"
   empty_folder: "Empty folder"
   search_placeholder: "Search in files"

@@ -33,6 +33,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use termwiz::cell::unicode_column_width;
+use wezterm_font::LoadedFont;
 use wezterm_term::color::{ColorAttribute, ColorPalette, SrgbaTuple};
 use window::color::LinearRgba;
 use window::{MouseCursor, MouseEvent, MouseEventKind as WMEK, MousePress, WindowOps};
@@ -49,7 +50,9 @@ const TOOL_STRIP_PT: f32 = 30.0;
 const ROW_PAD_X_PT: f32 = 6.0;
 const ROW_PAD_Y_PT: f32 = 3.0;
 const FIELD_PAD_Y_PT: f32 = 5.0;
-const INDENT_PT: f32 = 12.0;
+const INDENT_PT: f32 = 16.0;
+/// Width of one icon slot (a chevron or a file icon) in a row.
+const ICON_SLOT_PT: f32 = 18.0;
 const SECTION_GAP_PT: f32 = 6.0;
 /// Hit width of the drag handle on the panel's right edge.
 const RESIZE_HANDLE_PT: f32 = 6.0;
@@ -86,16 +89,6 @@ fn tool_icon(tool: LeftPanelTool) -> &'static str {
     }
 }
 
-fn tool_title(tool: LeftPanelTool) -> String {
-    let key = match tool {
-        LeftPanelTool::Files => "left_panel.files",
-        LeftPanelTool::Search => "left_panel.search",
-        LeftPanelTool::Snippets => "left_panel.snippets",
-        LeftPanelTool::Conversations => "left_panel.conversations",
-    };
-    rust_i18n::t!(key).into_owned()
-}
-
 /// What a panel region does under the pointer.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PanelItem {
@@ -126,6 +119,8 @@ pub enum SearchToggle {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PanelButton {
+    /// The close button right of the tools; hides the panel.
+    Close,
     NewSnippet,
     EditSnippets,
     NewChat,
@@ -516,10 +511,29 @@ struct PanelColors {
     active: LinearRgba,
     hover: LinearRgba,
     text: LinearRgba,
+    /// List names: a step softer than `text`, as in Warp's tree.
+    row_text: LinearRgba,
     dim: LinearRgba,
     faint: LinearRgba,
     accent: LinearRgba,
     field: LinearRgba,
+}
+
+/// The longest prefix of `advances` (byte offset, width) whose width plus
+/// `ellipsis` fits in `max`, as (byte end, width). None when all fit.
+fn fit_prefix(advances: &[(usize, f32)], max: f32, ellipsis: f32) -> Option<(usize, f32)> {
+    let total: f32 = advances.iter().map(|(_, w)| w).sum();
+    if total <= max {
+        return None;
+    }
+    let mut used = 0.0;
+    for &(start, w) in advances {
+        if used + w + ellipsis > max {
+            return Some((start, used));
+        }
+        used += w;
+    }
+    Some((advances.last().map_or(0, |(start, _)| *start), used))
 }
 
 /// Padding each row gains above and below for `left_panel_line_height`.
@@ -760,6 +774,7 @@ impl crate::TermWindow {
             active: to(mix(bg, fg, 0.13)),
             hover: to(mix(bg, fg, 0.07)),
             text: to(fg),
+            row_text: to(mix(bg, fg, 0.86)),
             dim: to(mix(bg, fg, 0.58)),
             faint: to(mix(bg, fg, 0.38)),
             accent: palette
@@ -776,6 +791,52 @@ impl crate::TermWindow {
                 .to_linear()
         })
         .unwrap_or(fallback)
+    }
+
+    fn left_panel_shape(
+        &self,
+        font: &Rc<LoadedFont>,
+        text: &str,
+    ) -> anyhow::Result<Vec<(usize, f32)>> {
+        let window = self.window.as_ref().unwrap().clone();
+        let infos = font.shape(
+            text,
+            move || window.notify(TermWindowNotif::InvalidateShapeCache),
+            |_| {},
+            None,
+            wezterm_bidi::Direction::LeftToRight,
+            None,
+            None,
+        )?;
+        Ok(infos
+            .iter()
+            .map(|g| (g.cluster as usize, g.x_advance.get() as f32))
+            .collect())
+    }
+
+    fn left_panel_text_width(&self, font: &Rc<LoadedFont>, text: &str) -> anyhow::Result<f32> {
+        Ok(self
+            .left_panel_shape(font, text)?
+            .iter()
+            .map(|(_, w)| w)
+            .sum())
+    }
+
+    /// `text` cut to `max` pixels in `font`, ending with an ellipsis when
+    /// cut, and its width.
+    fn left_panel_fit_text(
+        &self,
+        font: &Rc<LoadedFont>,
+        text: &str,
+        max: f32,
+    ) -> anyhow::Result<(String, f32)> {
+        let advances = self.left_panel_shape(font, text)?;
+        let ellipsis = self.left_panel_text_width(font, "…")?;
+        Ok(match fit_prefix(&advances, max, ellipsis) {
+            None => (text.to_string(), advances.iter().map(|(_, w)| w).sum()),
+            Some((end, _)) if end == 0 || !text.is_char_boundary(end) => (String::new(), 0.0),
+            Some((end, used)) => (format!("{}…", &text[..end]), used + ellipsis),
+        })
     }
 
     fn build_left_panel(
@@ -860,6 +921,9 @@ impl crate::TermWindow {
             })
         };
         let cells = |n: usize| Some(Dimension::Pixels(cell_w * n as f32));
+        // Icons sit in fixed slots so names line up whatever the font.
+        let icon_slot = px(ICON_SLOT_PT);
+        let slots = |n: usize| Some(Dimension::Pixels(icon_slot * n as f32));
         // A clickable block with hover, optionally highlighted.
         let block = |children: Vec<Element>,
                      item: PanelItem,
@@ -924,20 +988,20 @@ impl crate::TermWindow {
             out.push(layout(euclid::rect(x, y, tool_w, tool_h), &button)?);
             x += tool_w + px(4.0);
         }
-        // The active tool's name, right of the buttons when it fits.
-        let title = tool_title(self.left_panel.tool);
-        let left_cells = ((x0 + inner_w - x) / cell_w).floor() as usize;
-        if left_cells > unicode_column_width(&title, None) + 1 {
-            let label = text(title, colors.dim);
-            out.push(layout(
-                euclid::rect(
-                    x + px(4.0),
-                    y + (tool_h - line_h) / 2.0,
-                    x0 + inner_w - x,
-                    line_h,
-                ),
-                &label,
-            )?);
+        // Close, at the right end like Warp's panel.
+        let close_x = x0 + inner_w - tool_w;
+        if close_x >= x {
+            let pad = ((tool_w - cell_w * 2.0) / 2.0).max(0.0);
+            let close = block(
+                vec![text("\u{ea76}".to_string(), colors.dim)
+                    .min_width(Some(Dimension::Pixels(cell_w * 2.0)))],
+                PanelItem::Button(PanelButton::Close),
+                tool_w,
+                tool_h,
+                pad,
+                false,
+            );
+            out.push(layout(euclid::rect(close_x, y, tool_w, tool_h), &close)?);
         }
         y += px(TOOL_STRIP_PT) + px(SECTION_GAP_PT);
 
@@ -945,7 +1009,9 @@ impl crate::TermWindow {
         struct Row {
             target: RowTarget,
             indent: usize,
-            icon: Option<(String, LinearRgba)>,
+            /// Glyphs drawn in fixed slots before the text, such as a
+            /// chevron and a folder; " " leaves a slot empty.
+            icons: Vec<(&'static str, LinearRgba)>,
             segments: Vec<(String, LinearRgba)>,
             trailing: Option<String>,
             selected: bool,
@@ -964,7 +1030,7 @@ impl crate::TermWindow {
             Element::new(
                 &font,
                 ElementContent::Children(vec![
-                    text("\u{ea6d}".to_string(), colors.dim).min_width(cells(2)),
+                    text("\u{ea6d}".to_string(), colors.dim).min_width(slots(1)),
                     text(truncate_cells(&content, budget), color),
                 ]),
             )
@@ -995,44 +1061,24 @@ impl crate::TermWindow {
                 let root = self.left_panel.files.root().map(Path::to_path_buf);
                 match &root {
                     None => message = Some(rust_i18n::t!("left_panel.no_folder").into_owned()),
-                    Some(root) => {
-                        let name = root
-                            .file_name()
-                            .map(|n| n.to_string_lossy().into_owned())
-                            .unwrap_or_else(|| root.to_string_lossy().into_owned());
-                        let header =
-                            text(truncate_cells(&name.to_uppercase(), text_cells), colors.dim);
-                        out.push(layout(
-                            euclid::rect(x0 + px(ROW_PAD_X_PT), y, inner_w, line_h),
-                            &header,
-                        )?);
-                        y += line_h + px(4.0);
+                    Some(_) => {
                         let tree_rows = self.left_panel.files.rows();
-                        if tree_rows.is_empty() {
+                        if tree_rows.len() == 1 && tree_rows[0].expanded {
                             message = Some(rust_i18n::t!("left_panel.empty_folder").into_owned());
                         }
                         let selected = self.left_panel.files.selected.clone();
                         for row in tree_rows {
                             let entry = row.entry;
-                            let name_color = if entry.ignored {
-                                colors.faint
-                            } else {
-                                colors.text
-                            };
-                            let (chevron, icon, icon_color) = if entry.is_dir {
+                            let faded = entry.ignored;
+                            let name_color = if faded { colors.faint } else { colors.row_text };
+                            let icon_color = if faded { colors.faint } else { colors.dim };
+                            let (chevron, icon) = if entry.is_dir {
                                 (
                                     if row.expanded { "\u{eab4}" } else { "\u{eab6}" },
                                     if row.expanded { "\u{eaf7}" } else { "\u{ea83}" },
-                                    Self::palette_color(palette, Some(4), colors.dim),
                                 )
                             } else {
-                                let (icon, slot) = file_icon(&entry.name);
-                                (" ", icon, Self::palette_color(palette, slot, colors.dim))
-                            };
-                            let icon_color = if entry.ignored {
-                                colors.faint
-                            } else {
-                                icon_color
+                                (" ", file_icon(&entry.name).0)
                             };
                             rows.push(Row {
                                 selected: selected.as_deref() == Some(entry.path.as_path()),
@@ -1042,7 +1088,7 @@ impl crate::TermWindow {
                                     RowTarget::File(entry.path.clone())
                                 },
                                 indent: row.depth,
-                                icon: Some((format!("{chevron}{icon}"), icon_color)),
+                                icons: vec![(chevron, icon_color), (icon, icon_color)],
                                 segments: vec![(entry.name, name_color)],
                                 trailing: None,
                             });
@@ -1140,10 +1186,10 @@ impl crate::TermWindow {
                     rows.push(Row {
                         target: RowTarget::SearchFile(file.path.clone()),
                         indent: 0,
-                        icon: Some((
-                            format!("{}{icon}", if collapsed { "\u{eab6}" } else { "\u{eab4}" }),
-                            Self::palette_color(palette, slot, colors.dim),
-                        )),
+                        icons: vec![
+                            (if collapsed { "\u{eab6}" } else { "\u{eab4}" }, colors.dim),
+                            (icon, Self::palette_color(palette, slot, colors.dim)),
+                        ],
                         segments: vec![(name, colors.text), (dir, colors.faint)],
                         trailing: Some(file.matches.len().to_string()),
                         selected: false,
@@ -1175,7 +1221,7 @@ impl crate::TermWindow {
                                 line: m.line,
                             },
                             indent: 1,
-                            icon: None,
+                            icons: vec![],
                             segments,
                             trailing: Some(m.line.to_string()),
                             selected: false,
@@ -1202,7 +1248,7 @@ impl crate::TermWindow {
                     rows.push(Row {
                         target: RowTarget::Snippet(idx),
                         indent: 0,
-                        icon: Some(("\u{eb2c}".to_string(), run_color)),
+                        icons: vec![("\u{eb2c}", run_color)],
                         segments: vec![(label, colors.text), (detail, colors.faint)],
                         trailing: None,
                         selected: false,
@@ -1237,7 +1283,7 @@ impl crate::TermWindow {
                     rows.push(Row {
                         target: RowTarget::Conversation(meta.id.clone()),
                         indent: 0,
-                        icon: Some(("\u{ea6b}".to_string(), colors.dim)),
+                        icons: vec![("\u{ea6b}", colors.dim)],
                         segments: vec![(meta.summary.clone(), colors.text)],
                         trailing: Some(short_time(meta.updated_at)),
                         selected: active.as_deref() == Some(meta.id.as_str()),
@@ -1258,7 +1304,7 @@ impl crate::TermWindow {
         for (button, label, icon) in footer {
             let element = block(
                 vec![
-                    text(icon.to_string(), colors.dim).min_width(cells(2)),
+                    text(icon.to_string(), colors.dim).min_width(slots(1)),
                     text(
                         truncate_cells(&label, text_cells.saturating_sub(2)),
                         colors.dim,
@@ -1303,29 +1349,35 @@ impl crate::TermWindow {
             .min(rows.len().saturating_sub(1));
         let indent_px = px(INDENT_PT);
         for row in rows.into_iter().skip(scroll).take(fits) {
+            // Rows span the full width so the highlight does; the depth
+            // indents the content inside the row.
             let indent = indent_px * row.indent as f32;
-            let row_w = (inner_w - indent).max(cell_w * 4.0);
-            let budget = ((row_w - px(ROW_PAD_X_PT) * 2.0) / cell_w).floor().max(2.0) as usize;
+            let row_w = inner_w;
             let mut children = vec![];
-            let mut used = 0;
-            if let Some((icon, color)) = row.icon {
-                let icon_cells = icon.chars().count() * 2;
-                children.push(text(icon, color).min_width(cells(icon_cells)));
-                used += icon_cells;
+            if indent > 0.0 {
+                children.push(
+                    text(String::new(), colors.text).min_width(Some(Dimension::Pixels(indent))),
+                );
             }
-            let trailing_cells = row
-                .trailing
-                .as_deref()
-                .map(|t| unicode_column_width(t, None) + 1)
-                .unwrap_or(0);
-            let mut remaining = budget.saturating_sub(used + trailing_cells);
+            let icons_w = icon_slot * row.icons.len() as f32;
+            for (glyph, color) in row.icons {
+                children.push(text(glyph.to_string(), color).min_width(slots(1)));
+            }
+            let trailing_w = match row.trailing.as_deref() {
+                Some(t) => self.left_panel_text_width(&font, t)? + cell_w,
+                None => 0.0,
+            };
+            let mut remaining =
+                (row_w - px(ROW_PAD_X_PT) * 2.0 - indent - icons_w - trailing_w).max(0.0);
             for (segment, color) in row.segments {
-                if remaining == 0 || segment.is_empty() {
+                if remaining < 1.0 || segment.is_empty() {
                     continue;
                 }
-                let shown = truncate_cells(&segment, remaining);
-                remaining = remaining.saturating_sub(unicode_column_width(&shown, None));
-                children.push(text(shown, color));
+                let (shown, w) = self.left_panel_fit_text(&font, &segment, remaining)?;
+                remaining -= w;
+                if !shown.is_empty() {
+                    children.push(text(shown, color));
+                }
             }
             if let Some(trailing) = row.trailing {
                 children.push(text(trailing, colors.faint).float(Float::Right));
@@ -1340,10 +1392,7 @@ impl crate::TermWindow {
                 px(ROW_PAD_X_PT),
                 row.selected,
             );
-            out.push(layout(
-                euclid::rect(x0 + indent, y, row_w, row_h),
-                &element,
-            )?);
+            out.push(layout(euclid::rect(x0, y, row_w, row_h), &element)?);
             y += row_h + 1.0;
         }
         *self.left_panel.scroll_mut() = scroll;
@@ -1477,6 +1526,7 @@ impl crate::TermWindow {
                 self.start_left_panel_search();
             }
             (PanelItem::Button(button), WMEK::Press(MousePress::Left)) => match button {
+                PanelButton::Close => self.toggle_left_panel(),
                 PanelButton::NewSnippet => {
                     self.run_left_panel_command(LeftPanelCommand::NewSnippet)
                 }
@@ -2248,6 +2298,15 @@ mod tests {
             panel_pixel_width(true, 1.0, 72.0),
             LEFT_PANEL_MIN_WIDTH as usize
         );
+    }
+
+    #[test]
+    fn fitting_cuts_at_the_last_glyph_that_leaves_room_for_the_ellipsis() {
+        let advances = [(0, 10.0), (1, 10.0), (2, 10.0), (3, 10.0)];
+        assert_eq!(fit_prefix(&advances, 40.0, 5.0), None);
+        assert_eq!(fit_prefix(&advances, 39.0, 5.0), Some((3, 30.0)));
+        assert_eq!(fit_prefix(&advances, 24.0, 5.0), Some((1, 10.0)));
+        assert_eq!(fit_prefix(&advances, 4.0, 5.0), Some((0, 0.0)));
     }
 
     #[test]

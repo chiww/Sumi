@@ -194,11 +194,28 @@ impl FileTree {
         due && self.refresh()
     }
 
-    /// The visible rows in display order.
+    /// The visible rows in display order: the root itself first, as a
+    /// folder that collapses like any other, then its contents.
     pub fn rows(&self) -> Vec<TreeRow> {
         let mut out = vec![];
         if let Some(root) = &self.root {
-            self.push_rows(root, 0, &mut out);
+            let expanded = self.expanded.contains(root);
+            out.push(TreeRow {
+                entry: Entry {
+                    name: root
+                        .file_name()
+                        .map(|n| n.to_string_lossy().into_owned())
+                        .unwrap_or_else(|| root.to_string_lossy().into_owned()),
+                    path: root.clone(),
+                    is_dir: true,
+                    ignored: false,
+                },
+                depth: 0,
+                expanded,
+            });
+            if expanded {
+                self.push_rows(root, 1, &mut out);
+            }
         }
         out
     }
@@ -305,15 +322,25 @@ mod tests {
         std::fs::write(dir.join("docs/a.md"), "").unwrap();
         let mut tree = FileTree::default();
         tree.pin_root(dir.clone());
-        assert_eq!(tree.rows().len(), 1);
+        assert_eq!(tree.rows().len(), 2);
         tree.toggle(&dir.join("docs"));
         let rows = tree.rows();
-        assert_eq!(rows.len(), 2);
-        assert_eq!((rows[1].entry.name.as_str(), rows[1].depth), ("a.md", 1));
+        assert_eq!(rows.len(), 3);
+        assert_eq!(
+            (rows[0].entry.path.as_path(), rows[0].depth),
+            (dir.as_path(), 0)
+        );
+        assert_eq!((rows[2].entry.name.as_str(), rows[2].depth), ("a.md", 2));
         std::fs::write(dir.join("docs/b.md"), "").unwrap();
         assert!(tree.refresh());
-        assert_eq!(tree.rows().len(), 3);
+        assert_eq!(tree.rows().len(), 4);
         assert!(!tree.refresh());
+        // The root row collapses the whole tree and opens it again.
+        tree.toggle(&dir);
+        assert_eq!(tree.rows().len(), 1);
+        assert!(!tree.rows()[0].expanded);
+        tree.toggle(&dir);
+        assert_eq!(tree.rows().len(), 4);
         // A pinned root ignores the active pane.
         assert!(!tree.follow_cwd(Some(Path::new("/"))));
         std::fs::remove_dir_all(dir).unwrap();
